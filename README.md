@@ -1,2 +1,3 @@
 # 8085_simulator
-This is a 8085 simulator which simulates the 8085 microprocessor.
+This is an 8085 simulator that simulates the 8085 microprocessor.
+Updated on 01/10/2023 Sunday.
