@@ -1,16 +1,18 @@
-global A, flag, B, C, D, E, H, L
+global A, flag, B, C, D, E, H, L, M
 global reg_list, reg_value, address_location_list, address_value_list, address_list
 global program, program_counter
 A = hex(0) #b'\x00'
 flag = [0, 0, 0, 0, 0, 0, 0, 0] #b'\x00'
 B = hex(0) #b'\x00'
-C = hex(1) #b'\x01'
+C = hex(0) #b'\x01'
 D = hex(0) #b'\x00'
 E = hex(0) #b'\x00'
 H = hex(0) #b'\x00'
 L = hex(0) #b'\x00'
-reg_list = ["A", "flag", "B", "C", "D", "E", "H", "L"]
-reg_value = [A, flag, B, C, D, E, H, L]
+M = hex(0)
+reg_list = ["A", "flag", "B", "C", "D", "E", "H", "L", "M"]
+reg_value = [A, flag, B, C, D, E, H, L, M]
+M = hex(int(reg_value[6], 16) + int(reg_value[7], 16))
 program = []
 program_counter = []
 address_list = []
@@ -22,20 +24,57 @@ def ADD(mnemonic):
     mnemonic = mnemonic.split()
     reg_1 = mnemonic[1]
     reg_1 = reg_list.index(reg_1)
-    reg_value[0] = hex(int(reg_value[0], 16) + int(reg_value[reg_1], 16))
+    reg_value[0] = hex(int(reg_value[0], 16) + int(reg_value[reg_1], 16))[2:]
     print(f"A = {reg_value[0]}")
-    if len(reg_value[0]) > 2:
-        set_flag_status("C", 1)
+    if len(reg_value[0]) == 3:
+        set_flag_status("CY", 1)
+    elif len(reg_value[0]) == 4:
+        set_flag_status("CY", 2) # not complete
+    check_accumulator()    
     
 def ADI(mnemonic):
     print("-----ADI-----")
     mnemonic = mnemonic.split()
     immediate_value = mnemonic[1]
     if len(str(immediate_value)) == 2:
-        reg_value[0] = hex(int(reg_value[0], 16) + int(immediate_value, 16))
+        reg_value[0] = hex(int(reg_value[0], 16) + int(immediate_value, 16))[2:]
         print(f"A = {reg_value[0]}")
+        if len(reg_value[0]) == 3:
+            set_flag_status("CY", 1)
+        elif len(reg_value[0]) == 4:
+            set_flag_status("CY", 2) # not complete
     else:
         print("Invalid value: Expected value is one byte hexadecimal value")
+    check_accumulator()    
+
+def DCR(mnemonic): # problem
+    print("-----DCR-----")
+    mnemonic = mnemonic.split()
+    reg_1 = mnemonic[1]
+    reg_1 = reg_list.index(reg_1)
+    reg_value[0] = hex(1)
+    value = hex(int(reg_value[reg_1], 16) - int(reg_value[0], 16))
+    print(flag)
+    if value == "0":
+        set_flag_status("Z", 1) # not complete
+    print(flag)
+    check_accumulator()
+    
+def INR(mnemonic): # problem
+    print("-----INR-----")
+    mnemonic = mnemonic.split()
+    reg_1 = mnemonic[1]
+    reg_1 = reg_list.index(reg_1)
+    print(reg_1)
+    reg_value[reg_1] = hex(int(reg_value[reg_1], 16) + int("1", 16))[2:]
+    print(reg_value[reg_1][2:])
+    if reg_value[reg_1][2:] > hex(int("FF", 16))[2:]:
+        set_flag_status("CY", 1)
+    elif reg_value[reg_1][2:] < hex(int("FFF", 16))[2:] and reg_value[reg_1][2:] > hex(int("FF", 16))[2:] :
+        set_flag_status("CY", 2) # not complete
+    else:
+        set_flag_status("CY", 0)
+    check_accumulator()
         
 def JMP(mnemonic):
     print("-----JMP-----")
@@ -44,17 +83,38 @@ def JMP(mnemonic):
     jmp_to = address_list.index(jmp_address)
     return jmp_to
     
-def JC(instruction):
-    pass
+def JC(mnemonic): #problem
+    print("-----JC-----")
+    mnemonic = mnemonic.split()
+    jmp_address = mnemonic[1]
+    if flag[7] == 1 or flag[6] == 1:
+        jmp_to = address_list.index(jmp_address)
+        return jmp_to
     
-def JNC(instruction):
-    pass
+def JNC(mnemonic): # problem
+    print("-----JNC-----")
+    mnemonic = mnemonic.split()
+    jmp_address = mnemonic[1]
+    if flag[7] == 0 and flag[6] == 0:
+        jmp_to = address_list.index(jmp_address)
+        return jmp_to
     
-def JZ(instruction):
-    pass
+def JZ(mnemonic): #problem
+    print("-----JZ-----")
+    mnemonic = mnemonic.split()
+    jmp_address = mnemonic[1]
+    if flag[1] == 1:
+        jmp_to = address_list.index(jmp_address)
+        return jmp_to
     
-def JNZ(instruction):
-    pass             
+def JNZ(mnemonic): # problem
+    print("-----JNZ-----")
+    mnemonic = mnemonic.split()
+    jmp_address = mnemonic[1]
+    flag_status = get_flag_status("Z")
+    if flag_status != "1":
+        jmp_to = address_list.index(jmp_address)
+        return jmp_to           
         
 def MOV(mnemonic):
     print("-----MOV-----")
@@ -86,6 +146,16 @@ def MVI(mnemonic, address_location_list=None, address_value_list=None):
         reg_value[reg_1] = address_value_list[reg_temp]
         print(reg_value[reg_1])
 
+def check_accumulator():
+    if reg_value[0] == hex(0)[2:]:
+        set_flag_status("Z", 1)
+    elif reg_value[0] != hex(0)[2:]:
+        set_flag_status("Z", 0)
+    if reg_value[0] > hex(255)[2:]:
+        set_flag_status("CY", 1)
+    elif reg_value[0] <= hex(255)[2:]:
+        set_flag_status("CY", 0)
+
 def byte_8085(mnemonic):
     global one_byte
     global two_byte
@@ -93,9 +163,9 @@ def byte_8085(mnemonic):
     t = 0
     mnemonic = mnemonic.split()
     opcode = mnemonic[0]
-    one_byte = ["MOV", "ADD", "CMA", "INR", "INX", "LDAX", "HLT"]
+    one_byte = ["MOV", "ADD", "CMA", "INR", "INX", "DCR", "DCX", "LDAX", "HLT"]
     two_byte = ["MVI", "IN", "ADI", "ORI", "ACI"]
-    three_byte = ["LDA", "LXI", "JMP","CALL", "LHLD", "JNZ"]
+    three_byte = ["LDA", "LXI", "JMP","CALL", "LHLD", "JC", "JNC", "JZ", "JNZ"]
     if opcode in one_byte:
         print(opcode)
         t = 1
@@ -169,26 +239,32 @@ def execute_8085(program, address_list):
             ADD(instruction)
         elif opcode == "ADI":
             ADI(instruction)
+        elif opcode == "DCR":
+            DCR(instruction)    
+        elif opcode == "INR":
+            INR(instruction)    
         elif opcode == "JMP":
             m = JMP(instruction)
         elif opcode == "JC":
             m = JC(instruction)
         elif opcode == "JNC":
             m = JNC(instruction)
+            if m == None:
+                m = n
         elif opcode == "JZ":
             m = JZ(instruction)
         elif opcode == "JNZ":
-            m = JNZ(instruction)                 
+            m = JNZ(instruction)
+            if m == None:
+                m = n
+            n = m                   
         elif  opcode == "MOV":
             MOV(instruction)
         elif opcode == "MVI":
             MVI(instruction, address_location_list, address_value_list)
         elif opcode == "HLT":
             break
-        if opcode == "JMP":
-            n = m
-        else:    
-            n = n + 1    
+        n = n + 1    
     details = input("Do you want to see more details? [Y/N] : ")
     if details == "Y":
         print(f"A = {reg_value[0]} flag = {reg_value[1]}")
@@ -260,12 +336,6 @@ def go_8085():
     pass
 
 while True:
-    print(get_flag_status("S"))
-    set_flag_status("S", 1)
-    print("-----")
-    set_flag_status("Z", 1)
-    print("-----")
-    set_flag_status("CY", 2)
     print("Press any of the given key: AD - Address, EX - Execute, G - Go, M - Memory""\n""A, flag, B, C, D, E, H, L")
     key = input()
     if key == "AD":
