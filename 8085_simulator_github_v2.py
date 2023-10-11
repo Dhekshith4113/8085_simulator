@@ -40,7 +40,7 @@ def ADI(mnemonic):
     print(f"[A] = {reg_value[0]}")    
     check_accumulator()    
 
-def DCR(mnemonic): # problem
+def DCR(mnemonic):
     print("-----DCR-----")
     mnemonic = mnemonic.split()
     reg_1 = mnemonic[1]
@@ -51,7 +51,7 @@ def DCR(mnemonic): # problem
     print(f"[{reg_list[reg_1]}] = {reg_value[reg_1]}")    
     check_accumulator()
     
-def INR(mnemonic): # problem
+def INR(mnemonic):
     print("-----INR-----")
     mnemonic = mnemonic.split()
     reg_1 = mnemonic[1]
@@ -68,7 +68,7 @@ def JMP(mnemonic):
     print(f"Jump to [{jmp_address}]")
     return jmp_to
     
-def JC(mnemonic): #problem
+def JC(mnemonic):
     print("-----JC-----")
     mnemonic = mnemonic.split()
     jmp_address = mnemonic[1]
@@ -79,7 +79,7 @@ def JC(mnemonic): #problem
     elif flag[7] == 0:
         return "A"    
     
-def JNC(mnemonic): # problem
+def JNC(mnemonic):
     print("-----JNC-----")
     mnemonic = mnemonic.split()
     jmp_address = mnemonic[1]
@@ -90,7 +90,7 @@ def JNC(mnemonic): # problem
     elif flag[7] == 1:
         return "A"    
     
-def JZ(mnemonic): #problem
+def JZ(mnemonic):
     print("-----JZ-----")
     mnemonic = mnemonic.split()
     jmp_address = mnemonic[1]
@@ -101,7 +101,7 @@ def JZ(mnemonic): #problem
     elif flag[1] == 0:
         return "A"   
     
-def JNZ(mnemonic): # problem
+def JNZ(mnemonic):
     print("-----JNZ-----")
     mnemonic = mnemonic.split()
     jmp_address = mnemonic[1]
