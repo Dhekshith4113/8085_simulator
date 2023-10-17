@@ -1,5 +1,3 @@
-import random
-
 global A, flag, B, C, D, E, H, L, M
 global reg_list, reg_value, address_location_list, address_value_list, address_list
 global program, program_counter, p_c, flag_status
@@ -20,13 +18,6 @@ reg_value = [A, flag, B, C, D, E, H, L, M]
 M = str(reg_value[6]) + str(reg_value[7])
 program = []
 program_counter = []
-
-memory_location_list = []
-n = 0
-for i in range(65535):
-    n = int(str(n), 16) + 1
-    n = hex(n)[2:]
-    memory_location_list.append(n)
 
 def ADD(mnemonic):
     print("-----ADD-----")
