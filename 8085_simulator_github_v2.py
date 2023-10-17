@@ -26,11 +26,9 @@ def ADD(mnemonic):
     reg_1 = reg_list.index(reg_1)
     reg_value[0] = hex(int(reg_value[0], 16) + int(reg_value[reg_1], 16))[2:]
     if int(reg_value[0], 16) > 255:
+        check_accumulator()
         reg_value[0] = hex(int(reg_value[0], 16) - int("100", 16))[2:]
-        flag[7] = 1
-        print(flag)
     print(f"[A] = {reg_value[0]}")
-    check_accumulator()
     reg_value[0] = fill_zero(reg_value[0]) 
     
 def ADI(mnemonic):
@@ -39,6 +37,9 @@ def ADI(mnemonic):
     immediate_value = mnemonic[1]
     if len(str(immediate_value)) == 2:
         reg_value[0] = hex(int(str(reg_value[0]), 16) + int(str(immediate_value), 16))[2:]
+        if int(reg_value[0], 16) > 255:
+            check_accumulator()
+            reg_value[0] = hex(int(reg_value[0], 16) - int("100", 16))[2:]
     else:
         print("Invalid value: Expected value is one byte hexadecimal value")
     print(f"[A] = {reg_value[0]}")    
@@ -51,6 +52,7 @@ def ANA(mnemonic):
     reg_1 = mnemonic[1]
     reg_1 = reg_list.index(reg_1)
     reg_value[0] = int(reg_value[0], 16) & int(reg_value[reg_1], 16)
+    check_accumulator()
     print(f"[A] = {reg_value[0]}")
     reg_value[0] = fill_zero(reg_value[0])
     
@@ -61,6 +63,7 @@ def ANI(mnemonic):
     immediate_value = mnemonic[1]
     if len(str(immediate_value)) == 2:
         reg_value[0] = hex(int(str(reg_value[0]), 16) & int(str(immediate_value), 16))[2:]
+        check_accumulator()
     else:
         print("Invalid value: Expected value is one byte hexadecimal value")
     print(f"[A] = {reg_value[0]}")
@@ -74,7 +77,6 @@ def CMA(mnemonic):
     flag[1] = 1
     print(f"[A] = {reg_value[0]}")
     reg_value[0] = fill_zero(reg_value[0])
-    
     
 def CMP(mnemonic):
     print("-----CMP-----")
@@ -93,6 +95,7 @@ def CMP(mnemonic):
         flag[1] = 0
         flag[7] = 0
         print(f"[A] > [{reg_list[reg_1]}]")
+    print(flag)    
     
 def CPI(mnemonic):
     print("-----CPI-----")
@@ -120,13 +123,16 @@ def DAD(mnemonic):
     reg_2_index = reg_1_index + 1
     reg_value[7] = hex(int(reg_value[7], 16) + int(reg_value[reg_2_index], 16))[2:]
     if int(reg_value[7], 16) > 255:
+        check_flag(reg_value[7])
         reg_value[7] = hex(int(reg_value[7], 16) - int("100", 16))[2:]
         reg_value[6] = hex(int(reg_value[6], 16) + int(reg_value[reg_1_index], 16))[2:]
         if int(reg_value[6], 16) > 255:
+            check_flag(reg_value[6])
             reg_value[6] = hex(int(reg_value[6], 16) - int("100", 16))[2:]
     else:
         reg_value[6] = hex(int(reg_value[6], 16) + int(reg_value[reg_1_index], 16))[2:]
         if int(reg_value[6], 16) > 255:
+            check_flag(reg_value[6])
             reg_value[6] = hex(int(reg_value[6], 16) - int("100", 16))[2:]
     reg_value[6] = fill_zero(reg_value[6])
     reg_value[7] = fill_zero(reg_value[7])
@@ -140,7 +146,6 @@ def DCR(mnemonic):
     print(f"[{reg_list[reg_index]}] = {reg_value[reg_index]}")    
     check_flag(reg_value[reg_index])
     reg_value[reg_index] = fill_zero(reg_value[reg_index])
-    print(flag)
     
 def DCX(mnemonic):
     print("-----DCX-----")
@@ -200,14 +205,68 @@ def JMP(mnemonic):
     print("-----JMP-----")
     mnemonic = mnemonic.split()
     jmp_address = mnemonic[1]
+    jmp_address = hex(int(jmp_address, 16))[2:]
     jmp_to = address_list.index(jmp_address)
     print(f"Jump to {jmp_address}")
     return jmp_to
     
-def JC(mnemonic): #problem
+def JP(mnemonic):
+    print("-----JP-----")
+    mnemonic = mnemonic.split()
+    jmp_address = mnemonic[1]
+    jmp_address = hex(int(jmp_address, 16))[2:]
+    if flag[0] == 0:
+        p_c = address_list.index(jmp_address)
+        print(f"Jump to {jmp_address}")
+        return p_c
+    elif flag[0] == 1:
+        print("Jump completed...")
+        return "A"    
+
+def JM(mnemonic):
+    print("-----JM-----")
+    mnemonic = mnemonic.split()
+    jmp_address = mnemonic[1]
+    jmp_address = hex(int(jmp_address, 16))[2:]
+    if flag[0] == 1:
+        p_c = address_list.index(jmp_address)
+        print(f"Jump to {jmp_address}")
+        return p_c
+    elif flag[0] == 0:
+        print("Jump completed...")
+        return "A"
+
+def JPE(mnemonic):
+    print("-----JPE-----")
+    mnemonic = mnemonic.split()
+    jmp_address = mnemonic[1]
+    jmp_address = hex(int(jmp_address, 16))[2:]
+    if flag[5] == 1:
+        p_c = address_list.index(jmp_address)
+        print(f"Jump to {jmp_address}")
+        return p_c
+    elif flag[5] == 0:
+        print("Jump completed...")
+        return "A"
+
+def JPO(mnemonic):
+    print("-----JPO-----")
+    mnemonic = mnemonic.split()
+    jmp_address = mnemonic[1]
+    jmp_address = hex(int(jmp_address, 16))[2:]
+    if flag[5] == 0:
+        p_c = address_list.index(jmp_address)
+        print(f"Jump to {jmp_address}")
+        return p_c
+    elif flag[5] == 1:
+        print("Jump completed...")
+        return "A"
+    
+def JC(mnemonic):
     print("-----JC-----")
     mnemonic = mnemonic.split()
     jmp_address = mnemonic[1]
+    jmp_address = hex(int(jmp_address, 16))[2:]
     if flag[7] == 1:
         p_c = address_list.index(jmp_address)
         print(f"Jump to {jmp_address}")
@@ -216,7 +275,7 @@ def JC(mnemonic): #problem
         print("Jump completed...")
         return "A"    
     
-def JNC(mnemonic): # problem
+def JNC(mnemonic):
     print("-----JNC-----")
     mnemonic = mnemonic.split()
     jmp_address = mnemonic[1]
@@ -229,10 +288,11 @@ def JNC(mnemonic): # problem
         print("Jump completed...")
         return "A"    
     
-def JZ(mnemonic): #problem
+def JZ(mnemonic):
     print("-----JZ-----")
     mnemonic = mnemonic.split()
     jmp_address = mnemonic[1]
+    jmp_address = hex(int(jmp_address, 16))[2:]
     if flag[1] == 1:
         p_c = address_list.index(jmp_address)
         print(f"Jump to {jmp_address}")
@@ -241,7 +301,7 @@ def JZ(mnemonic): #problem
         print("Jump completed...")
         return "A"   
     
-def JNZ(mnemonic): # problem
+def JNZ(mnemonic):
     print("-----JNZ-----")
     mnemonic = mnemonic.split()
     jmp_address = mnemonic[1]
@@ -372,6 +432,7 @@ def ORA(mnemonic):
     reg_1 = reg_list.index(reg_1)
     reg_value[0] = hex(int(reg_value[0], 16) | int(reg_value[reg_1], 16))[2:]
     print(f"[A] = {reg_value[0]}")
+    check_accumulator()
     reg_value[0] = fill_zero(reg_value[0])
     
 def ORI(mnemonic):
@@ -383,7 +444,22 @@ def ORI(mnemonic):
     else:
         print("Invalid value: Expected value is one byte hexadecimal value")
     print(f"[A] = {reg_value[0]}")
-    reg_value[0] = fill_zero(reg_value[0])      
+    check_accumulator()
+    reg_value[0] = fill_zero(reg_value[0])
+    
+def RLC(mnemonic):
+    print("-----RLC-----")
+    reg_value[0] = int(reg_value[0], 16) << 1
+    reg_value[0] = hex(reg_value[0])[2:]
+    reg_value[0] = fill_zero(reg_value[0])
+    print(f"[A] = {reg_value[0]}")
+    
+def RRC(instruction):
+    print("-----RRC-----")
+    reg_value[0] = int(reg_value[0], 16) >> 1
+    reg_value[0] = hex(reg_value[0])[2:]
+    reg_value[0] = fill_zero(reg_value[0])
+    print(f"[A] = {reg_value[0]}")          
 
 def STA(mnemonic):
     print("-----STA-----")
@@ -432,6 +508,7 @@ def SUB(mnemonic):
         reg_value[0] = hex(int(reg_value[0], 16) - int(reg_value[reg_1], 16))
         reg_value[0] = hex(int(reg_value[0], 16) + int("100", 16))[2:]
         flag[0] = 1
+        flag[7] = 1
     print(f"[A] = {reg_value[0]}")
     reg_value[0] = fill_zero(reg_value[0])
     
@@ -446,6 +523,7 @@ def SUI(mnemonic):
             reg_value[0] = hex(int(reg_value[0], 16) - int(str(immediate_value), 16))
             reg_value[0] = hex(int(reg_value[0], 16) + int("100", 16))[2:]
             flag[0] = 1
+            flag[7] = 1
     else:
         print("Invalid value: Expected value is one byte hexadecimal value")
     print(f"[A] = {reg_value[0]}")
@@ -507,6 +585,7 @@ def check_accumulator():
         flag[7] = 1
     elif int(reg_value[0], 16) <= 255:
         flag[7] = 0
+    print(flag)    
         
 def check_flag(reg_name):
     if int(reg_name, 16) == 0:
@@ -517,6 +596,7 @@ def check_flag(reg_name):
         flag[7] = 1
     elif int(reg_name, 16) <= 255:
         flag[7] = 0
+    print(flag)    
         
 def fill_zero(reg_name):
     if reg_name == None:
@@ -540,9 +620,9 @@ def byte_8085(mnemonic):
     t = 0
     mnemonic = mnemonic.split()
     opcode = mnemonic[0]
-    one_byte = ["MOV", "ADD", "CPI", "CMP", "CMA", "INR", "INX", "DCR", "DCX", "DAD", "LDAX", "STAX", "HLT", "SUB", "XCHG", "ANA", "ANI", "ORA", "ORI", "XRA", "XRI"]
+    one_byte = ["MOV", "ADD", "CPI", "CMP", "CMA", "INR", "INX", "DCR", "DCX", "DAD", "LDAX", "STAX", "HLT", "SUB", "XCHG", "ANA", "ANI", "ORA", "ORI", "XRA", "XRI", "RRC", "RLC"]
     two_byte = ["MVI", "ADI", "ORI", "ACI", "SUI", "CPI"]
-    three_byte = ["LDA", "LXI", "STA", "JMP","CALL", "LHLD", "SHLD", "JC", "JNC", "JZ", "JNZ"]
+    three_byte = ["LDA", "LXI", "STA", "JMP","CALL", "LHLD", "SHLD", "JC", "JNC", "JZ", "JNZ", "JP", "JM", "JPE", "JPO"]
     if opcode in one_byte:
         t = 1
         return t
@@ -606,7 +686,6 @@ def execute_8085():
     machine_cycles = len(program)
     print(f"Start address: {address_list[0]}")
     while True:
-        reg_value[1] = [0, 0, 0, 0, 0, 0, 0, 0]
         machine_code = program[p_c]
         mnemonic = machine_code.split(":")
         address_code = mnemonic[0]
@@ -638,6 +717,26 @@ def execute_8085():
             INX(instruction)        
         elif opcode == "JMP":
             m = JMP(instruction)
+        elif opcode == "JP":
+            p_c = JC(instruction)
+            if p_c == "A":
+                p_c = address_list.index(address_code)
+                p_c = p_c + 1
+        elif opcode == "JM":
+            p_c = JC(instruction)
+            if p_c == "A":
+                p_c = address_list.index(address_code)
+                p_c = p_c + 1
+        elif opcode == "JPE":
+            p_c = JC(instruction)
+            if p_c == "A":
+                p_c = address_list.index(address_code)
+                p_c = p_c + 1
+        elif opcode == "JPO":
+            p_c = JC(instruction)
+            if p_c == "A":
+                p_c = address_list.index(address_code)
+                p_c = p_c + 1                            
         elif opcode == "JC":
             p_c = JC(instruction)
             if p_c == "A":
@@ -675,7 +774,11 @@ def execute_8085():
         elif opcode == "ORA":
             ORA(instruction)
         elif opcode == "ORI":
-            ORI(instruction)      
+            ORI(instruction)
+        elif opcode == "RLC":
+            RLC(instruction)    
+        elif opcode == "RRC":
+            RRC(instruction)
         elif opcode == "STA":
             STA(instruction)
         elif opcode == "STAX":
