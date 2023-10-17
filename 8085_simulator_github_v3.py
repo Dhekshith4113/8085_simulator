@@ -1,6 +1,8 @@
+import random
+
 global A, flag, B, C, D, E, H, L, M
 global reg_list, reg_value, address_location_list, address_value_list, address_list
-global program, program_counter, p_c, flag_status
+global program, program_counter, p_c, flag_status, memory_location_list, memory_location_value 
 A = hex(0)[2:]
 flag = [0, 0, 0, 0, 0, 0, 0, 0]
 B = hex(0)[2:]
@@ -19,6 +21,22 @@ M = str(reg_value[6]) + str(reg_value[7])
 program = []
 program_counter = []
 
+memory_location_list = []
+n = 0
+for i in range(65535):
+    n = int(str(n), 16) + 1
+    n = hex(n)[2:]
+    memory_location_list.append(n)
+    
+memory_location_value = []
+n = 0
+for i in range(65535):
+    n = random.randint(0, 255)
+    n = hex(n)[2:]
+    if int(n, 16) < 16:
+        n = str(n).zfill(2)
+    memory_location_value.append(n)
+    
 def ADD(mnemonic):
     print("-----ADD-----")
     mnemonic = mnemonic.split()
@@ -603,7 +621,6 @@ def fill_zero(reg_name):
         return reg_name
     else:    
         if int(reg_name, 16) < 16:
-            print(hex(int(reg_name, 16)))
             return str(reg_name).zfill(2)
         else:
             return reg_name              
@@ -658,7 +675,8 @@ def address_8085():
             address = hex(int(address, 16) + int("2",16))
         elif byte == 3:
             address = hex(int(address, 16) + int("3",16))
-    print(address_list)
+    print(program)        
+    MN_to_MC()
 
 def memory_8085():
     print("-----MEMORY-----")
@@ -666,26 +684,319 @@ def memory_8085():
     global address_value_list
     address_location_list =[]
     address_value_list = []
+    print("Enter address: ")
+    address_location = input()
     while True:
-        print("Enter address: ")
-        address_location = input()
-        if address_location == "EXIT":
-            print(address_location_list, address_value_list)
-            break
         address_location = hex(int(address_location, 16))[2:]
         address_location_list.append(address_location)
-        print("Enter value: ")
-        address_value = hex(int(input(), 16))[2:]
-        addrss_value = fill_zero(address_value)
-        address_value_list.append(address_value)
+        address_value = input(f"{address_location}: ")
+        if address_value == "EXIT":
+            print(address_location_list, address_value_list)
+            break
+        elif len(address_value) > 2:
+            print("Invalid value: 2-byte hexadecimal value expected")
+        else:       
+            address_value = hex(int(address_value, 16))[2:]
+            addrss_value = fill_zero(address_value)
+            address_value_list.append(address_value)
+            address_location_list.append(address_location)
+            address_location = hex(int(address_location, 16) + 1)
+    for x in address_location_list:
+        m = address_location_list.index(x)
+        print(m)
+        address_value = address_value_list[m]
+        memory_location_index = memory_location_list.index(x)
+        memory_location_value[memory_location_index ] = address_value
+    # print(memory_location_value)
+    
+def instruction_decoder(mnemonic):
+    instruction  = mnemonic.split()[0]
+    one_byte_list = ["MOV", "ADD", "CPI", "CMP", "CMA", "INR", "INX", "DCR", "DCX", "DAD", "LDAX", "STAX", "HLT", "SUB", "XCHG", "ANA", "ANI", "ORA", "ORI", "XRA", "XRI", "RRC", "RLC"]
+    two_byte_list = ["MVI", "ADI", "ORI", "ACI", "SUI", "CPI"]
+    three_byte_list = ["LDA", "LXI", "STA", "JMP","CALL", "LHLD", "SHLD", "JC", "JNC", "JZ", "JNZ", "JP", "JM", "JPE", "JPO"]
+    if instruction in one_byte_list:
+        byte = "ONE"
+        if mnemonic == "ADD A":
+            machine_code = "87"
+        elif mnemonic == "ADD B":
+            machine_code = "80"
+        elif mnemonic == "MOV A,B":
+            machine_code = "78"
+        elif mnemonic == "MOV B,A":
+            machine_code = "47"
+        elif mnemonic == "HLT":
+            machine_code = "76"            
+        return byte, machine_code, None   
+    elif instruction in two_byte_list:
+        byte = "TWO"
+        mnemonic = mnemonic.split(",")
+        opcode = mnemonic[0]
+        immediate_value = mnemonic[1]
+        if opcode == "MVI A":
+            machine_code = "3E"
+        elif opcode == "MVI B":
+            machine_code = "06"
+        return byte, machine_code, immediate_value
+    elif instruction in three_byte_list:
+        byte = "THREE"
+        mnemonic = mnemonic.split(",")
+        opcode = mnemonic[0]
+        memory_location = mnemonic[1]
+        if opcode == "LDA":
+            machine_code = "3A"
+        elif opcode == "LXI B":
+            machine_code = "0A"
+        return byte, machine_code, memory_location
 
-def execute_8085():
+def MN_to_MC():
+    print("Converting to Machine Code...")
+    global machine_code_list, address_list, memory_location_list
+    machine_code_list = []
+    mc = 0
+    address_list = []
+    while mc < len(program):
+        machine_code = program[mc]
+        mnemonic = machine_code.split(":")
+        address_code = mnemonic[0]
+        opcode = mnemonic[1]
+        byte, machine_code, iv_ml = instruction_decoder(opcode) # iv_ml means immediate_value or memory_location
+        if byte == "ONE":
+            machine_code = fill_zero(machine_code)
+            address_list.append(f"{address_code}")
+            machine_code_list.append(machine_code)
+        elif byte == "TWO":
+            machine_code = fill_zero(machine_code)
+            address_list.append(f"{address_code}")
+            machine_code_list.append(machine_code)
+            immediate_value = hex(int(iv_ml, 16))[2:]
+            immediate_value = fill_zero(immediate_value)
+            address_code = hex(int(address_code, 16) + 1)
+            address_list.append(f"{address_code[2:]}")
+            machine_code_list.append(immediate_value)
+        elif byte == "THREE":
+            machine_code = fill_zero(machine_code)
+            address_list.append(f"{address_code}")
+            machine_code_list.append(machine_code)
+            memory_location = iv_ml
+            higher_byte, lower_byte = split_address(memory_location)
+            machine_code_list.append(lower_byte)
+            address_code = hex(int(address_code, 16) + 1)
+            address_list.append(f"{address_code[2:]}")
+            machine_code_list.append(higher_byte)
+            address_code = hex(int(address_code, 16) + 1)
+            address_list.append(f"{address_code[2:]}")
+        mc = mc + 1
+    print(address_list)
+    for x in address_list:
+        m = address_list.index(x)
+        machine_code = machine_code_list[m]
+        memory_location_index = memory_location_list.index(x)
+        memory_location_value[memory_location_index ] = machine_code
+
+def execute_8085_MN():
     print("-----EXECUTE-----")
-    global p_c, M
-    p_c = 0
-    machine_cycles = len(program)
-    print(f"Start address: {address_list[0]}")
+    global p_c
+    start_address = input("Start address: ")
+    p_c = address_list.index(start_address)
     while True:
+        machine_code = program[p_c]
+        mnemonic = machine_code.split(":")
+        address_code = mnemonic[0]
+        instruction = mnemonic[1]
+        opcode = instruction.split()[0]
+        if opcode == "ADD":
+            ADD(instruction)
+        elif opcode == "ADI":
+            ADI(instruction)
+        elif opcode == "ANA":
+            ANA(instruction)
+        elif opcode == "ANI":
+            ANI(instruction)
+        elif opcode == "CMA":
+            CMA(instruction)
+        elif opcode == "CMP":
+            CMP(instruction)
+        elif opcode == "CPI":
+            CPI(instruction)                  
+        elif opcode == "DCR":
+            DCR(instruction)
+        elif opcode == "DCX":
+            DCX(instruction)
+        elif opcode == "DAD":
+            DAD(instruction)          
+        elif opcode == "INR":
+            INR(instruction)
+        elif opcode == "INX":
+            INX(instruction)        
+        elif opcode == "JMP":
+            m = JMP(instruction)
+        elif opcode == "JP":
+            p_c = JC(instruction)
+            if p_c == "A":
+                p_c = address_list.index(address_code)
+                p_c = p_c + 1
+        elif opcode == "JM":
+            p_c = JC(instruction)
+            if p_c == "A":
+                p_c = address_list.index(address_code)
+                p_c = p_c + 1
+        elif opcode == "JPE":
+            p_c = JC(instruction)
+            if p_c == "A":
+                p_c = address_list.index(address_code)
+                p_c = p_c + 1
+        elif opcode == "JPO":
+            p_c = JC(instruction)
+            if p_c == "A":
+                p_c = address_list.index(address_code)
+                p_c = p_c + 1                            
+        elif opcode == "JC":
+            p_c = JC(instruction)
+            if p_c == "A":
+                p_c = address_list.index(address_code)
+                p_c = p_c + 1
+        elif opcode == "JNC":
+            p_c = JNC(instruction)
+            if p_c == "A":
+                p_c = address_list.index(address_code)
+                p_c = p_c + 1
+        elif opcode == "JZ":
+            p_c = JZ(instruction)
+            if p_c == "A":
+                p_c = address_list.index(address_code)
+                p_c = p_c + 1
+        elif opcode == "JNZ":
+            p_c = JNZ(instruction)
+            if p_c == "A":
+                p_c = address_list.index(address_code)
+                p_c = p_c + 1
+        elif opcode == "LDA":
+            LDA(instruction)
+        elif opcode == "LDAX":
+            LDAX(instruction)    
+        elif opcode == "LXI":
+            LXI(instruction)
+        elif opcode == "LHLD":
+            LHLD(instruction)
+        elif opcode == "SHLD":
+            SHLD(instruction)       
+        elif  opcode == "MOV":
+            MOV(instruction)
+        elif opcode == "MVI":
+            MVI(instruction)
+        elif opcode == "ORA":
+            ORA(instruction)
+        elif opcode == "ORI":
+            ORI(instruction)
+        elif opcode == "RLC":
+            RLC(instruction)    
+        elif opcode == "RRC":
+            RRC(instruction)
+        elif opcode == "STA":
+            STA(instruction)
+        elif opcode == "STAX":
+            STAX(instruction)     
+        elif opcode == "SUB":
+            SUB(instruction)
+        elif opcode == "SUI":
+            SUI(instruction)
+        elif opcode == "XCHG":
+            XCHG(instruction)
+        elif opcode == "XRA":
+            XRA(instruction)
+        elif opcode == "XRI":
+            XRI(instruction)           
+        elif opcode == "HLT":
+            break
+        if opcode != "JMP" and opcode != "JC" and opcode != "JNC" and opcode != "JZ" and opcode != "JNZ":
+            p_c = p_c + 1
+                
+    details = input("Do you want to see more details? [Y/N] : ")
+    if details == "Y":
+        print(f"A = {reg_value[0]} flag = {reg_value[1]}")
+        print(f"B = {reg_value[2]} C = {reg_value[3]}")
+        print(f"D = {reg_value[4]} E = {reg_value[5]}")
+        print(f"H = {reg_value[6]} L = {reg_value[7]}")
+        print(f"address_location_list = {address_location_list}")
+        print(f"address_value_list = {address_value_list}")
+
+def instruction_encoder(machine_code):
+    one_byte_list = ["87", "80", "78", "47", "76"]
+    two_byte_list = ["3E", "06"]
+    three_byte_list = ["3A", "0A"]
+    if machine_code in one_byte_list:
+        byte = "ONE"
+        if machine_code == "87":
+            mnemonic = "ADD A"
+        elif machine_code == "80":
+            mnemonic = "ADD B"
+        elif machine_code == "78":
+            mnemonic = "MOV A,B"
+        elif machine_code == "47":
+            mnemonic = "MOV B,A"
+        elif machine_code == "76":
+            mnemonic = "HLT"            
+        return byte, mnemonic 
+    elif machine_code in two_byte_list:
+        byte = "TWO"
+        if machine_code == "3E":
+            opcode = "MVI A"
+        elif machine_code == "06":
+            opcode = "MVI B"
+        return byte, opcode
+    elif machine_code in three_byte_list:
+        byte = "THREE"
+        if machine_code == "3A":
+            opcode = "LDA"
+        elif machine_code == "0A":
+            opcode = "LXI B"
+        return byte, opcode
+
+def MC_to_MN():
+    print("Converting to Mnemonic...")
+    global program, address_list, memory_location_list
+    program = []
+    p_c = 0
+    address_list_temp = address_list
+    while p_c < len(address_list):
+        machine_code = machine_code_list[p_c]
+        print(f"Machine code = {machine_code}")
+        byte, mnemonic_opcode = instruction_encoder(machine_code) # iv_ml means immediate_value or memory_location
+        if byte == "ONE":
+            print(f"p_c = {p_c}")
+            program.append(f"{address_list_temp[p_c]}:{mnemonic_opcode}")
+        elif byte == "TWO":
+            print(f"p_c = {p_c}")
+            p_c = p_c + 1
+            machine_code = machine_code_list[p_c]
+            mnemonic = mnemonic_opcode + "," + str(machine_code).zfill(2)
+            program.append(f"{address_list_temp[p_c]}:{mnemonic}")
+            address_list.pop(p_c)
+            print(f"p_c = {p_c}")
+        elif byte == "THREE":
+            print(f"p_c = {p_c}")
+            p_c = p_c + 1
+            mnemonic = mnemonic_opcode + "," + str(machine_code).zfill(2)
+            address_list.pop(p_c)
+            print(f"p_c = {p_c}")
+            p_c = p_c + 1
+            mnemonic = mnemonic_opcode + str(machine_code).zfill(2)
+            program.append(f"{address_list_temp[p_c]}:{mnemonic}")
+            address_list.pop(p_c)
+            print(f"p_c = {p_c}")
+        p_c = p_c + 1
+    print(f"Address List = {address_list}")
+    print(f"Temporary Address List = {address_list_temp}")
+    print(program)
+
+def execute_8085_MC():
+    print("-----EXECUTE-----")
+    global p_c
+    start_address = input("Start address: ")
+    start_address = hex(int(start_address, 16))[2:]
+    p_c = address_list.index(start_address)
+    MC_to_MN()
+    while p_c < len(program):
         machine_code = program[p_c]
         mnemonic = machine_code.split(":")
         address_code = mnemonic[0]
@@ -814,7 +1125,11 @@ while True:
     if key == "AD":
         address_8085()
     elif key == "GO":
-        execute_8085()
+        MNMC = input("MN or MC?")
+        if MNMC == "MN":
+            execute_8085_MN()
+        if MNMC == "MC":
+            execute_8085_MC()
     elif key == "M":
         memory_8085()
     elif key == "A":
