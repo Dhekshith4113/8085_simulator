@@ -10,3 +10,4 @@ Updated on 12/10/2023 Thursday ( Added LXI, STAX, LHLD, SHLD instructions ).
 Updated on 16/10/2023 Monday ( Added CMA, compare instructions, logical instructions, LDAX instruction. SUB instruction works as expected. There are problems with jump instructions ).
 Updated on 16/10/2023 Monday ( Added RRC and RLC instructions. Jump instruction's problem fixed. There are problems with SHLD instruction ).
 Updated on 17/10/2023 Tuesday ( Made a new version V3. It can convert mnemonics to machine code. The memory/edit function does not work yet ).
+Updated 18/10/2023 Wednesday ( Made some changes to V3. The memory/edit function works. In V2, SHLD and DAD works as expected ).
