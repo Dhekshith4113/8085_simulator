@@ -389,10 +389,10 @@ def SHLD(mnemonic):
     mnemonic = mnemonic.split()
     address = mnemonic[1]
     address_index = address_location_list.index(address)
-    address_value_list[address_index] = reg_value[7]
+    address_value_list[address_index] = reg_value[6]
     address_value_list[address_index] = fill_zero(address_value_list[address_index])
     address_index += 1
-    address_value_list[address_index] = reg_value[6]
+    address_value_list[address_index] = reg_value[7]
     address_value_list[address_index] = fill_zero(address_value_list[address_index])
     print(f"[H] = {reg_value[6]}")
     print(f"[L] = {reg_value[7]}")
