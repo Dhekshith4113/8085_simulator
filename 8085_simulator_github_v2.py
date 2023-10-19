@@ -603,7 +603,6 @@ def fill_zero(reg_name):
         return reg_name
     else:    
         if int(reg_name, 16) < 16:
-            print(hex(int(reg_name, 16)))
             return str(reg_name).zfill(2)
         else:
             return reg_name              
@@ -666,18 +665,21 @@ def memory_8085():
     global address_value_list
     address_location_list =[]
     address_value_list = []
+    address_location = input(f"Enter address: ")
     while True:
-        print("Enter address: ")
-        address_location = input()
-        if address_location == "EXIT":
+        address_location = hex(int(address_location, 16))[2:]
+        address_value = input(f"{address_location}: ")
+        if address_value == "EXIT":
             print(address_location_list, address_value_list)
             break
-        address_location = hex(int(address_location, 16))[2:]
-        address_location_list.append(address_location)
-        print("Enter value: ")
-        address_value = hex(int(input(), 16))[2:]
-        addrss_value = fill_zero(address_value)
-        address_value_list.append(address_value)
+        elif len(address_value) > 2:
+            print("Invalid: Expected 2-byte hexadecimal number")
+        else:
+            address_location_list.append(address_location)
+            address_value = hex(int(address_value, 16))[2:]    
+            addrss_value = fill_zero(address_value)
+            address_value_list.append(address_value)
+            address_location = hex(int(address_location, 16) + 1)[2:]
 
 def execute_8085():
     print("-----EXECUTE-----")
@@ -809,27 +811,16 @@ def execute_8085():
         print(f"address_value_list = {address_value_list}")
 
 while True:
-    print("\n""Press any of the given key: AD - Address, GO - Execute, M - Memory""\n""A, flag, B, C, D, E, H, L")
+    print("\n""Press any of the given key: A - Address, G - Execute, M - Memory, R - Register")
     key = input()
-    if key == "AD":
+    if key == "A":
         address_8085()
-    elif key == "GO":
+    elif key == "G":
         execute_8085()
     elif key == "M":
         memory_8085()
-    elif key == "A":
-        print(reg_value[0])
-    elif key == "flag":
-        print(reg_value[1])    
-    elif key == "B":
-        print(reg_value[2])
-    elif key == "C":
-        print(reg_value[3])
-    elif key == "D":
-        print(reg_value[4])
-    elif key == "E":
-        print(reg_value[5])
-    elif key == "H":
-        print(reg_value[6])
-    elif key == "L":
-        print(reg_value[7])
+    elif key == "R":
+        print(f"A = {reg_value[0]} flag = {reg_value[1]}")
+        print(f"B = {reg_value[2]} C = {reg_value[3]}")
+        print(f"D = {reg_value[4]} E = {reg_value[5]}")
+        print(f"H = {reg_value[6]} L = {reg_value[7]}")
