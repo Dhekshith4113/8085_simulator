@@ -1,4 +1,4 @@
-# 8085_simulator
+8085_simulator
 This is an 8085 simulator that simulates the 8085 microprocessor.
 Started on 27/09/2023 Wednesday.
 Updated on 01/10/2023 Sunday.
@@ -13,3 +13,5 @@ Updated on 17/10/2023 Tuesday ( Made a new version V3. It can convert mnemonics 
 Updated on 18/10/2023 Wednesday ( Made some changes to V3. The memory/edit function works. In V2, SHLD and DAD works as expected ).
 Updated on 19/10/2023 Thursday ( Made some changes to memory function ).
 Updated on 21/10/2023 Saturday ( All instructions work in the 8085_simulator_v3. Some instructions like stack pointer, CALL, RET, interrupts, etc... are not added yet. Now I'll proceed to make an app that simulates the 8085 microprocessor with displays, keypads, etc... ).
+Updated on 02/11/2023 Thursday (Added CALL and RET instructions and their conditional counterparts. I've saved these changes in 8085_simulator.py . And also added stack pointer and LXI SP instruction ).
+Updated on 03/11/2023 Friday ( Added PUSH and POP instructions. I've saved these changes in 8085_simulator.py . PSW operand is now available ).
