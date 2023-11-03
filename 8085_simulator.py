@@ -23,9 +23,9 @@ reg_value = [A, flag, B, C, D, E, H, L, M]
 M_address = str(reg_value[6]) + str(reg_value[7])
 program = []
 
-stack = []
+stack = ["0FFF"]
 stack_value = []
-stack_pointer = None
+stack_pointer = "0FFF"
 
 memory_location_list = []
 n = 0
@@ -44,7 +44,7 @@ for i in range(65535):
     memory_location_value.append(n)
     
 def ADD(mnemonic):
-    print("-----ADD-----")
+    print("\n""-----ADD-----")
     mnemonic = mnemonic.split()
     reg_1 = mnemonic[1]
     reg_1 = reg_list.index(reg_1)
@@ -58,7 +58,7 @@ def ADD(mnemonic):
     print(f"[A] = {reg_value[0]}")
     
 def ADI(mnemonic):
-    print("-----ADI-----")
+    print("\n""-----ADI-----")
     mnemonic = mnemonic.split()
     immediate_value = mnemonic[1]
     if len(str(immediate_value)) == 2:
@@ -72,7 +72,7 @@ def ADI(mnemonic):
     print(f"[A] = {reg_value[0]}")
 
 def ANA(mnemonic):
-    print("-----ANA-----")
+    print("\n""-----ANA-----")
     mnemonic = mnemonic.split()
     reg_1 = mnemonic[1]
     reg_1 = reg_list.index(reg_1)
@@ -84,7 +84,7 @@ def ANA(mnemonic):
     print(f"[A] = {reg_value[0]}")
     
 def ANI(mnemonic):
-    print("-----ANI-----")
+    print("\n""-----ANI-----")
     mnemonic = mnemonic.split()
     immediate_value = mnemonic[1]
     if len(str(immediate_value)) == 2:
@@ -98,26 +98,15 @@ def ANI(mnemonic):
 def CALL(mnemonic):
     global ret_address, stack_pointer
     global p_c
-    print("-----CALL-----")
+    print("\n""-----CALL-----")
     mnemonic = mnemonic.split()
     call_address = mnemonic[1]
     ret_address = program_address_list[p_c + 1]
     higher_byte, lower_byte = split_address(ret_address)
-    if stack == []:
-        stack_pointer = "0FFF"
-        stack.append(stack_pointer)
-        stack_value.append(higher_byte)
-        stack_pointer = hex(int(stack_pointer, 16) - 1)[2:]
-        stack_pointer = fill_zero(stack_pointer)
-        stack_value.append(lower_byte)
-    elif stack != []:    
-        stack.append(stack_pointer)
-        stack_value.append(higher_byte)
-        stack_pointer = hex(int(stack_pointer, 16) - 1)[2:]
-        stack_pointer = fill_zero(stack_pointer)
-        stack_value.append(lower_byte)
-    else:
-        print("Stack error: Stack not initialized")    
+    stack_value.append(higher_byte)
+    stack_pointer = hex(int(stack_pointer, 16) - 1)[2:]
+    stack_pointer = fill_zero(stack_pointer)
+    stack_value.append(lower_byte)
     call_address = hex(int(call_address, 16))[2:]
     p_c = program_address_list.index(call_address)
     print(f"Going to {call_address}")
@@ -129,7 +118,7 @@ def CALL(mnemonic):
 def CC(mnemonic):
     global ret_address, stack_pointer
     global p_c
-    print("-----CC-----")
+    print("\n""-----CC-----")
     if flag[7] == 1:
         mnemonic = mnemonic.split()
         call_address = mnemonic[1]
@@ -163,7 +152,7 @@ def CC(mnemonic):
 def CNC(mnemonic):
     global ret_address, stack_pointer
     global p_c
-    print("-----CNC-----")
+    print("\n""-----CNC-----")
     if flag[7] == 0:
         mnemonic = mnemonic.split()
         call_address = mnemonic[1]
@@ -197,7 +186,7 @@ def CNC(mnemonic):
 def CP(mnemonic):
     global ret_address, stack_pointer
     global p_c
-    print("-----CP-----")
+    print("\n""-----CP-----")
     if flag[0] == 0:
         mnemonic = mnemonic.split()
         call_address = mnemonic[1]
@@ -231,7 +220,7 @@ def CP(mnemonic):
 def CM(mnemonic):
     global ret_address, stack_pointer
     global p_c
-    print("-----CM-----")
+    print("\n""-----CM-----")
     if flag[0] == 1:
         mnemonic = mnemonic.split()
         call_address = mnemonic[1]
@@ -265,7 +254,7 @@ def CM(mnemonic):
 def CPE(mnemonic):
     global ret_address, stack_pointer
     global p_c
-    print("-----CPE-----")
+    print("\n""-----CPE-----")
     if flag[5] == 1:
         mnemonic = mnemonic.split()
         call_address = mnemonic[1]
@@ -299,7 +288,7 @@ def CPE(mnemonic):
 def CPO(mnemonic):
     global ret_address, stack_pointer
     global p_c
-    print("-----CPO-----")
+    print("\n""-----CPO-----")
     if flag[5] == 0:
         mnemonic = mnemonic.split()
         call_address = mnemonic[1]
@@ -331,7 +320,7 @@ def CPO(mnemonic):
         return p_c + 1                              
     
 def CMA(mnemonic):
-    print("-----CMA-----")
+    print("\n""-----CMA-----")
     reg_value[0] = hex(0 - int(reg_value[0], 16))
     reg_value[0] = hex(int(reg_value[0], 16) + int("FF", 16))[2:]
     flag[0] = 1
@@ -340,7 +329,7 @@ def CMA(mnemonic):
     print(f"[A] = {reg_value[0]}")
     
 def CMP(mnemonic):
-    print("-----CMP-----")
+    print("\n""-----CMP-----")
     mnemonic = mnemonic.split()
     reg_1 = mnemonic[1]
     reg_1 = reg_list.index(reg_1)
@@ -361,7 +350,7 @@ def CMP(mnemonic):
     print(flag)    
     
 def CPI(mnemonic):
-    print("-----CPI-----")
+    print("\n""-----CPI-----")
     mnemonic = mnemonic.split()
     immediate_value = mnemonic[1]
     if int(reg_value[0], 16) < int(immediate_value, 16):
@@ -379,7 +368,7 @@ def CPI(mnemonic):
     print(flag)    
     
 def DAD(mnemonic):
-    print("-----DAD-----")
+    print("\n""-----DAD-----")
     mnemonic = mnemonic.split()
     reg_1 = mnemonic[1]
     reg_1_index = reg_list.index(reg_1)
@@ -403,7 +392,7 @@ def DAD(mnemonic):
     print(f"[L] = {reg_value[7]}")
 
 def DCR(mnemonic):
-    print("-----DCR-----")
+    print("\n""-----DCR-----")
     mnemonic = mnemonic.split()
     reg_1 = mnemonic[1]
     reg_index = reg_list.index(reg_1)
@@ -417,7 +406,7 @@ def DCR(mnemonic):
     reg_value[reg_index] = fill_zero(reg_value[reg_index])
     
 def DCX(mnemonic):
-    print("-----DCX-----")
+    print("\n""-----DCX-----")
     mnemonic = mnemonic.split()
     reg_1 = mnemonic[1]
     reg_1_index = reg_list.index(reg_1)
@@ -435,7 +424,7 @@ def DCX(mnemonic):
     print(f"[{reg_list[reg_2_index]}] = {reg_value[reg_2_index]}") 
     
 def INR(mnemonic):
-    print("-----INR-----")
+    print("\n""-----INR-----")
     mnemonic = mnemonic.split()
     reg_1 = mnemonic[1]
     reg_index = reg_list.index(reg_1)
@@ -449,7 +438,7 @@ def INR(mnemonic):
     reg_value[reg_index] = fill_zero(reg_value[reg_index])
     
 def INX(mnemonic):
-    print("-----INX-----")
+    print("\n""-----INX-----")
     mnemonic = mnemonic.split()
     reg_1 = mnemonic[1]
     reg_1_index = reg_list.index(reg_1)
@@ -475,7 +464,7 @@ def INX(mnemonic):
     print(f"[{reg_list[reg_2_index]}] = {reg_value[reg_2_index]}") 
         
 def JMP(mnemonic):
-    print("-----JMP-----")
+    print("\n""-----JMP-----")
     mnemonic = mnemonic.split()
     jmp_address = mnemonic[1]
     jmp_address = hex(int(jmp_address, 16))[2:]
@@ -484,7 +473,7 @@ def JMP(mnemonic):
     return p_c
     
 def JP(mnemonic):
-    print("-----JP-----")
+    print("\n""-----JP-----")
     mnemonic = mnemonic.split()
     jmp_address = mnemonic[1]
     jmp_address = hex(int(jmp_address, 16))[2:]
@@ -497,7 +486,7 @@ def JP(mnemonic):
         return "A"    
 
 def JM(mnemonic):
-    print("-----JM-----")
+    print("\n""-----JM-----")
     mnemonic = mnemonic.split()
     jmp_address = mnemonic[1]
     jmp_address = hex(int(jmp_address, 16))[2:]
@@ -510,7 +499,7 @@ def JM(mnemonic):
         return "A"
 
 def JPE(mnemonic):
-    print("-----JPE-----")
+    print("\n""-----JPE-----")
     mnemonic = mnemonic.split()
     jmp_address = mnemonic[1]
     jmp_address = hex(int(jmp_address, 16))[2:]
@@ -523,7 +512,7 @@ def JPE(mnemonic):
         return "A"
 
 def JPO(mnemonic):
-    print("-----JPO-----")
+    print("\n""-----JPO-----")
     mnemonic = mnemonic.split()
     jmp_address = mnemonic[1]
     jmp_address = hex(int(jmp_address, 16))[2:]
@@ -536,7 +525,7 @@ def JPO(mnemonic):
         return "A"
     
 def JC(mnemonic):
-    print("-----JC-----")
+    print("\n""-----JC-----")
     mnemonic = mnemonic.split()
     jmp_address = mnemonic[1]
     jmp_address = hex(int(jmp_address, 16))[2:]
@@ -549,7 +538,7 @@ def JC(mnemonic):
         return "A"    
     
 def JNC(mnemonic):
-    print("-----JNC-----")
+    print("\n""-----JNC-----")
     mnemonic = mnemonic.split()
     jmp_address = mnemonic[1]
     jmp_address = hex(int(jmp_address, 16))[2:]
@@ -562,7 +551,7 @@ def JNC(mnemonic):
         return "A"    
     
 def JZ(mnemonic):
-    print("-----JZ-----")
+    print("\n""-----JZ-----")
     mnemonic = mnemonic.split()
     jmp_address = mnemonic[1]
     jmp_address = hex(int(jmp_address, 16))[2:]
@@ -575,7 +564,7 @@ def JZ(mnemonic):
         return "A"   
     
 def JNZ(mnemonic):
-    print("-----JNZ-----")
+    print("\n""-----JNZ-----")
     mnemonic = mnemonic.split()
     jmp_address = mnemonic[1]
     jmp_address = hex(int(jmp_address, 16))[2:]
@@ -584,11 +573,11 @@ def JNZ(mnemonic):
         print(f"Jump to {jmp_address}")
         return p_c
     elif flag[1] == 1:
-        print("Jump completed...")
+        print("\n""Jump completed...")
         return "A"
         
 def LDA(mnemonic):
-    print("-----LDA-----")
+    print("\n""-----LDA-----")
     mnemonic = mnemonic.split()
     address = mnemonic[1]
     address_index = memory_location_list.index(address)
@@ -598,8 +587,7 @@ def LDA(mnemonic):
     print(f"[A] = {reg_value[0]}")
     
 def LDAX(mnemonic):
-    global stack_pointer
-    print("-----LDAX-----")
+    print("\n""-----LDAX-----")
     mnemonic = mnemonic.split()
     reg_1 = mnemonic[1]
     reg_1 = reg_list.index(reg_1)
@@ -618,7 +606,7 @@ def LDAX(mnemonic):
     print(f"[A] = {reg_value[0]}")    
     
 def LXI(mnemonic):
-    print("-----LXI-----")
+    print("\n""-----LXI-----")
     global stack_pointer
     mnemonic = mnemonic.split()
     operand = mnemonic[1].split(",")
@@ -636,6 +624,7 @@ def LXI(mnemonic):
     elif operand[0] == "SP":
         stack_pointer = operand[1]
         stack_pointer = fill_zero(stack_pointer)
+        stack[0] = stack_pointer
     else:
         print("Register invalid")
     if operand[0] == "H":
@@ -649,7 +638,7 @@ def LXI(mnemonic):
             print(f"[M] = [{operand[1]}] = {reg_value[8]}")
         
 def LHLD(mnemonic):
-    print("-----LHLD-----")
+    print("\n""-----LHLD-----")
     mnemonic = mnemonic.split()
     address = mnemonic[1]
     address_index = memory_location_list.index(address)
@@ -663,7 +652,7 @@ def LHLD(mnemonic):
     print(f"[L] = {reg_value[7]}")
     
 def SHLD(mnemonic):
-    print("-----SHLD-----")
+    print("\n""-----SHLD-----")
     mnemonic = mnemonic.split()
     address = mnemonic[1]
     address_index = memory_location_list.index(address)
@@ -677,7 +666,7 @@ def SHLD(mnemonic):
     print(f"[{address}] = {memory_location_value[address_index]}")
     
 def MOV(mnemonic):
-    print("-----MOV-----")
+    print("\n""-----MOV-----")
     mnemonic = mnemonic.split()
     mnemonic = mnemonic[1].split(",")
     reg_1 = mnemonic[0]
@@ -693,7 +682,7 @@ def MOV(mnemonic):
     print(f"[{reg_list[reg_1_index]}] = {reg_value[reg_1_index]}")
 
 def MVI(mnemonic, address_location_list=None, address_value_list=None):
-    print("-----MVI-----")
+    print("\n""-----MVI-----")
     mnemonic = mnemonic.split()
     operand = mnemonic[1].split(",")
     reg_1 = reg_list.index(operand[0])
@@ -710,7 +699,7 @@ def MVI(mnemonic, address_location_list=None, address_value_list=None):
     print(f"[{reg_list[reg_1]}] = {reg_value[reg_1]}")
         
 def ORA(mnemonic):
-    print("-----ORA-----")
+    print("\n""-----ORA-----")
     mnemonic = mnemonic.split()
     reg_1 = mnemonic[1]
     reg_1 = reg_list.index(reg_1)
@@ -722,7 +711,7 @@ def ORA(mnemonic):
     reg_value[0] = fill_zero(reg_value[0])
     
 def ORI(mnemonic):
-    print("-----ORI-----")
+    print("\n""-----ORI-----")
     mnemonic = mnemonic.split()
     immediate_value = mnemonic[1]
     if len(str(immediate_value)) == 2:
@@ -733,9 +722,104 @@ def ORI(mnemonic):
     check_accumulator()
     reg_value[0] = fill_zero(reg_value[0])
 
+def PUSH(mnemonic):
+    global stack, stack_pointer, stack_value
+    print("\n""-----PUSH-----")
+    mnemonic = mnemonic.split()
+    reg_1 = mnemonic[1]
+    if reg_1 == "PSW":
+        higher_byte = reg_value[0]
+        higher_byte = fill_zero(higher_byte)
+        stack_value.append(higher_byte)
+        lower_byte = ''.join([str(elem) for elem in reg_value[1]])
+        lower_byte = hex(int(lower_byte, 2))[2:]
+        lower_byte = fill_zero(lower_byte)
+        stack_pointer = hex(int(stack_pointer, 16) - 1)[2:]
+        stack_pointer = fill_zero(stack_pointer)
+        stack.append(stack_pointer)
+        stack_value.append(lower_byte)
+        stack_pointer = hex(int(stack_pointer, 16) - 1)[2:]
+        stack_pointer = fill_zero(stack_pointer)
+        print(f"Higher byte = [A] = {higher_byte}")
+        print(f"Lower byte = flag = {lower_byte}")
+    else:    
+        reg_1 = reg_list.index(reg_1)
+        higher_byte = reg_value[reg_1]
+        higher_byte = fill_zero(higher_byte)
+        reg_2 = reg_1 + 1
+        lower_byte = reg_value[reg_2]
+        lower_byte = fill_zero(lower_byte)
+        stack_value.append(higher_byte)
+        stack_pointer = hex(int(stack_pointer, 16) - 1)[2:]
+        stack_pointer = fill_zero(stack_pointer)
+        stack.append(stack_pointer)
+        stack_value.append(lower_byte)
+        stack_pointer = hex(int(stack_pointer, 16) - 1)[2:]
+        stack_pointer = fill_zero(stack_pointer)
+        print(f"Higher byte = [{reg_list[reg_1]}] = {higher_byte}")
+        print(f"Lower byte = [{reg_list[reg_2]}] = {lower_byte}")
+    print(f"Stack pointer = {stack_pointer}")
+    print(f"Stack = {stack}")
+    print(f"Stack value = {stack_value}")
+    
+def POP(mnemonic):
+    global stack, stack_pointer, stack_value 
+    print("\n""-----POP-----")
+    mnemonic = mnemonic.split()
+    reg_1 = mnemonic[1]
+    if reg_1 == "PSW":
+        
+        lower_byte = stack_value.pop()
+        lower_byte = fill_zero(lower_byte)
+        flag = bin(int(lower_byte, 16))[2:]
+        flag = flag.zfill(8)
+        stack.pop()
+        print(f"Flag_binary = {flag}")
+        reg_value[1] = [i for i in flag]
+        print(f"Flag = {reg_value[1]}")
+        
+        stack_pointer = fill_zero(stack_pointer)
+        stack_pointer = hex(int(str(stack_pointer), 16) + 1)[2:]
+        stack_pointer = fill_zero(stack_pointer)
+        
+        higher_byte = stack_value.pop()
+        higher_byte = fill_zero(higher_byte)
+        reg_value[0] = higher_byte
+    
+        stack_pointer = fill_zero(stack_pointer)
+        stack_pointer = hex(int(str(stack_pointer), 16) + 1)[2:]
+        stack_pointer = fill_zero(stack_pointer)
+        print(f"Higher byte = [A] = {higher_byte}")
+        print(f"Lower byte = flag = {lower_byte}")
+    else:    
+        reg_1 = reg_list.index(reg_1)
+        reg_2 = reg_1 + 1
+    
+        lower_byte = stack_value.pop()
+        lower_byte = fill_zero(lower_byte)
+        reg_value[reg_2] = lower_byte
+        stack.pop()
+    
+        stack_pointer = fill_zero(stack_pointer)
+        stack_pointer = hex(int(str(stack_pointer), 16) + 1)[2:]
+        stack_pointer = fill_zero(stack_pointer)
+    
+        higher_byte = stack_value.pop()
+        higher_byte = fill_zero(higher_byte)
+        reg_value[reg_1] = higher_byte
+    
+        stack_pointer = fill_zero(stack_pointer)
+        stack_pointer = hex(int(str(stack_pointer), 16) + 1)[2:]
+        stack_pointer = fill_zero(stack_pointer)
+        print(f"Higher byte = [{reg_list[reg_1]}] = {higher_byte}")
+        print(f"Lower byte = [{reg_list[reg_2]}] = {lower_byte}")
+    print(f"Stack pointer = {stack_pointer}")
+    print(f"Stack = {stack}")
+    print(f"Stack value = {stack_value}")    
+
 def RET(mnemonic):
     global ret_address, stack, stack_pointer, stack_value 
-    print("-----RET-----")
+    print("\n""-----RET-----")
     lower_byte = stack_value.pop()
     lower_byte = fill_zero(lower_byte)
     stack_pointer = fill_zero(stack_pointer)
@@ -749,7 +833,7 @@ def RET(mnemonic):
     
 def RC(mnemonic):
     global ret_address, stack, stack_pointer, stack_value 
-    print("-----RC-----")
+    print("\n""-----RC-----")
     if flag[7] == 1:
         lower_byte = stack_value.pop()
         lower_byte = fill_zero(lower_byte)
@@ -767,7 +851,7 @@ def RC(mnemonic):
         
 def RNC(mnemonic):
     global ret_address, stack, stack_pointer, stack_value 
-    print("-----RNC-----")
+    print("\n""-----RNC-----")
     if flag[7] == 0:
         lower_byte = stack_value.pop()
         lower_byte = fill_zero(lower_byte)
@@ -785,7 +869,7 @@ def RNC(mnemonic):
         
 def RP(mnemonic):
     global ret_address, stack, stack_pointer, stack_value 
-    print("-----RP-----")
+    print("\n""-----RP-----")
     if flag[0] == 0:
         lower_byte = stack_value.pop()
         lower_byte = fill_zero(lower_byte)
@@ -803,7 +887,7 @@ def RP(mnemonic):
         
 def RM(mnemonic):
     global ret_address, stack, stack_pointer, stack_value 
-    print("-----RM-----")
+    print("\n""-----RM-----")
     if flag[0] == 1:
         lower_byte = stack_value.pop()
         lower_byte = fill_zero(lower_byte)
@@ -821,7 +905,7 @@ def RM(mnemonic):
         
 def RPE(mnemonic):
     global ret_address, stack, stack_pointer, stack_value 
-    print("-----RPE-----")
+    print("\n""-----RPE-----")
     if flag[5] == 1:
         lower_byte = stack_value.pop()
         lower_byte = fill_zero(lower_byte)
@@ -839,7 +923,7 @@ def RPE(mnemonic):
         
 def RPO(mnemonic):
     global ret_address, stack, stack_pointer, stack_value 
-    print("-----RPO-----")
+    print("\n""-----RPO-----")
     if flag[5] == 0:
         lower_byte = stack_value.pop()
         lower_byte = fill_zero(lower_byte)
@@ -857,7 +941,7 @@ def RPO(mnemonic):
         
 def RZ(mnemonic):
     global ret_address, stack, stack_pointer, stack_value 
-    print("-----RZ-----")
+    print("\n""-----RZ-----")
     if flag[1] == 1:
         lower_byte = stack_value.pop()
         lower_byte = fill_zero(lower_byte)
@@ -875,7 +959,7 @@ def RZ(mnemonic):
         
 def RNZ(mnemonic):
     global ret_address, stack, stack_pointer, stack_value 
-    print("-----RNZ-----")
+    print("\n""-----RNZ-----")
     if flag[1] == 0:
         lower_byte = stack_value.pop()
         lower_byte = fill_zero(lower_byte)
@@ -892,21 +976,21 @@ def RNZ(mnemonic):
         return_value = False                                                           
     
 def RLC(mnemonic):
-    print("-----RLC-----")
+    print("\n""-----RLC-----")
     reg_value[0] = int(reg_value[0], 16) << 1
     reg_value[0] = hex(reg_value[0])[2:]
     reg_value[0] = fill_zero(reg_value[0])
     print(f"[A] = {reg_value[0]}")
     
 def RRC(instruction):
-    print("-----RRC-----")
+    print("\n""-----RRC-----")
     reg_value[0] = int(reg_value[0], 16) >> 1
     reg_value[0] = hex(reg_value[0])[2:]
     reg_value[0] = fill_zero(reg_value[0])
     print(f"[A] = {reg_value[0]}")          
 
 def STA(mnemonic):
-    print("-----STA-----")
+    print("\n""-----STA-----")
     mnemonic = mnemonic.split()
     address = mnemonic[1]
     address_index = memory_location_list.index(address)
@@ -916,7 +1000,7 @@ def STA(mnemonic):
     print(f"[{address}] = {memory_location_value[address_index]}")
 
 def STAX(mnemonic):
-    print("-----STAX-----")
+    print("\n""-----STAX-----")
     mnemonic = mnemonic.split()
     reg_1 = mnemonic[1]
     reg_1 = reg_list.index(reg_1)
@@ -935,7 +1019,7 @@ def STAX(mnemonic):
     print(f"[{address}] = {memory_location_value[address_index]}")
     
 def SUB(mnemonic):
-    print("-----SUB-----")
+    print("\n""-----SUB-----")
     mnemonic = mnemonic.split()
     reg_1 = mnemonic[1]
     reg_1_index = reg_list.index(reg_1)
@@ -955,7 +1039,7 @@ def SUB(mnemonic):
     print(flag)
     
 def SUI(mnemonic):
-    print("-----SUI-----")
+    print("\n""-----SUI-----")
     mnemonic = mnemonic.split()
     immediate_value = mnemonic[1]
     if len(str(immediate_value)) == 2:
@@ -972,7 +1056,7 @@ def SUI(mnemonic):
     reg_value[0] = fill_zero(reg_value[0])
 
 def XCHG(mnemonic):
-    print("-----XCHG-----")
+    print("\n""-----XCHG-----")
     print("Before: ")
     print(f"[H] = {reg_value[6]}")
     print(f"[L] = {reg_value[7]}")
@@ -997,7 +1081,7 @@ def XCHG(mnemonic):
     print(f"[E] = {reg_value[5]}")
     
 def XRA(mnemonic):
-    print("-----XRA-----")
+    print("\n""-----XRA-----")
     mnemonic = mnemonic.split()
     reg_1 = mnemonic[1]
     reg_1 = reg_list.index(reg_1)
@@ -1009,7 +1093,7 @@ def XRA(mnemonic):
     reg_value[0] = fill_zero(reg_value[0])
     
 def XRI(mnemonic):
-    print("-----XRI-----")
+    print("\n""-----XRI-----")
     mnemonic = mnemonic.split()
     immediate_value = mnemonic[1]
     if len(str(immediate_value)) == 2:
@@ -1068,7 +1152,7 @@ def byte_8085(mnemonic):
     t = 0
     mnemonic = mnemonic.split()
     opcode = mnemonic[0]
-    one_byte = ["MOV", "ADD", "CMP", "CMA", "INR", "INX", "DCR", "DCX", "DAD", "LDAX", "STAX", "HLT", "SUB", "XCHG", "ANA", "ORA", "XRA", "RRC", "RLC", "RET", "RC", "RNC", "RP", "RM", "RPE", "RPO", "RZ", "RNZ"]
+    one_byte = ["MOV", "ADD", "CMP", "CMA", "INR", "INX", "DCR", "DCX", "DAD", "LDAX", "STAX", "HLT", "SUB", "XCHG", "ANA", "ORA", "XRA", "RRC", "RLC", "RET", "RC", "RNC", "RP", "RM", "RPE", "RPO", "RZ", "RNZ", "PUSH", "POP"]
     two_byte = ["MVI", "ADI", "ANI", "ORI", "XRI", "ACI", "SUI", "CPI"]
     three_byte = ["LDA", "LXI", "STA", "JMP", "CALL", "CC", "CNC", "CP", "CM", "CPE", "CPO", "CZ", "CNZ", "LHLD", "SHLD", "JC", "JNC", "JZ", "JNZ", "JP", "JM", "JPE", "JPO"]
     if opcode in one_byte:
@@ -1130,7 +1214,7 @@ def instruction_decoder(mnemonic):
     print("Decoding instruction...")
     instruction  = mnemonic.split()[0]
     print(f"Mnemonic = {mnemonic}, Instruction = {instruction}")
-    one_byte_list = ["MOV", "ADD", "CMP", "CMA", "INR", "INX", "DCR", "DCX", "DAD", "LDAX", "STAX", "HLT", "SUB", "XCHG", "ANA", "ORA", "XRA", "RRC", "RLC", "RET", "RC", "RNC", "RP", "RM", "RPE", "RPO", "RZ", "RNZ"]
+    one_byte_list = ["MOV", "ADD", "CMP", "CMA", "INR", "INX", "DCR", "DCX", "DAD", "LDAX", "STAX", "HLT", "SUB", "XCHG", "ANA", "ORA", "XRA", "RRC", "RLC", "RET", "RC", "RNC", "RP", "RM", "RPE", "RPO", "RZ", "RNZ", "PUSH", "POP"]
     two_byte_list_1 = ["ADI", "ORI", "ACI", "SUI", "CPI", "ANI", "ORI", "XRI"]
     two_byte_list_2 = ["MVI"]
     three_byte_list_1 = ["LDA", "STA", "JMP", "CALL", "CC", "CNC", "CP", "CM", "CPE", "CPO", "CZ", "CNZ", "LHLD", "SHLD", "JC", "JNC", "JZ", "JNZ", "JP", "JM", "JPE", "JPO"]
@@ -1390,11 +1474,27 @@ def instruction_decoder(mnemonic):
         elif mnemonic == "ORA E":
             machine_code = "B3"
         elif mnemonic == "ORA H":
-            machine_code = "N4"
+            machine_code = "B4"
         elif mnemonic == "ORA L":
             machine_code = "B5"
         elif mnemonic == "ORA M":
             machine_code = "B6"
+        elif mnemonic == "PUSH B":
+            machine_code = "C5"
+        elif mnemonic == "PUSH D":
+            machine_code = "D5"
+        elif mnemonic == "PUSH H":
+            machine_code = "E5"
+        elif mnemonic == "PUSH PSW":
+            machine_code = "F5"
+        elif mnemonic == "POP B":
+            machine_code = "C1"
+        elif mnemonic == "POP D":
+            machine_code = "D1"
+        elif mnemonic == "POP H":
+            machine_code = "E1"
+        elif mnemonic == "POP PSW":
+            machine_code = "F1"        
         elif mnemonic == "RET":
             machine_code = "C9"
         elif mnemonic == "RC":
@@ -1663,7 +1763,7 @@ def address_8085():
 def instruction_encoder(machine_code):
     print("Encoding Instruction...")
     print(f"Machine code = {machine_code}")
-    one_byte_list = ["00", "80", "81", "82", "83", "84", "85", "86", "87", "AO", "A1", "A2", "A3", "A4", "A5", "A6", "A7", "2F", "B8", "B9", "BA", "BB", "BC", "BD", "BE", "BF", "09", "19", "29", "39", "05", "0D", "15", "1D", "25", "2D", "35", "3D", "0B", "1B", "2B", "3B", "76", "04", "0C", "14", "1C", "24", "2C", "34", "3C", "03", "13", "23", "33", "0A", "1A", "78", "79", "7A", "7B", "7C", "7D", "7E", "7F", "40", "41", "42", "43", "44", "45", "46", "47", "48", "49", "4A", "4B", "4C", "4D", "4E", "4F", "50", "51", "52", "53", "54", "55", "56", "57", "58", "59", "5A", "5B" ,"5C", "5D", "5E", "5F", "60", "61", "62", "63", "64", "65", "66", "67", "68", "69", "6A", "6B", "6C", "6D", "6E", "6F", "70", "71", "72", "73", "74", "75", "76", "77", "07", "0F", "B0", "B1", "B2", "B3", "B4", "B5", "B6", "B7", "02", "12", "90", "91", "92", "93", "94", "95", "96", "97", "EB", "A8", "A9", "AA", "AB", "AC", "AD", "AE", "AF", "C9", "D8", "F8", "C0", "D0", "F0", "E8", "E0", "C8"]
+    one_byte_list = ["00", "80", "81", "82", "83", "84", "85", "86", "87", "AO", "A1", "A2", "A3", "A4", "A5", "A6", "A7", "2F", "B8", "B9", "BA", "BB", "BC", "BD", "BE", "BF", "09", "19", "29", "39", "05", "0D", "15", "1D", "25", "2D", "35", "3D", "0B", "1B", "2B", "3B", "76", "04", "0C", "14", "1C", "24", "2C", "34", "3C", "03", "13", "23", "33", "0A", "1A", "78", "79", "7A", "7B", "7C", "7D", "7E", "7F", "40", "41", "42", "43", "44", "45", "46", "47", "48", "49", "4A", "4B", "4C", "4D", "4E", "4F", "50", "51", "52", "53", "54", "55", "56", "57", "58", "59", "5A", "5B" ,"5C", "5D", "5E", "5F", "60", "61", "62", "63", "64", "65", "66", "67", "68", "69", "6A", "6B", "6C", "6D", "6E", "6F", "70", "71", "72", "73", "74", "75", "76", "77", "07", "0F", "B0", "B1", "B2", "B3", "B4", "B5", "B6", "B7", "02", "12", "90", "91", "92", "93", "94", "95", "96", "97", "EB", "A8", "A9", "AA", "AB", "AC", "AD", "AE", "AF", "C9", "D8", "F8", "C0", "D0", "F0", "E8", "E0", "C8", "C1", "C5", "D1", "D5", "E1", "E5", "F1", "F5"]
     two_byte_list_1 = ["C6", "D6", "E6", "F6", "EE", "FE"]
     two_byte_list_2 = ["06", "0E", "16", "1E", "26", "2E", "36", "3E"]
     three_byte_list_1 = ["22", "2A", "32", "3A", "C2", "C3", "CA", "CD", "DC", "FC", "D4", "C4", "CC" "F4", "EC", "FE", "E4", "D2", "DA", "E2", "EA", "F2", "FA"]
@@ -1928,6 +2028,22 @@ def instruction_encoder(machine_code):
             opcode = "ORA L"
         elif machine_code == "B6":
             opcode = "ORA M"
+        elif machine_code == "C5":
+            opcode = "PUSH B"
+        elif machine_code == "D5":
+            opcode = "PUSH D"
+        elif machine_code == "E5":
+            opcode = "PUSH H"
+        elif machine_code == "F5":
+            opcode = "PUSH PSW"
+        elif machine_code == "C1":
+            opcode = "POP B"
+        elif machine_code == "D1":
+            opcode = "POP D"
+        elif machine_code == "E1":
+            opcode = "POP H"
+        elif machine_code == "F1":
+            opcode = "POP PSW"    
         elif machine_code == "C9":
             opcode = "RET"
         elif machine_code == "D8":
@@ -2283,6 +2399,10 @@ def execute_8085():
             ORA(instruction)
         elif opcode == "ORI":
             ORI(instruction)
+        elif opcode == "PUSH":
+            PUSH(instruction)    
+        elif opcode == "POP":
+            POP(instruction)    
         elif opcode == "RET":
             RET(instruction)
             p_c = program_address_list.index(ret_address)
@@ -2355,15 +2475,15 @@ def execute_8085():
         elif opcode == "HLT":
             print("-----HLT-----")
             break
-        if opcode != "CALL" and opcode != "JMP" and opcode != "JC" and opcode != "JNC" and opcode != "JZ" and opcode != "JNZ" and opcode != "RET":
+        if opcode != "CALL" and opcode != "CC" and opcode != "CNC" and opcode != "CP" and opcode != "CM" and opcode != "CPE" and opcode != "CPO" and opcode != "CZ" and opcode != "CNZ" and opcode != "JMP" and opcode != "JC" and opcode != "JNC" and opcode != "JZ" and opcode != "JNZ" and opcode != "RET" and opcode != "RC" and opcode != "RNC" and opcode != "RP" and opcode != "RM" and opcode != "RPE" and opcode != "RPO" and opcode != "RZ" and opcode != "RNZ":
             p_c = p_c + 1
                 
     details = input("Do you want to see more details? [Y/N] : ")
     if details == "Y":
-        print(f"A = {reg_value[0]} flag = {reg_value[1]}")
-        print(f"B = {reg_value[2]} C = {reg_value[3]}")
-        print(f"D = {reg_value[4]} E = {reg_value[5]}")
-        print(f"H = {reg_value[6]} L = {reg_value[7]}")
+        print(f"A = {fill_zero(reg_value[0])} flag = {reg_value[1]}")
+        print(f"B = {fill_zero(reg_value[2])} C = {fill_zero(reg_value[3])}")
+        print(f"D = {fill_zero(reg_value[4])} E = {fill_zero(reg_value[5])}")
+        print(f"H = {fill_zero(reg_value[6])} L = {fill_zero(reg_value[7])}")
 
 def memory_address_M(mode):
     if mode == 0:
@@ -2395,7 +2515,7 @@ while True:
     elif key == "M":
         memory_8085()
     elif key == "R":
-        print(f"A = {reg_value[0]} flag = {reg_value[1]}")
-        print(f"B = {reg_value[2]} C = {reg_value[3]}")
-        print(f"D = {reg_value[4]} E = {reg_value[5]}")
-        print(f"H = {reg_value[6]} L = {reg_value[7]}")
+        print(f"A = {fill_zero(reg_value[0])} flag = {reg_value[1]}")
+        print(f"B = {fill_zero(reg_value[2])} C = {fill_zero(reg_value[3])}")
+        print(f"D = {fill_zero(reg_value[4])} E = {fill_zero(reg_value[5])}")
+        print(f"H = {fill_zero(reg_value[6])} L = {fill_zero(reg_value[7])}")
