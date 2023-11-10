@@ -1,0 +1,20 @@
+<!doctype html>
+<html>
+<head>
+ <title>8085 Simulator</title>
+ <link rel="stylesheet" href="style.css">
+</head>
+<body>
+ <h1>8085 Simulator</h1>
+ <div class="lcd">
+  <p id="lcdTop">MENU: A,D,M,F,</p>
+  <input id="lcdBottom" type="text" placeholder="C,G,R,S,I,E,P"></input>
+ </div>
+ <div>
+  <button id="esc" onclick="esc()">ESC</button>
+  <button id="reset" onclick="reset()">RST</button>
+  <button id="enter" onclick="enter()">ENTER</button>
+ </div>
+ <script src="script.js"></script>
+</body>
+</html>
