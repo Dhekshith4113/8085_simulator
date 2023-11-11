@@ -1,21 +1,46 @@
-let textTop = document.getElementById(
- "lcdTop");
-let textBottom = document.getElementById(
- "lcdBottom");
+const textTop = document.getElementById("lcdTop")
+const buttons = document.querySelectorAll('.btn')
+const textBottom = document.getElementById('lcdBottom')
 
-textBottom.addEventListener("keypress", function(event) {
-  if (event.key === "Enter") {
-    event.preventDefault();
-    document.getElementById("myBtn").click();
-  }
-});
+const escape = document.querySelector('.escape')
+const backSpace = document.querySelector('.backspace')
+const enter = document.querySelector('.enter')
+const space = document.querySelector('.space')
 
-function enter() {
- textTop.innerHTML = textBottom.value;
- console.log(textBottom.value);
+function memory8085() {
+    console.log("-----MEMORY/EDIT-----")
+    textTop.innerHTML = "  MEMORY/EDIT  "
+    textBottom.value = "ADDRESS: 0000"
 }
 
-function reset() {
- textTop.innerHTML = "MENU: A,D,M,F,";
- textBottom.value = "C,G,S,R,I,E,P";
+function address8085() {
+    console.log("-----ADDRESS-----")
+    textTop.innerHTML = "ENTER STARTING"
+    textBottom.value = "ADDRESS: 0000"
 }
+
+let string = ''
+
+backSpace.addEventListener('click', () => {
+    string = string.substring(0, string.length - 1)
+    textBottom.value = string
+})
+
+space.addEventListener('click', () => {
+    string += ' '
+    textBottom.value = string
+})
+
+// string += btn.innerText
+// textBottom.value = string
+// console.log(string)
+
+buttons.forEach(btn => {
+    btn.addEventListener('click',(e) => {
+        if (e.target.innerText === 'M') {
+            memory8085()
+        } else if (e.target.innerText === 'A') {
+            address8085()
+        }
+    })
+})
