@@ -9,10 +9,11 @@
 <body>
     <h1>8085 Simulator</h1>
     <div class="lcd">
-        <p id="lcdTop">MENU: A,D,M,F,</p>
-        <input id="lcdBottom" placeholder="C,G,R,S,I,E,P"></input>
+        <p id="lcdTop"></p>
+        <input id="lcdBottom"></input>
     </div>
     <div class="keyboard">
+        <button id="reset">RESET</button>
         <div class="row">
             <button id="escape" class="btn hex">Esc</button>
             <button class="btn hex">1</button>
@@ -49,7 +50,6 @@
             <button class="btn">J</button>
             <button class="btn">K</button>
             <button class="btn">L</button>
-            <button class="btn">0</button>
             <button id="enter"class="btn hex">Enter</button>
         </div>
         <div class="row">
