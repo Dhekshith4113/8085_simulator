@@ -18,11 +18,14 @@ let hexAddress = '0000'
 let address1 = '0000'
 let addressList, machineCodeList, machineCodeList1, programAddressList, byte, machineCode, ivMl, retValue, nextAddress1, nextAddress2
 let memoryActiveStatus = 'inactive'
-let addressActiveStaus = 'inactive'
+let addressActiveStatus = 'inactive'
 let executeActiveStatus = 'inactive'
-let initialMode, addressLocationList, addressValueList, addressValueListBefore, p_c, ret_address, program_1, startAddress
+let initialMode, p_c, ret_address, program_1, startAddress
 let program = []
-let one_byte, mnemonic
+let addressLocationList = []
+let addressValueList = []
+let addressValueListBefore = []
+let one_byte, mnemonic, modeAddress, modeExecute, modeMemory
 let two_byte
 let three_byte
 let memoryLocationList, memoryLocationValue
@@ -103,7 +106,6 @@ let M_address = reg_value[6] + reg_value[7]
 let stack = ["0FFF"]
 let stack_value = []
 let stack_pointer = "0FFF"
-let addressLocation = "0000"
 
 ////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////
@@ -115,7 +117,7 @@ function ADD(mnemonic) {
     let reg_1 = mnemonicParts[1];
     console.log(reg_1)
     reg_1 = reg_list.indexOf(reg_1);
-    
+
     if (reg_1 === "M") {
         memory_address_M(1);
     }
@@ -206,10 +208,189 @@ function instructionDecoder(mnemonic) {
             case "ADD B":
                 machineCode = "80";
                 break;
+            case "ADD C":
+                machineCode = "81";
+                break;
+            case "ADD D":
+                machineCode = "82";
+                break;
+            case "ADD E":
+                machineCode = "83";
+                break;
+            case "ADD H":
+                machineCode = "84";
+                break;
+            case "ADD L":
+                machineCode = "85";
+                break;
+            case "ADD M":
+                machineCode = "86";
+                break;
+            case "ANA A":
+                machineCode = "A7";
+                break;
+            case "ANA B":
+                machineCode = "A0";
+                break;
+            case "ANA C":
+                machineCode = "A1";
+                break;
+            case "ANA D":
+                machineCode = "A2";
+                break;
+            case "ANA E":
+                machineCode = "A3";
+                break;
+            case "ANA H":
+                machineCode = "A4";
+                break;
+            case "ANA L":
+                machineCode = "A5";
+                break;
+            case "ANA M":
+                machineCode = "A6";
+                break;
+            case "CMA":
+                machineCode = "2F";
+                break;
+            case "CMP A":
+                machineCode = "BF";
+                break;
+            case "CMP B":
+                machineCode = "B8";
+                break;
+            case "CMP C":
+                machineCode = "B9";
+                break;
+            case "CMP D":
+                machineCode = "BA";
+                break;
+            case "CMP E":
+                machineCode = "BB";
+                break;
+            case "CMP H":
+                machineCode = "BC";
+                break;
+            case "CMP L":
+                machineCode = "BD";
+                break;
+            case "CMP M":
+                machineCode = "BE";
+                break;
+            case "DAD B":
+                machineCode = "09";
+                break;
+            case "DAD D":
+                machineCode = "19";
+                break;
+            case "DAD H":
+                machineCode = "29";
+                break;
+            case "DAD SP":
+                machineCode = "39";
+                break;
+            case "DCR A":
+                machineCode = "3D";
+                break;
+            case "DCR B":
+                machineCode = "05";
+                break;
+            case "DCR C":
+                machineCode = "0D";
+                break;
+            case "DCR D":
+                machineCode = "15";
+                break;
+            case "DCR E":
+                machineCode = "1D";
+                break;
+            case "DCR H":
+                machineCode = "25";
+                break;
+            case "DCR L":
+                machineCode = "2D";
+                break;
+            case "DCR M":
+                machineCode = "35";
+                break;
+            case "DCX B":
+                machineCode = "0B";
+                break;
+            case "DCX D":
+                machineCode = "1B";
+                break;
+            case "DCX H":
+                machineCode = "2B";
+                break;
+            case "DCX SP":
+                machineCode = "3B";
+                break;
             case "HLT":
                 machineCode = "76";
                 break;
-            // Add more cases for other instructions...
+            case "":
+                machineCode = "";
+                break;
+            case "":
+                machineCode = "";
+                break;
+            case "":
+                machineCode = "";
+                break;
+            case "":
+                machineCode = "";
+                break;
+            case "":
+                machineCode = "";
+                break;
+            case "":
+                machineCode = "";
+                break;
+            case "":
+                machineCode = "";
+                break;
+            case "":
+                machineCode = "";
+                break;
+            case "":
+                machineCode = "";
+                break;
+            case "":
+                machineCode = "";
+                break;
+            case "":
+                machineCode = "";
+                break;
+            case "":
+                machineCode = "";
+                break;
+            case "":
+                machineCode = "";
+                break;
+            case "":
+                machineCode = "";
+                break;
+            case "":
+                machineCode = "";
+                break;
+            case "":
+                machineCode = "";
+                break;
+            case "":
+                machineCode = "";
+                break;
+            case "":
+                machineCode = "";
+                break;
+            case "":
+                machineCode = "";
+                break;
+            case "":
+                machineCode = "";
+                break;
+            case "":
+                machineCode = "";
+                break;
 
             default:
                 console.log("Unknown instruction...");
@@ -394,32 +575,28 @@ function memory8085() {
     console.log("If you want to change the value, type the desired value. Otherwise hit enter.")
     memoryFunc = 'active'
 
-    let addressLocationList = []
-    let addressValueList = []
-    let addressValueListBefore = []
-
     modeMemory = 0
-    textBottom.value = "Address: " + hexValue
     let addressPlace = textBottom.value
-    addressLocation = addressPlace.split(": ")[1]
-    addressLocation = (parseInt(addressLocation, 16)).toString(16).padStart(4, '0')
-    memoryLocationIndex = memoryLocationList.indexOf(addressLocation)
+    hexValue = addressPlace.split(": ")[1]
+    console.log(`hexValue: ${hexValue}`)
+    hexValue = (parseInt(hexValue, 16)).toString(16).padStart(4, '0')
+    memoryLocationIndex = memoryLocationList.indexOf(hexValue)
     addressValue = memoryLocationValue[memoryLocationIndex]
 
     enter.addEventListener('click', enterMemory = () => {
         modeMemory = 1
         console.log("-                  -")
-        if (initialMode === false && addressActiveStaus !== 'active') {
-            addressLocation = hexValue
+        if (initialMode === false && addressActiveStatus !== 'active') {
+            hexValue = hexValue
             console.log(`hexValue = ${hexValue}`)
-            memoryLocationIndex = memoryLocationList.indexOf(addressLocation)
+            memoryLocationIndex = memoryLocationList.indexOf(hexValue)
             let addressValue = memoryLocationValue[memoryLocationIndex]
             let newValue = addressValue
             let l = string.length
             console.log(addressValue)
             console.log(string.length)
             if (l !== 0) {
-                newValue = string
+                newValue = string.padStart(2, '0')
                 string = ''
             }
             console.log(`string = ${string}`)
@@ -431,12 +608,12 @@ function memory8085() {
                 console.log(`Same Value: ${addressValue}`)
                 addressValue = (parseInt(addressValue, 16)).toString(16).toUpperCase().padStart(2, '0')
                 addressValueListBefore.push(memoryLocationValue[memoryLocationIndex])
-                let addressLocationIndex = addressLocationList.indexOf(addressLocation);
+                let addressLocationIndex = addressLocationList.indexOf(hexValue);
                 if (addressLocationIndex !== -1) {
                     addressValueList[addressLocationIndex] = addressValue;
                 } else {
                     addressValueList.push(addressValue);
-                    addressLocationList.push(addressLocation);
+                    addressLocationList.push(hexValue);
                 }
             } else {
                 addressValue = newValue
@@ -445,19 +622,19 @@ function memory8085() {
                 addressLocationList.pop()
                 addressValueListBefore.pop()
                 hexValue = (parseInt(hexValue, 16) - 1).toString(16).toUpperCase().padStart(4, '0')
-                addressLocation = hexValue
-                memoryLocationIndex = memoryLocationList.indexOf(addressLocation)
+                hexValue = hexValue
+                memoryLocationIndex = memoryLocationList.indexOf(hexValue)
                 addressValueListBefore.push(memoryLocationValue[memoryLocationIndex])
-                let addressLocationIndex = addressLocationList.indexOf(addressLocation);
+                let addressLocationIndex = addressLocationList.indexOf(hexValue);
                 if (addressLocationIndex !== -1) {
                     addressValueList[addressLocationIndex] = addressValue;
                 } else {
                     addressValueList.push(addressValue);
-                    addressLocationList.push(addressLocation);
+                    addressLocationList.push(hexValue);
                 }
             }
 
-            textBottom.value = `${addressLocation}: ${addressValue}`
+            textBottom.value = `${hexValue}: ${addressValue}`
             console.log(`Address location list = [${addressLocationList}]`)
             console.log(`Address value list before = [${addressValueListBefore}]`)
             console.log(`Address value list after = [${addressValueList}]`)
@@ -502,24 +679,20 @@ function memory8085() {
 }
 
 function address8085() {
-    addressActiveStaus = 'active'
-
     console.log("-----ADDRESS-----")
-    addressFunc = 'active'
-
     let byte1
     let programAddressList = []
     modeAddress = 0
-    textBottom.value = "Address: " + hexValue
-    let addressPlace = textBottom.value
-    addressLocation = addressPlace.split(": ")[1]
-    addressLocation = (parseInt(addressLocation, 16)).toString(16).padStart(4, '0')
+    addressActiveStatus = 'active'
+
+    textTop.innerHTML = "ASSEMBLER"
+    textBottom.value = "ADDRESS: " + hexValue
 
     enter.addEventListener('click', enterAddress = () => {
         if (initialMode === false && memoryActiveStatus !== 'active' && executeActiveStatus !== 'active') {
             textBottom.value = ''
             modeAddress = 1
-            textTop.innerHTML = `${address1}:`
+            textTop.innerHTML = `${hexValue}:`
             textBottom.value += `${string}`
             string = ''
             mnemonic = textBottom.value
@@ -527,35 +700,35 @@ function address8085() {
 
             byte1 = byte8085(mnemonic)
             if (byte1 !== "error") {
-                console.log(address1)
-                programAddressList.push(address1);
-                program.push(`${address1}:${mnemonic}`);
-                let retValue = MNToMC(address1, mnemonic);
+                console.log(hexValue)
+                programAddressList.push(hexValue);
+                program.push(`${hexValue}:${mnemonic}`);
+                let retValue = MNToMC(hexValue, mnemonic);
                 console.log(retValue)
                 machineCode = retValue[0]
                 nextAddress1 = retValue[1]
                 nextAddress2 = retValue[2]
                 if (nextAddress1 === null && nextAddress2 === null) {
                     console.log(`Machine Code : ${machineCode}`)
-                    textTop.innerHTML = `${address1}: ${machineCode}`
+                    textTop.innerHTML = `${hexValue}: ${machineCode}`
                     textBottom.value = ''
                 } else if (nextAddress2 === null) {
                     console.log(`Machine Code : ${machineCode}:${nextAddress1}`)
-                    textTop.innerHTML = `${address1}: ${machineCode}:${nextAddress1}`
+                    textTop.innerHTML = `${hexValue}: ${machineCode}:${nextAddress1}`
                     textBottom.value = ''
                 } else {
                     console.log(`Machine Code : ${machineCode}:${nextAddress1}:${nextAddress2}`)
-                    textTop.innerHTML = `${address1}: ${machineCode}:${nextAddress1}:${nextAddress2}`
+                    textTop.innerHTML = `${hexValue}: ${machineCode}:${nextAddress1}:${nextAddress2}`
                     textBottom.value = ''
                 }
             }
             console.log(`byte: ${byte1}, ${byte}`)
             if (byte1 === 1) {
-                address1 = (parseInt(address1, 16) + parseInt("1", 16)).toString(16).toUpperCase().padStart(4, '0')
+                hexValue = (parseInt(hexValue, 16) + parseInt("1", 16)).toString(16).toUpperCase().padStart(4, '0')
             } else if (byte1 === 2) {
-                address1 = (parseInt(address1, 16) + parseInt("2", 16)).toString(16).toUpperCase().padStart(4, '0')
+                hexValue = (parseInt(hexValue, 16) + parseInt("2", 16)).toString(16).toUpperCase().padStart(4, '0')
             } else if (byte1 === 3) {
-                address1 = (parseInt(address1, 16) + parseInt("3", 16)).toString(16).toUpperCase().padStart(4, '0')
+                hexValue = (parseInt(hexValue, 16) + parseInt("3", 16)).toString(16).toUpperCase().padStart(4, '0')
             }
             string = ''
         }
@@ -571,7 +744,7 @@ function address8085() {
             console.log(`Program address list = [${programAddressList}]`)
             initialMode = true
             modeAddress = 0
-            addressActiveStaus = 'inactive'
+            addressActiveStatus = 'inactive'
         }
     })
 }
@@ -580,11 +753,11 @@ function address8085() {
 function instructionEncoder(machineCode) {
     console.log("Encoding Instruction...");
     console.log(`Machine code = ${machineCode}`);
-    
-    const oneByteList = ["00", "80", "81", "82", "83", "84", "85", "86", "87", "AO", "A1", "A2", "A3", "A4", "A5", "A6", "A7", "2F", "B8", "B9", "BA", "BB", "BC", "BD", "BE", "BF", "09", "19", "29", "39", "05", "0D", "15", "1D", "25", "2D", "35", "3D", "0B", "1B", "2B", "3B", "76", "04", "0C", "14", "1C", "24", "2C", "34", "3C", "03", "13", "23", "33", "0A", "1A", "78", "79", "7A", "7B", "7C", "7D", "7E", "7F", "40", "41", "42", "43", "44", "45", "46", "47", "48", "49", "4A", "4B", "4C", "4D", "4E", "4F", "50", "51", "52", "53", "54", "55", "56", "57", "58", "59", "5A", "5B" ,"5C", "5D", "5E", "5F", "60", "61", "62", "63", "64", "65", "66", "67", "68", "69", "6A", "6B", "6C", "6D", "6E", "6F", "70", "71", "72", "73", "74", "75", "76", "77", "07", "0F", "B0", "B1", "B2", "B3", "B4", "B5", "B6", "B7", "02", "12", "90", "91", "92", "93", "94", "95", "96", "97", "EB", "A8", "A9", "AA", "AB", "AC", "AD", "AE", "AF", "C9", "D8", "F8", "C0", "D0", "F0", "E8", "E0", "C8", "C1", "C5", "D1", "D5", "E1", "E5", "F1", "F5"];
+
+    const oneByteList = ["00", "80", "81", "82", "83", "84", "85", "86", "87", "AO", "A1", "A2", "A3", "A4", "A5", "A6", "A7", "2F", "B8", "B9", "BA", "BB", "BC", "BD", "BE", "BF", "09", "19", "29", "39", "05", "0D", "15", "1D", "25", "2D", "35", "3D", "0B", "1B", "2B", "3B", "76", "04", "0C", "14", "1C", "24", "2C", "34", "3C", "03", "13", "23", "33", "0A", "1A", "78", "79", "7A", "7B", "7C", "7D", "7E", "7F", "40", "41", "42", "43", "44", "45", "46", "47", "48", "49", "4A", "4B", "4C", "4D", "4E", "4F", "50", "51", "52", "53", "54", "55", "56", "57", "58", "59", "5A", "5B", "5C", "5D", "5E", "5F", "60", "61", "62", "63", "64", "65", "66", "67", "68", "69", "6A", "6B", "6C", "6D", "6E", "6F", "70", "71", "72", "73", "74", "75", "76", "77", "07", "0F", "B0", "B1", "B2", "B3", "B4", "B5", "B6", "B7", "02", "12", "90", "91", "92", "93", "94", "95", "96", "97", "EB", "A8", "A9", "AA", "AB", "AC", "AD", "AE", "AF", "C9", "D8", "F8", "C0", "D0", "F0", "E8", "E0", "C8", "C1", "C5", "D1", "D5", "E1", "E5", "F1", "F5"];
     const twoByteList1 = ["C6", "D6", "E6", "F6", "EE", "FE"];
     const twoByteList2 = ["06", "0E", "16", "1E", "26", "2E", "36", "3E"];
-    const threeByteList1 = ["22", "2A", "32", "3A", "C2", "C3", "CA", "CD", "DC", "FC", "D4", "C4", "CC" ,"F4", "EC", "FE", "E4", "D2", "DA", "E2", "EA", "F2", "FA"];
+    const threeByteList1 = ["22", "2A", "32", "3A", "C2", "C3", "CA", "CD", "DC", "FC", "D4", "C4", "CC", "F4", "EC", "FE", "E4", "D2", "DA", "E2", "EA", "F2", "FA"];
     const threeByteList2 = ["01", "11", "21", "31"];
 
     if (oneByteList.includes(machineCode)) {
@@ -671,7 +844,7 @@ function MC_to_MN(startAddress) {
         console.log(machineCode)
         let machineCodeHex = fillZero(machineCode).toUpperCase();
         console.log(`Machine code = ${machineCodeHex}`);
-        
+
         let [byte, mnemonicOpcode] = instructionEncoder(machineCodeHex);
 
         if (byte === "ONE") {
@@ -745,20 +918,18 @@ function execute8085() {
     let ret_address
     console.log("-----EXECUTE-----")
     let p_c = 0
-
     textTop.innerHTML = "GO EXECUTE"
-    executeActiveStatus = 'active'
-    
-    modeExecute = 0
-    textBottom.value = "Address: " + hexValue
+    textBottom.value = "ADDRESS: " + hexValue
+    modeAddress = 0
+    addressActiveStatus = 'active'
 
-    enter.addEventListener('click', enterAddress = () => {
-        if (initialMode === false && memoryActiveStatus !== 'active' && addressActiveStaus !== 'active') {
+    enter.addEventListener('click', enterExecute = () => {
+        if (initialMode === false && memoryActiveStatus !== 'active') {
             let startAddress = textBottom.value.split(": ")[1]
             console.log(startAddress)
             let addressPlace = textBottom.value
-            addressLocation = addressPlace.split(": ")[1]
-            addressLocation = (parseInt(addressLocation, 16)).toString(16).padStart(4, '0')
+            hexValue = addressPlace.split(": ")[1]
+            hexValue = (parseInt(hexValue, 16)).toString(16).padStart(4, '0')
             console.log(program)
             program_1 = program.slice() // Assuming `program` is a global variable
             MC_to_MN(startAddress);
@@ -939,12 +1110,12 @@ function execute8085() {
                     }
                 } else if (opcode === "RNZ") {
                     let returnValue = RNZ(instruction);
-                    if (returnValue) { 
-                    p_c = program_address_list.indexOf(ret_address);
+                    if (returnValue) {
+                        p_c = program_address_list.indexOf(ret_address);
                     } else {
-                    p_c = p_c + 1;
+                        p_c = p_c + 1;
                     }
-                } else if (opcode === "RLC") { 
+                } else if (opcode === "RLC") {
                     RLC(instruction);
                 } else if (opcode === "RRC") {
                     RRC(instruction);
@@ -966,30 +1137,30 @@ function execute8085() {
                     console.log("-----HLT-----");
                     break;
                 } if (
-                opcode !== "CALL" &&
-                opcode !== "CC" &&
-                opcode !== "CNC" &&
-                opcode !== "CP" &&
-                opcode !== "CM" &&
-                opcode !== "CPE" &&
-                opcode !== "CPO" &&
-                opcode !== "CZ" &&
-                opcode !== "CNZ" &&
-                opcode !== "JMP" &&
-                opcode !== "JC" &&
-                opcode !== "JNC" &&
-                opcode !== "JZ" &&
-                opcode !== "JNZ" &&
-                opcode !== "RET" &&
-                opcode !== "RC" &&
-                opcode !== "RNC" &&
-                opcode !== "RP" &&
-                opcode !== "RM" &&
-                opcode !== "RPE" &&
-                opcode !== "RPO" &&
-                opcode !== "RZ" &&
-                opcode !== "RNZ") {
-                p_c = p_c + 1;
+                    opcode !== "CALL" &&
+                    opcode !== "CC" &&
+                    opcode !== "CNC" &&
+                    opcode !== "CP" &&
+                    opcode !== "CM" &&
+                    opcode !== "CPE" &&
+                    opcode !== "CPO" &&
+                    opcode !== "CZ" &&
+                    opcode !== "CNZ" &&
+                    opcode !== "JMP" &&
+                    opcode !== "JC" &&
+                    opcode !== "JNC" &&
+                    opcode !== "JZ" &&
+                    opcode !== "JNZ" &&
+                    opcode !== "RET" &&
+                    opcode !== "RC" &&
+                    opcode !== "RNC" &&
+                    opcode !== "RP" &&
+                    opcode !== "RM" &&
+                    opcode !== "RPE" &&
+                    opcode !== "RPO" &&
+                    opcode !== "RZ" &&
+                    opcode !== "RNZ") {
+                    p_c = p_c + 1;
                 }
             }
         }
@@ -1013,20 +1184,19 @@ reset.addEventListener('click', () => {
 
 buttons.forEach(btn => {
     btn.addEventListener('click', buttonFunc = () => {
-        if (modeAddress === 0 && initialMode === false && memoryActiveStatus !== 'active') {
-            if (hexValue.length >= 3 && btn.innerHTML !== 'Enter') {
-                hexValue += btn.innerHTML
-                hexValue = hexValue.slice(1)
+        if (modeAddress === 0 && initialMode === false && addressActiveStatus === 'active') {
+            if (btn.innerHTML === 'Backspace') {
+                hexValue = hexValue.substring(0, hexValue.length - 1)
                 textBottom.value = `ADDRESS: ${hexValue}`
-            } else if (btn.innerHTML === 'Enter') {
-                textBottom.value = `ADDRESS: ${hexValue}`
-            } else {
-                hexValue += btn.innerHTML
-                hexValue = hexValue.padStart(4, '0')
-                textBottom.value = `ADDRESS: ${hexValue}`
+            } else if (hexValue.length < 4) {
+                if (btn.innerHTML === 'Enter') {
+                    textBottom.value = `ADDRESS: ${hexValue}`
+                } else if (btn.innerHTML !== 'Enter') {
+                    hexValue += btn.innerHTML
+                    textBottom.value = `ADDRESS: ${hexValue}`
+                }
             }
-        }
-        else if (modeAddress === 1 && initialMode === false) {
+        } else if (modeAddress === 1 && initialMode === false && addressActiveStatus === 'active') {
             if (btn.innerHTML === 'Backspace') {
                 string = string.substring(0, string.length - 1)
                 textBottom.value = `${string}`
@@ -1047,37 +1217,40 @@ buttons.forEach(btn => {
 hexButtons.forEach(hex => {
     hex.addEventListener('click', hexFunc = () => {
         if (modeMemory === 0 && initialMode === false && memoryActiveStatus === 'active') {
-            if (hexValue.length > 3 && hex.innerHTML !== 'Enter') {
-                hexValue += hex.innerHTML
-                hexValue = hexValue.slice(1)
+            if (hex.innerHTML === 'Backspace') {
+                hexValue = hexValue.substring(0, hexValue.length - 1)
                 textBottom.value = `M_ADDRESS: ${hexValue}`
-            } else if (hex.innerHTML === 'Enter') {
-                textBottom.value = `M_ADDRESS: ${hexValue}`
-            } else {
-                hexValue += hex.innerHTML
-                hexValue = hexValue.padStart(4, '0')
-                textBottom.value = `M_ADDRESS: ${hexValue}`
+            } else if (hexValue.length < 4) {
+                if (hex.innerHTML === 'Enter') {
+                    textBottom.value = `M_ADDRESS: ${hexValue}`
+                } else if (hex.innerHTML !== 'Enter') {
+                    hexValue += hex.innerHTML
+                    textBottom.value = `M_ADDRESS: ${hexValue}`
+                }
             }
         } else if (modeMemory === 1 && initialMode === false && memoryActiveStatus === 'active') {
-            if (string.length > 1 && hex.innerHTML !== 'Enter') {
-                string += hex.innerHTML
-                string = string.slice(1)
+            if (hex.innerHTML === 'Backspace') {
+                string = addressValue
+                string = string.substring(0, string.length - 1)
                 addressValue = string
-                textBottom.value = `${addressLocation}: ${addressValue}`
-            } else if (hex.innerHTML === 'Enter') {
-                if (string !== '') {
-                    addressValue = string
-                    console.log(`${addressLocation}: ${addressValue}`)
-                    textBottom.value = `${addressLocation}: ${addressValue}`
+                hexValueTemp = hexValue
+                hexValueTemp = (parseInt(hexValueTemp, 16) - 1).toString(16).toUpperCase().padStart(4, '0')
+                textBottom.value = `${hexValueTemp}: ${addressValue}`
+            } else if (string.length < 2) {
+                if (hex.innerHTML === 'Enter') {
+                    if (string !== '') {
+                        addressValue = string
+                        console.log(`${hexValue}: ${addressValue}`)
+                        textBottom.value = `${hexValue}: ${addressValue}`
+                    } else {
+                        console.log(`${hexValue}: ${addressValue}`)
+                        textBottom.value = `${hexValue}: ${addressValue}`
+                    }
                 } else {
-                    console.log(`${addressLocation}: ${addressValue}`)
-                    textBottom.value = `${addressLocation}: ${addressValue}`
+                    string += hex.innerHTML
+                    addressValue = string
+                    textBottom.value = `${hexValue}: ${addressValue}`
                 }
-            } else {
-                string += hex.innerHTML
-                string = string.padStart(2, '0')
-                addressValue = string
-                textBottom.value = `${addressLocation}: ${addressValue}`
             }
         }
     })
@@ -1088,17 +1261,17 @@ spclButtons.forEach(spclbtn => {
         if (spclbtn.innerHTML === 'M' && initialMode === true) {
             initialMode = false
             textTop.innerHTML = "MEMORY/EDIT"
-            textBottom.value = "ADDRESS: 0000"
+            textBottom.value = "M8_ADDRESS: " + hexValue
             memory8085()
         } else if (spclbtn.innerHTML === 'A' && initialMode === true) {
             initialMode = false
             textTop.innerHTML = "ASSEMBLER"
-            textBottom.value = "ADDRESS: 0000"
+            textBottom.value = "ADDRESS: " + hexValue
             address8085()
         } else if (spclbtn.innerHTML === 'G' && initialMode === true) {
             initialMode = false
             textTop.innerHTML = "GO EXECUTE"
-            textBottom.value = "ADDRESS: 0000"
+            textBottom.value = "ADDRESS: " + hexValue
             execute8085()
         } else if (spclbtn.innerHTML === 'R' && initialMode === true) {
             initialMode = false
