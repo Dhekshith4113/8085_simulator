@@ -636,7 +636,7 @@ function memory8085() {
                 }
             }
 
-            // textBottom.value = `${hexValue}:${addressValue}`
+            textBottom.value = `${hexValue}:${addressValue}`
             console.log(`Address location list = [${addressLocationList}]`)
             console.log(`Address value list before = [${addressValueListBefore}]`)
             console.log(`Address value list after = [${addressValueList}]`)
