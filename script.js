@@ -588,6 +588,10 @@ function memory8085() {
     enter.addEventListener('click', enterMemory = () => {
         modeMemory = 1
         console.log("-                  -")
+
+        memoryLocationIndex = memoryLocationList.indexOf(hexValue)
+        addressValue = memoryLocationValue[memoryLocationIndex]
+        
         if (initialMode === false && addressActiveStatus !== 'active') {
             hexValue = hexValue
             console.log(`hexValue = ${hexValue}`)
