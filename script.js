@@ -687,13 +687,13 @@ function address8085() {
     addressActiveStatus = 'active'
 
     textTop.innerHTML = "ASSEMBLE"
-    textBottom.value = "ADDRESS: " + hexValue
+    textBottom.value = "ADDR: " + hexValue
 
     enter.addEventListener('click', enterAddress = () => {
         if (initialMode === false && memoryActiveStatus !== 'active' && executeActiveStatus !== 'active') {
             textBottom.value = ''
             modeAddress = 1
-            textTop.innerHTML = `ASSEMBLE:${hexValue}:`
+            textTop.innerHTML = `ASSEMBLE:${hexValue}`
             textBottom.value += `${string}`
             string = ''
             mnemonic = textBottom.value
@@ -735,6 +735,7 @@ function address8085() {
         }
     })
     escapeBtn.addEventListener('click', escapeAddress = () => {
+        enter.removeEventListener('click', enterAddress)
         if (initialMode === false && memoryActiveStatus !== 'active') {
             textTop.innerHTML = "MENU: A,D,M,F,"
             textBottom.value = "C,G,R,S,I,E,P"
@@ -920,7 +921,7 @@ function execute8085() {
     console.log("-----EXECUTE-----")
     let p_c = 0
     textTop.innerHTML = "GO EXECUTE"
-    textBottom.value = "ADDRESS: " + hexValue
+    textBottom.value = "ADDR: " + hexValue
     modeAddress = 0
     addressActiveStatus = 'active'
 
