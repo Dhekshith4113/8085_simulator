@@ -1251,7 +1251,7 @@ hexButtons.forEach(hex => {
                 } else {
                     string += hex.innerHTML
                     addressValue = string
-                    textBottom.value = `${hexValue}: ${addressValue}`
+                    textBottom.value = `${hexValue}Z: ${addressValue}`
                 }
             }
         }
