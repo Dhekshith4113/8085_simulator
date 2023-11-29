@@ -1209,7 +1209,7 @@ buttons.forEach(btn => {
                 console.log(`string: ${string}`)
             } else {
                 string += btn.innerHTML
-                textTop.innerHTML = `ASSEMBLE:${address1}`
+                textTop.innerHTML = `ASSEMBLE:${hexValue}`
                 textBottom.value = `${string}`
             }
         }
