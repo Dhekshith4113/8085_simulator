@@ -574,6 +574,9 @@ function memory8085() {
     console.log("If you want to change the value, type the desired value. Otherwise hit enter.")
     memoryFunc = 'active'
 
+    textTop.innerHTML = "MEMORY VIEW/EDIT"
+    textBottom.value = "ADDR:" + hexValue
+    
     modeMemory = 0
     let addressPlace = textBottom.value
     hexValue = addressPlace.split(": ")[1]
@@ -686,7 +689,7 @@ function address8085() {
     addressActiveStatus = 'active'
 
     textTop.innerHTML = "ASSEMBLE"
-    textBottom.value = "ADDR: " + hexValue
+    textBottom.value = "ADDR:" + hexValue
 
     enter.addEventListener('click', enterAddress = () => {
         if (initialMode === false && memoryActiveStatus !== 'active' && executeActiveStatus !== 'active') {
@@ -1250,7 +1253,7 @@ hexButtons.forEach(hex => {
                 } else {
                     string += hex.innerHTML
                     addressValue = string
-                    textBottom.value = `${hexValue}Z: ${addressValue}`
+                    textBottom.value = `${hexValue}: ${addressValue}`
                 }
             }
         }
