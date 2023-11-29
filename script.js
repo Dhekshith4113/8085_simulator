@@ -13,9 +13,8 @@ let space = document.querySelector('#space')
 
 console.log("Hola!")
 let string = ''
-let hexValue = '0000'
+let hexValue = '8000'
 let hexAddress = '0000'
-let address1 = '0000'
 let addressList, machineCodeList, machineCodeList1, programAddressList, byte, machineCode, ivMl, retValue, nextAddress1, nextAddress2
 let memoryActiveStatus = 'inactive'
 let addressActiveStatus = 'inactive'
@@ -711,15 +710,15 @@ function address8085() {
                 nextAddress2 = retValue[2]
                 if (nextAddress1 === null && nextAddress2 === null) {
                     console.log(`Machine Code : ${machineCode}`)
-                    textTop.innerHTML = `${hexValue}: ${machineCode}`
+                    textTop.innerHTML = `${hexValue}:${machineCode}`
                     textBottom.value = ''
                 } else if (nextAddress2 === null) {
                     console.log(`Machine Code : ${machineCode}:${nextAddress1}`)
-                    textTop.innerHTML = `${hexValue}: ${machineCode}:${nextAddress1}`
+                    textTop.innerHTML = `${hexValue}:${machineCode}:${nextAddress1}`
                     textBottom.value = ''
                 } else {
                     console.log(`Machine Code : ${machineCode}:${nextAddress1}:${nextAddress2}`)
-                    textTop.innerHTML = `${hexValue}: ${machineCode}:${nextAddress1}:${nextAddress2}`
+                    textTop.innerHTML = `${hexValue}:${machineCode}:${nextAddress1}:${nextAddress2}`
                     textBottom.value = ''
                 }
             }
@@ -1189,13 +1188,13 @@ buttons.forEach(btn => {
         if (modeAddress === 0 && initialMode === false && addressActiveStatus === 'active') {
             if (btn.innerHTML === 'Backspace') {
                 hexValue = hexValue.substring(0, hexValue.length - 1)
-                textBottom.value = `ADDR: ${hexValue}`
+                textBottom.value = `ADDR:${hexValue}`
             } else if (hexValue.length < 4) {
                 if (btn.innerHTML === 'Enter') {
-                    textBottom.value = `ADDR: ${hexValue}`
+                    textBottom.value = `ADDR:${hexValue}`
                 } else if (btn.innerHTML !== 'Enter') {
                     hexValue += btn.innerHTML
-                    textBottom.value = `ADDR: ${hexValue}`
+                    textBottom.value = `ADDR:${hexValue}`
                 }
             }
         } else if (modeAddress === 1 && initialMode === false && addressActiveStatus === 'active') {
