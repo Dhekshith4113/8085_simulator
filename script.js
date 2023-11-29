@@ -1209,7 +1209,7 @@ buttons.forEach(btn => {
                 console.log(`string: ${string}`)
             } else {
                 string += btn.innerHTML
-                textTop.innerHTML = `${address1}:`
+                textTop.innerHTML = `ASSEMBLE:${address1}`
                 textBottom.value = `${string}`
             }
         }
@@ -1221,13 +1221,13 @@ hexButtons.forEach(hex => {
         if (modeMemory === 0 && initialMode === false && memoryActiveStatus === 'active') {
             if (hex.innerHTML === 'Backspace') {
                 hexValue = hexValue.substring(0, hexValue.length - 1)
-                textBottom.value = `M_ADDR: ${hexValue}`
+                textBottom.value = `M_ADDR:${hexValue}`
             } else if (hexValue.length < 4) {
                 if (hex.innerHTML === 'Enter') {
-                    textBottom.value = `M_ADDR: ${hexValue}`
+                    textBottom.value = `M_ADDR:${hexValue}`
                 } else if (hex.innerHTML !== 'Enter') {
                     hexValue += hex.innerHTML
-                    textBottom.value = `M_ADDR: ${hexValue}`
+                    textBottom.value = `M_ADDR:${hexValue}`
                 }
             }
         } else if (modeMemory === 1 && initialMode === false && memoryActiveStatus === 'active') {
@@ -1237,16 +1237,16 @@ hexButtons.forEach(hex => {
                 addressValue = string
                 hexValueTemp = hexValue
                 hexValueTemp = (parseInt(hexValueTemp, 16) - 1).toString(16).toUpperCase().padStart(4, '0')
-                textBottom.value = `${hexValueTemp}: ${addressValue}`
+                textBottom.value = `${hexValueTemp}:${addressValue}`
             } else if (string.length < 2) {
                 if (hex.innerHTML === 'Enter') {
                     if (string !== '') {
                         addressValue = string
                         console.log(`${hexValue}: ${addressValue}`)
-                        textBottom.value = `${hexValue}: ${addressValue}`
+                        textBottom.value = `${hexValue}:${addressValue}`
                     } else {
                         console.log(`${hexValue}: ${addressValue}`)
-                        textBottom.value = `${hexValue}: ${addressValue}`
+                        textBottom.value = `${hexValue}:${addressValue}`
                     }
                 } else {
                     string += hex.innerHTML
@@ -1263,17 +1263,17 @@ spclButtons.forEach(spclbtn => {
         if (spclbtn.innerHTML === 'M' && initialMode === true) {
             initialMode = false
             textTop.innerHTML = "MEMORY VIEW/EDIT"
-            textBottom.value = "ADDR: " + hexValue
+            textBottom.value = "ADDR:" + hexValue
             memory8085()
         } else if (spclbtn.innerHTML === 'A' && initialMode === true) {
             initialMode = false
             textTop.innerHTML = "ASSEMBLE"
-            textBottom.value = "ADDR: " + hexValue
+            textBottom.value = "ADDR:" + hexValue
             address8085()
         } else if (spclbtn.innerHTML === 'G' && initialMode === true) {
             initialMode = false
             textTop.innerHTML = "GO EXECUTE"
-            textBottom.value = "ADDR: " + hexValue
+            textBottom.value = "ADDR:" + hexValue
             execute8085()
         } else if (spclbtn.innerHTML === 'R' && initialMode === true) {
             initialMode = false
