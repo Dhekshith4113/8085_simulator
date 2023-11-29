@@ -34,8 +34,8 @@ let initialMod = (function () {
     let done = false
     return function () {
         setTimeout(() => {
-            textTop.innerHTML = "8085 SCIENTIFIC"
-            textBottom.value = "KIT"
+            textTop.innerHTML = "SCIENTIFIC TECH"
+            textBottom.value = "8085 TRAINER KIT"
             setTimeout(() => {
                 textTop.innerHTML = "MENU: A,D,M,F,"
                 textBottom.value = "C,G,R,S,I,E,P"
@@ -571,7 +571,7 @@ function MNToMC(address1, mnemonic) {
 function memory8085() {
     memoryActiveStatus = 'active'
 
-    console.log("-----MEMORY/EDIT-----")
+    console.log("-----MEMORY VIEW/EDIT-----")
     console.log("If you want to change the value, type the desired value. Otherwise hit enter.")
     memoryFunc = 'active'
 
@@ -643,6 +643,7 @@ function memory8085() {
         }
     })
     escapeBtn.addEventListener('click', escapeMemory = () => {
+        enter.removeEventListener('click', enterMemory)
         if (initialMode === false && memoryActiveStatus === 'active') {
             textTop.innerHTML = "MENU: A,D,M,F,"
             textBottom.value = "C,G,R,S,I,E,P"
@@ -685,14 +686,14 @@ function address8085() {
     modeAddress = 0
     addressActiveStatus = 'active'
 
-    textTop.innerHTML = "ASSEMBLER"
+    textTop.innerHTML = "ASSEMBLE"
     textBottom.value = "ADDRESS: " + hexValue
 
     enter.addEventListener('click', enterAddress = () => {
         if (initialMode === false && memoryActiveStatus !== 'active' && executeActiveStatus !== 'active') {
             textBottom.value = ''
             modeAddress = 1
-            textTop.innerHTML = `${hexValue}:`
+            textTop.innerHTML = `ASSEMBLE:${hexValue}:`
             textBottom.value += `${string}`
             string = ''
             mnemonic = textBottom.value
@@ -933,7 +934,7 @@ function execute8085() {
             console.log(program)
             program_1 = program.slice() // Assuming `program` is a global variable
             MC_to_MN(startAddress);
-            textTop.innerHTML = "EXECUTING..."
+            textTop.innerHTML = "EXECUTING...."
             textBottom.value = ''
             while (true) {
                 let machine_code = program[p_c];
@@ -1173,8 +1174,8 @@ function execute8085() {
 reset.addEventListener('click', () => {
     setTimeout(() => {
         initialMode = true
-        textTop.innerHTML = "8085 SCIENTIFIC"
-        textBottom.value = "KIT"
+        textTop.innerHTML = "SCIENTIFIC TECH"
+        textBottom.value = "8085 TRAINER KIT"
         setTimeout(() => {
             textTop.innerHTML = "MENU: A,D,M,F,"
             textBottom.value = "C,G,R,S,I,E,P"
@@ -1187,13 +1188,13 @@ buttons.forEach(btn => {
         if (modeAddress === 0 && initialMode === false && addressActiveStatus === 'active') {
             if (btn.innerHTML === 'Backspace') {
                 hexValue = hexValue.substring(0, hexValue.length - 1)
-                textBottom.value = `ADDRESS: ${hexValue}`
+                textBottom.value = `ADDR: ${hexValue}`
             } else if (hexValue.length < 4) {
                 if (btn.innerHTML === 'Enter') {
-                    textBottom.value = `ADDRESS: ${hexValue}`
+                    textBottom.value = `ADDR: ${hexValue}`
                 } else if (btn.innerHTML !== 'Enter') {
                     hexValue += btn.innerHTML
-                    textBottom.value = `ADDRESS: ${hexValue}`
+                    textBottom.value = `ADDR: ${hexValue}`
                 }
             }
         } else if (modeAddress === 1 && initialMode === false && addressActiveStatus === 'active') {
@@ -1219,13 +1220,13 @@ hexButtons.forEach(hex => {
         if (modeMemory === 0 && initialMode === false && memoryActiveStatus === 'active') {
             if (hex.innerHTML === 'Backspace') {
                 hexValue = hexValue.substring(0, hexValue.length - 1)
-                textBottom.value = `M_ADDRESS: ${hexValue}`
+                textBottom.value = `M_ADDR: ${hexValue}`
             } else if (hexValue.length < 4) {
                 if (hex.innerHTML === 'Enter') {
-                    textBottom.value = `M_ADDRESS: ${hexValue}`
+                    textBottom.value = `M_ADDR: ${hexValue}`
                 } else if (hex.innerHTML !== 'Enter') {
                     hexValue += hex.innerHTML
-                    textBottom.value = `M_ADDRESS: ${hexValue}`
+                    textBottom.value = `M_ADDR: ${hexValue}`
                 }
             }
         } else if (modeMemory === 1 && initialMode === false && memoryActiveStatus === 'active') {
@@ -1260,18 +1261,18 @@ spclButtons.forEach(spclbtn => {
     spclbtn.addEventListener('click', spclFunc = () => {
         if (spclbtn.innerHTML === 'M' && initialMode === true) {
             initialMode = false
-            textTop.innerHTML = "MEMORY/EDIT"
-            textBottom.value = "M8_ADDRESS: " + hexValue
+            textTop.innerHTML = "MEMORY VIEW/EDIT"
+            textBottom.value = "ADDR: " + hexValue
             memory8085()
         } else if (spclbtn.innerHTML === 'A' && initialMode === true) {
             initialMode = false
-            textTop.innerHTML = "ASSEMBLER"
-            textBottom.value = "ADDRESS: " + hexValue
+            textTop.innerHTML = "ASSEMBLE"
+            textBottom.value = "ADDR: " + hexValue
             address8085()
         } else if (spclbtn.innerHTML === 'G' && initialMode === true) {
             initialMode = false
             textTop.innerHTML = "GO EXECUTE"
-            textBottom.value = "ADDRESS: " + hexValue
+            textBottom.value = "ADDR: " + hexValue
             execute8085()
         } else if (spclbtn.innerHTML === 'R' && initialMode === true) {
             initialMode = false
