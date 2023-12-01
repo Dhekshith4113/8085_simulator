@@ -36,8 +36,8 @@ let initialMod = (function () {
             textTop.innerHTML = "SCIENTIFIC TECH"
             textBottom.value = "8085 TRAINER KIT"
             setTimeout(() => {
-                textTop.innerHTML = "MENU: A,D,M,F,"
-                textBottom.value = "C,G,R,S,I,E,P"
+                textTop.innerHTML = "MENU: A, D, M, F, "
+                textBottom.value = "C, G, R, S, I, E, P"
             }, 1000)
         }, 500)
         done = true
@@ -579,7 +579,7 @@ function memory8085() {
     
     modeMemory = 0
     let addressPlace = textBottom.value
-    hexValue = addressPlace.split(": ")[1]
+    hexValue = addressPlace.split(":")[1]
     console.log(`hexValue: ${hexValue}`)
     hexValue = (parseInt(hexValue, 16)).toString(16).padStart(4, '0')
     memoryLocationIndex = memoryLocationList.indexOf(hexValue)
@@ -651,8 +651,8 @@ function memory8085() {
     escapeBtn.addEventListener('click', escapeMemory = () => {
         enter.removeEventListener('click', enterMemory)
         if (initialMode === false && memoryActiveStatus === 'active') {
-            textTop.innerHTML = "MENU: A,D,M,F,"
-            textBottom.value = "C,G,R,S,I,E,P"
+            textTop.innerHTML = "MENU: A, D, M, F, "
+            textBottom.value = "C, G, R, S, I, E, P"
             console.log(`Address location list = [${addressLocationList}]`)
             console.log(`Address value list before = [${addressValueListBefore}]`)
             console.log(`Address value list after = [${addressValueList}]`)
@@ -743,8 +743,8 @@ function address8085() {
     escapeBtn.addEventListener('click', escapeAddress = () => {
         enter.removeEventListener('click', enterAddress)
         if (initialMode === false && memoryActiveStatus !== 'active') {
-            textTop.innerHTML = "MENU: A,D,M,F,"
-            textBottom.value = "C,G,R,S,I,E,P"
+            textTop.innerHTML = "MENU: A, D, M, F, "
+            textBottom.value = "C, G, R, S, I, E, P"
             console.log(`Program = [${program}]`)
             console.log(`Address list = [${addressList}]`)
             console.log(`Machine code list = [${machineCodeList}]`)
@@ -1184,8 +1184,8 @@ reset.addEventListener('click', () => {
         textTop.innerHTML = "SCIENTIFIC TECH"
         textBottom.value = "8085 TRAINER KIT"
         setTimeout(() => {
-            textTop.innerHTML = "MENU: A,D,M,F,"
-            textBottom.value = "C,G,R,S,I,E,P"
+            textTop.innerHTML = "MENU: A, D, M, F, "
+            textBottom.value = "C, G, R, S, I, E, P"
         }, 1000)
     }, 500)
 })
@@ -1248,9 +1248,11 @@ hexButtons.forEach(hex => {
                 if (hex.innerHTML === 'Enter') {
                     if (string !== '') {
                         addressValue = string
+                        string = ''
                         console.log(`${hexValue}: ${addressValue}`)
                         textBottom.value = `${hexValue}:${addressValue}`
                     } else {
+                        string = ''
                         console.log(`${hexValue}: ${addressValue}`)
                         textBottom.value = `${hexValue}:${addressValue}`
                     }
