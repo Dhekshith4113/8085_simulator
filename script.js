@@ -81,7 +81,7 @@ let initialMod = (function () {
 
 initialMod()
 
-let A = "3"
+let A = "0"
 let flag = [0, 0, 0, 0, 0, 0, 0, 0]
 let B = "0"
 let C = "0"
