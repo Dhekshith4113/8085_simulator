@@ -1,6 +1,11 @@
 @import url('https://fonts.googleapis.com/css2?family=Ubuntu:wght@300&display=swap');
 /* @import url('https://db.onlinewebfonts.com/c/2427d7acdb15d5c064b9ced748f0da75?family=LED+Dot-Matrix'); */
 
+@font-face {
+    font-family: 'LCD 16X2';
+    src: url(fonts/LCD\ 16X2.ttf);
+}
+
 * {
     margin: 0;
     padding: 0;
@@ -35,8 +40,8 @@ body {
     margin-left: auto;
     margin-right: auto;
     margin-bottom: 2px;
-    width: 310px;
-    height: 80px;
+    width: 300px;
+    height: 75px;
     display: flex;
     flex-direction: column;
     color: white;
@@ -50,8 +55,7 @@ body {
     padding: 0 15px 0 15px;
     text-align: left;
     font-size: 30px;
-    /* font-family: "LED Dot-Matrix"; */
-    font-family: 'Ubuntu', sans-serif;
+    font-family: 'LCD 16X2';
 }
 
 #lcdBottom {
@@ -60,8 +64,7 @@ body {
     padding: 0 15px 0 15px;
     text-align: left;
     font-size: 30px;
-    /* font-family: "LED Dot-Matrix"; */
-    font-family: 'Ubuntu', sans-serif;
+    font-family: 'LCD 16X2';
     color: white;
     background-color: transparent;
 }
@@ -79,9 +82,10 @@ button {
     font-size: 18px;
     border: none;
     border-radius: 5px;
+    cursor: pointer;
 }
 
-#reset {
+.reset {
     width: 50px;
     height: 50px;
     font-size: 15px;
