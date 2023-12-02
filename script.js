@@ -15,11 +15,12 @@ console.log("Hola!")
 let string = ''
 let hexValue = '8000'
 let hexAddress = '0000'
-let addressList, machineCodeList, machineCodeList1, programAddressList, byte, machineCode, ivMl, retValue, nextAddress1, nextAddress2
+let addressList, machineCodeList, machineCodeList1, byte, machineCode, ivMl, retValue, nextAddress1, nextAddress2
 let memoryActiveStatus = 'inactive'
 let addressActiveStatus = 'inactive'
 let executeActiveStatus = 'inactive'
 let initialMode, p_c, ret_address, program_1, startAddress
+let programAddressList = []
 let program = []
 let addressLocationList = []
 let addressValueList = []
@@ -36,8 +37,8 @@ let initialMod = (function () {
             textTop.innerHTML = "SCIENTIFIC TECH"
             textBottom.value = "8085 TRAINER KIT"
             setTimeout(() => {
-                textTop.innerHTML = "MENU: A, D, M, F, "
-                textBottom.value = "C, G, R, S, I, E, P"
+                textTop.innerHTML = "MENU:   A,D,M,F, "
+                textBottom.value = "C,G,S,R,I,E,P"
             }, 1000)
         }, 500)
         done = true
@@ -86,8 +87,8 @@ let B = "0"
 let C = "0"
 let D = "0"
 let E = "0"
-let H = "FF"
-let L = "FF"
+let H = "0"
+let L = "0"
 let M = "0"
 let reg_list = ["A", "flag", "B", "C", "D", "E", "H", "L", "M"]
 
@@ -102,6 +103,7 @@ let machine_code_list = []
 let machine_code_list_1 = []
 let reg_value = [A, flag, B, C, D, E, H, L, M]
 let M_address = reg_value[6] + reg_value[7]
+let M_index
 let stack = ["0FFF"]
 let stack_value = []
 let stack_pointer = "0FFF"
@@ -113,19 +115,18 @@ function ADD(mnemonic) {
     console.log("\n-----ADD-----");
     let mnemonicParts = mnemonic.split(" ");
     let reg_1 = mnemonicParts[1];
-    reg_1 = reg_list.indexOf(reg_1);
 
     if (reg_1 === "M") {
         memory_address_M(1);
     }
 
+    reg_1 = reg_list.indexOf(reg_1);
+    console.log(`[A] = [${reg_value[0]} + ${reg_value[reg_1]}]`)
     reg_value[0] = (parseInt(reg_value[0], 16) + parseInt(reg_value[reg_1], 16)).toString(16).toUpperCase().padStart(2, '0')
-
     if (parseInt(reg_value[0], 16) > 255) {
         checkAccumulator();
         reg_value[0] = (parseInt(reg_value[0], 16) - parseInt("100", 16)).toString(16).toUpperCase().padStart(2, '0')
     }
-
     reg_value[0] = fillZero(reg_value[0]);
     console.log(`[A] = ${reg_value[0]}`);
 }
@@ -136,6 +137,7 @@ function ADI(mnemonic) {
     let immediate_value = mnemonicParts[1];
 
     if (immediate_value.length === 2) {
+        console.log(`[A] = [${reg_value[0]} + ${immediate_value}]`)
         reg_value[0] = (parseInt(reg_value[0], 16) + parseInt(immediate_value, 16)).toString(16);
 
         if (parseInt(reg_value[0], 16) > 255) {
@@ -154,12 +156,13 @@ function ANA(mnemonic) {
     console.log("\n-----ANA-----");
     let mnemonicParts = mnemonic.split(" ");
     let reg_1 = mnemonicParts[1];
-    reg_1 = reg_list.indexOf(reg_1);
 
     if (reg_1 === "M") {
         memory_address_M(1);
     }
 
+    reg_1 = reg_list.indexOf(reg_1);
+    console.log(`[A] = [${reg_value[0]} & ${reg_value[reg_1]}]`)
     reg_value[0] = (parseInt(reg_value[0], 16) & parseInt(reg_value[reg_1], 16)).toString(16);
     checkAccumulator();
     reg_value[0] = fillZero(reg_value[0]);
@@ -173,6 +176,7 @@ function ANI(mnemonic) {
     let immediate_value = mnemonicParts[1];
 
     if (immediate_value.length === 2) {
+        console.log(`[A] = [${reg_value[0]} & ${immediate_value}]`)
         reg_value[0] = (parseInt(reg_value[0], 16) & parseInt(immediate_value, 16)).toString(16);
         checkAccumulator();
     } else {
@@ -438,11 +442,12 @@ function CMP(mnemonic) {
     console.log("\n-----CMP-----");
     mnemonic = mnemonic.split(" ");
     let reg_1 = mnemonic[1];
-    reg_1 = reg_list.indexOf(reg_1);
-    if (reg_1 === -1) {
-        // Handle case when reg_1 is 'M'
+
+    if (reg_1 === "M") {
         memory_address_M(1);
     }
+
+    reg_1 = reg_list.indexOf(reg_1);
     if (parseInt(reg_value[0], 16) < parseInt(reg_value[reg_1], 16)) {
         flag[1] = 0;
         flag[7] = 1;
@@ -611,7 +616,7 @@ function JMP(mnemonic) {
     console.log("\n-----JMP-----");
     mnemonic = mnemonic.split(" ");
     let jmp_address = mnemonic[1];
-    jmp_address = parseInt(jmp_address, 16).toString(16);
+    jmp_address = parseInt(jmp_address, 16).toString(16).toUpperCase().padStart(4, '0')
     let p_c = programAddressList.indexOf(jmp_address);
     console.log(`Jump to ${jmp_address}`);
     return p_c;
@@ -621,7 +626,7 @@ function JP(mnemonic) {
     console.log("\n-----JP-----");
     mnemonic = mnemonic.split(" ");
     let jmp_address = mnemonic[1];
-    jmp_address = parseInt(jmp_address, 16).toString(16);
+    jmp_address = parseInt(jmp_address, 16).toString(16).toUpperCase().padStart(4, '0')
     if (flag[0] === 0) {
         let p_c = programAddressList.indexOf(jmp_address);
         console.log(`Jump to ${jmp_address}`);
@@ -636,7 +641,7 @@ function JM(mnemonic) {
     console.log("\n-----JM-----");
     mnemonic = mnemonic.split(" ");
     let jmp_address = mnemonic[1];
-    jmp_address = parseInt(jmp_address, 16).toString(16);
+    jmp_address = parseInt(jmp_address, 16).toString(16).toUpperCase().padStart(4, '0')
     if (flag[0] === 1) {
         let p_c = programAddressList.indexOf(jmp_address);
         console.log(`Jump to ${jmp_address}`);
@@ -651,7 +656,7 @@ function JPE(mnemonic) {
     console.log("\n-----JPE-----");
     mnemonic = mnemonic.split(" ");
     let jmp_address = mnemonic[1];
-    jmp_address = parseInt(jmp_address, 16).toString(16);
+    jmp_address = parseInt(jmp_address, 16).toString(16).toUpperCase().padStart(4, '0')
     if (flag[5] === 1) {
         let p_c = programAddressList.indexOf(jmp_address);
         console.log(`Jump to ${jmp_address}`);
@@ -666,7 +671,7 @@ function JPO(mnemonic) {
     console.log("\n-----JPO-----");
     mnemonic = mnemonic.split(" ");
     let jmp_address = mnemonic[1];
-    jmp_address = parseInt(jmp_address, 16).toString(16);
+    jmp_address = parseInt(jmp_address, 16).toString(16).toUpperCase().padStart(4, '0')
     if (flag[5] === 0) {
         let p_c = programAddressList.indexOf(jmp_address);
         console.log(`Jump to ${jmp_address}`);
@@ -681,7 +686,7 @@ function JC(mnemonic) {
     console.log("\n-----JC-----");
     mnemonic = mnemonic.split(" ");
     let jmp_address = mnemonic[1];
-    jmp_address = parseInt(jmp_address, 16).toString(16);
+    jmp_address = parseInt(jmp_address, 16).toString(16).toUpperCase().padStart(4, '0')
     if (flag[7] === 1) {
         let p_c = programAddressList.indexOf(jmp_address);
         console.log(`Jump to ${jmp_address}`);
@@ -696,7 +701,8 @@ function JNC(mnemonic) {
     console.log("\n-----JNC-----");
     mnemonic = mnemonic.split(" ");
     let jmp_address = mnemonic[1];
-    jmp_address = parseInt(jmp_address, 16).toString(16);
+    console.log(jmp_address)
+    jmp_address = parseInt(jmp_address, 16).toString(16).toUpperCase().padStart(4, '0')
     if (flag[7] === 0) {
         let p_c = programAddressList.indexOf(jmp_address);
         console.log(`Jump to ${jmp_address}`);
@@ -711,7 +717,7 @@ function JZ(mnemonic) {
     console.log("\n-----JZ-----");
     mnemonic = mnemonic.split(" ");
     let jmp_address = mnemonic[1];
-    jmp_address = parseInt(jmp_address, 16).toString(16);
+    jmp_address = parseInt(jmp_address, 16).toString(16).toUpperCase().padStart(4, '0')
     if (flag[1] === 1) {
         let p_c = programAddressList.indexOf(jmp_address);
         console.log(`Jump to ${jmp_address}`);
@@ -726,7 +732,7 @@ function JNZ(mnemonic) {
     console.log("\n-----JNZ-----");
     mnemonic = mnemonic.split(" ");
     let jmp_address = mnemonic[1];
-    jmp_address = parseInt(jmp_address, 16).toString(16);
+    jmp_address = parseInt(jmp_address, 16).toString(16).toUpperCase().padStart(4, '0')
     if (flag[1] === 0) {
         let p_c = programAddressList.indexOf(jmp_address);
         console.log(`Jump to ${jmp_address}`);
@@ -855,7 +861,7 @@ function MVI(mnemonic, addressLocationList = null, addressValueList = null) {
     mnemonic = mnemonic.split(" ");
     let operand = mnemonic[1].split(",");
     let reg_1 = reg_list.indexOf(operand[0]);
-    if (reg_1 === "M") {
+    if (operand[0] === "M") {
         memory_address_M(0);
     }
     if (operand[1].length === 2) {
@@ -1108,7 +1114,7 @@ function STA(mnemonic) {
     let address = mnemonic[1];
     let address_index = memoryLocationList.indexOf(address);
     memoryLocationValue[address_index] = reg_value[0];
-    memoryLocationValue[address_index] = fillZero(memory_location_value[address_index]);
+    memoryLocationValue[address_index] = fillZero(memoryLocationValue[address_index]);
     console.log(`[A] = ${reg_value[0]}`);
     console.log(`[${address}] = ${memoryLocationValue[address_index]}`);
 }
@@ -1273,13 +1279,13 @@ function fillZero(regName) {
         return regName;
     } else {
         if (regName.length === 1) {
-            regName = regName.toString().padStart(2, '0');
+            regName = regName.toString(16).toUpperCase().padStart(2, '0')
             return regName.toUpperCase();
         } else if (regName.length === 3) {
-            regName = regName.toString().padStart(4, '0');
-            return regName.toUpperCase();
+            regName = regName.toString(16).toUpperCase().padStart(4, '0')
+            return regName
         } else {
-            return regName.toUpperCase();
+            return regName
         }
     }
 }
@@ -2198,8 +2204,8 @@ function memory8085() {
     escapeBtn.addEventListener('click', escapeMemory = () => {
         enter.removeEventListener('click', enterMemory)
         if (initialMode === false && memoryActiveStatus === 'active') {
-            textTop.innerHTML = "MENU: A, D, M, F, "
-            textBottom.value = "C, G, R, S, I, E, P"
+            textTop.innerHTML = "MENU:   A,D,M,F, "
+            textBottom.value = "C,G,S,R,I,E,P"
             console.log(`Address location list = [${addressLocationList}]`)
             console.log(`Address value list before = [${addressValueListBefore}]`)
             console.log(`Address value list after = [${addressValueList}]`)
@@ -2226,7 +2232,6 @@ function memory8085() {
             initialMode = true
             modeMemory = 0
             memoryActiveStatus = 'inactive'
-            hexValue = '0000'
             addressValueListBefore = []
         }
     })
@@ -2235,7 +2240,6 @@ function memory8085() {
 function address8085() {
     console.log("-----ADDRESS-----")
     let byte1
-    let programAddressList = []
     modeAddress = 0
     addressActiveStatus = 'active'
 
@@ -2290,8 +2294,8 @@ function address8085() {
     escapeBtn.addEventListener('click', escapeAddress = () => {
         enter.removeEventListener('click', enterAddress)
         if (initialMode === false && memoryActiveStatus !== 'active') {
-            textTop.innerHTML = "MENU: A, D, M, F, "
-            textBottom.value = "C, G, R, S, I, E, P"
+            textTop.innerHTML = "MENU:   A,D,M,F, "
+            textBottom.value = "C,G,S,R,I,E,P"
             console.log(`Program = [${program}]`)
             console.log(`Address list = [${addressList}]`)
             console.log(`Machine code list = [${machineCodeList}]`)
@@ -2663,16 +2667,16 @@ function execute8085() {
     console.log("-----EXECUTE-----")
     let p_c = 0
     textTop.innerHTML = "GO EXECUTE"
-    textBottom.value = "ADDR: " + hexValue
+    textBottom.value = "ADDR:" + hexValue
     modeAddress = 0
     addressActiveStatus = 'active'
 
     enter.addEventListener('click', enterExecute = () => {
         if (initialMode === false && memoryActiveStatus !== 'active') {
-            let startAddress = textBottom.value.split(": ")[1]
+            startAddress = textBottom.value.split(": ")[1]
             console.log(startAddress)
             let addressPlace = textBottom.value
-            hexValue = addressPlace.split(": ")[1]
+            hexValue = addressPlace.split(":")[1]
             hexValue = (parseInt(hexValue, 16)).toString(16).padStart(4, '0')
             console.log(program)
             program_1 = program.slice() // Assuming `program` is a global variable
@@ -2733,49 +2737,49 @@ function execute8085() {
                 } else if (opcode === "JP") {
                     p_c = JC(instruction);
                     if (p_c === "A") {
-                        p_c = program_address_list.indexOf(address_code);
+                        p_c = programAddressList.indexOf(address_code);
                         p_c = p_c + 1;
                     }
                 } else if (opcode === "JM") {
                     p_c = JC(instruction);
                     if (p_c === "A") {
-                        p_c = program_address_list.indexOf(address_code);
+                        p_c = programAddressList.indexOf(address_code);
                         p_c = p_c + 1;
                     }
                 } else if (opcode === "JPE") {
                     p_c = JC(instruction);
                     if (p_c === "A") {
-                        p_c = program_address_list.indexOf(address_code);
+                        p_c = programAddressList.indexOf(address_code);
                         p_c = p_c + 1;
                     }
                 } else if (opcode === "JPO") {
                     p_c = JC(instruction);
                     if (p_c === "A") {
-                        p_c = program_address_list.indexOf(address_code);
+                        p_c = programAddressList.indexOf(address_code);
                         p_c = p_c + 1;
                     }
                 } else if (opcode === "JC") {
                     p_c = JC(instruction);
                     if (p_c === "A") {
-                        p_c = program_address_list.indexOf(address_code);
+                        p_c = programAddressList.indexOf(address_code);
                         p_c = p_c + 1;
                     }
                 } else if (opcode === "JNC") {
                     p_c = JNC(instruction);
                     if (p_c === "A") {
-                        p_c = program_address_list.indexOf(address_code);
+                        p_c = programAddressList.indexOf(address_code);
                         p_c = p_c + 1;
                     }
                 } else if (opcode === "JZ") {
                     p_c = JZ(instruction);
                     if (p_c === "A") {
-                        p_c = program_address_list.indexOf(address_code);
+                        p_c = programAddressList.indexOf(address_code);
                         p_c = p_c + 1;
                     }
                 } else if (opcode === "JNZ") {
                     p_c = JNZ(instruction);
                     if (p_c === "A") {
-                        p_c = program_address_list.indexOf(address_code);
+                        p_c = programAddressList.indexOf(address_code);
                         p_c = p_c + 1;
                     }
                 } else if (opcode === "LDA") {
@@ -2802,60 +2806,60 @@ function execute8085() {
                     POP(instruction);
                 } else if (opcode === "RET") {
                     RET(instruction);
-                    p_c = program_address_list.indexOf(ret_address);
+                    p_c = programAddressList.indexOf(ret_address);
                 } else if (opcode === "RC") {
                     let returnValue = RC(instruction);
                     if (returnValue) {
-                        p_c = program_address_list.indexOf(ret_address);
+                        p_c = programAddressList.indexOf(ret_address);
                     } else {
                         p_c = p_c + 1;
                     }
                 } else if (opcode === "RNC") {
                     let returnValue = RNC(instruction);
                     if (returnValue) {
-                        p_c = program_address_list.indexOf(ret_address);
+                        p_c = programAddressList.indexOf(ret_address);
                     } else {
                         p_c = p_c + 1;
                     }
                 } else if (opcode === "RP") {
                     let returnValue = RP(instruction);
                     if (returnValue) {
-                        p_c = program_address_list.indexOf(ret_address);
+                        p_c = programAddressList.indexOf(ret_address);
                     } else {
                         p_c = p_c + 1;
                     }
                 } else if (opcode === "RM") {
                     let returnValue = RM(instruction);
                     if (returnValue) {
-                        p_c = program_address_list.indexOf(ret_address);
+                        p_c = programAddressList.indexOf(ret_address);
                     } else {
                         p_c = p_c + 1;
                     }
                 } else if (opcode === "RPE") {
                     let returnValue = RPE(instruction);
                     if (returnValue) {
-                        p_c = program_address_list.indexOf(ret_address);
+                        p_c = programAddressList.indexOf(ret_address);
                     } else {
                         p_c = p_c + 1;
                     }
                 } else if (opcode === "RPO") {
                     let returnValue = RPO(instruction);
                     if (returnValue) {
-                        p_c = program_address_list.indexOf(ret_address);
+                        p_c = programAddressList.indexOf(ret_address);
                     } else {
                         p_c = p_c + 1;
                     }
                 } else if (opcode === "RZ") {
                     let returnValue = RZ(instruction);
                     if (returnValue) {
-                        p_c = program_address_list.indexOf(ret_address);
+                        p_c = programAddressList.indexOf(ret_address);
                     } else {
                         p_c = p_c + 1;
                     }
                 } else if (opcode === "RNZ") {
                     let returnValue = RNZ(instruction);
                     if (returnValue) {
-                        p_c = program_address_list.indexOf(ret_address);
+                        p_c = programAddressList.indexOf(ret_address);
                     } else {
                         p_c = p_c + 1;
                     }
@@ -2916,8 +2920,8 @@ function memory_address_M(mode) {
         console.log("Storing the value to Memory address...");
         reg_value[6] = fillZero(reg_value[6]);
         reg_value[7] = fillZero(reg_value[7]);
-        let M_address = reg_value[6] + reg_value[7];
-        let M_index = memoryLocationList.indexOf(M_address);
+        M_address = reg_value[6] + reg_value[7];
+        M_index = memoryLocationList.indexOf(M_address);
         memoryLocationValue[M_index] = reg_value[8];
         console.log(`[H] = ${reg_value[6]}, [L] = ${reg_value[7]}`);
         console.log(`[M] = [${M_address}] = ${reg_value[8]}`);
@@ -2925,8 +2929,8 @@ function memory_address_M(mode) {
         console.log("Retrieving the value from Memory address...");
         reg_value[6] = fillZero(reg_value[6]);
         reg_value[7] = fillZero(reg_value[7]);
-        let M_address = reg_value[6] + reg_value[7];
-        let M_index = memoryLocationList.indexOf(M_address);
+        M_address = reg_value[6] + reg_value[7];
+        M_index = memoryLocationList.indexOf(M_address);
         reg_value[8] = memoryLocationValue[M_index];
         console.log(`[M] = [${M_address}] = ${reg_value[8]}`);
         console.log(`[H] = ${reg_value[6]}, [L] = ${reg_value[7]}`);
@@ -2939,14 +2943,29 @@ function memory_address_M(mode) {
 
 reset.addEventListener('click', () => {
     setTimeout(() => {
+        enter.removeEventListener('click', enterExecute)
+        hexButtons.forEach(hex => { hex.removeEventListener('click', hexFunc) })
+        buttons.forEach(btn => { btn.removeEventListener('click', buttonFunc) })
+
+        string = ''
+        hexValue = '8000'
+        hexAddress = '0000'
+        memoryActiveStatus = 'inactive'
+        addressActiveStatus = 'inactive'
+        executeActiveStatus = 'inactive'
         initialMode = true
+        modeMemory = 0
+        modeAddress = 0
+        modeExecute = 0
+
         textTop.innerHTML = "SCIENTIFIC TECH"
         textBottom.value = "8085 TRAINER KIT"
         setTimeout(() => {
-            textTop.innerHTML = "MENU: A, D, M, F, "
-            textBottom.value = "C, G, R, S, I, E, P"
+            textTop.innerHTML = "MENU:   A,D,M,F, "
+            textBottom.value = "C,G,S,R,I,E,P"
         }, 1000)
     }, 500)
+    // spclButtons.forEach(spclbtn => {spclbtn.removeEventListener('click', spclFunc)})
 })
 
 buttons.forEach(btn => {
@@ -2986,21 +3005,23 @@ hexButtons.forEach(hex => {
         if (modeMemory === 0 && initialMode === false && memoryActiveStatus === 'active') {
             if (hex.innerHTML === 'Backspace') {
                 hexValue = hexValue.substring(0, hexValue.length - 1)
-                textBottom.value = `M_ADDR:${hexValue}`
+                console.log(hexValue)
+                textBottom.value = `ADDR:${hexValue}`
             } else if (hexValue.length < 4) {
                 if (hex.innerHTML === 'Enter') {
-                    textBottom.value = `M_ADDR:${hexValue}`
+                    textBottom.value = `ADDR:${hexValue}`
                 } else if (hex.innerHTML !== 'Enter') {
                     hexValue += hex.innerHTML
-                    textBottom.value = `M_ADDR:${hexValue}`
+                    textBottom.value = `ADDR:${hexValue}`
                 }
             }
         } else if (modeMemory === 1 && initialMode === false && memoryActiveStatus === 'active') {
             if (hex.innerHTML === 'Backspace') {
+                console.log(string)
                 string = addressValue
                 string = string.substring(0, string.length - 1)
                 addressValue = string
-                hexValueTemp = hexValue
+                let hexValueTemp = hexValue
                 hexValueTemp = (parseInt(hexValueTemp, 16) - 1).toString(16).toUpperCase().padStart(4, '0')
                 textBottom.value = `${hexValueTemp}:${addressValue}`
             } else if (string.length < 2) {
@@ -3016,9 +3037,10 @@ hexButtons.forEach(hex => {
                         textBottom.value = `${hexValue}:${addressValue}`
                     }
                 } else {
+                    let address1 = (parseInt(hexValue, 16) - 1).toString(16).toUpperCase().padStart(4, '0')
                     string += hex.innerHTML
                     addressValue = string
-                    textBottom.value = `${hexValue}:${addressValue}`
+                    textBottom.value = `${address1}:${addressValue}`
                 }
             }
         }
@@ -3044,9 +3066,32 @@ spclButtons.forEach(spclbtn => {
             execute8085()
         } else if (spclbtn.innerHTML === 'R' && initialMode === true) {
             initialMode = false
-            textTop.innerHTML = "REGISTERS"
-            textBottom.value = ''
-            console.log(`A = ${fillZero(reg_value[0])} flag = ${reg_value[1]}`);
+            textTop.innerHTML = "REG VIEW/EDIT"
+            let regArray = ["PSW", "BC", "DE", "HL"]
+            textBottom.value = `${regArray[0]}:${fillZero(reg_value[0]) + fillZero(parseInt(reg_value[1].join(''), 2).toString(16))}`
+            let i = 1
+            let j = 2
+            let k = 3
+
+            enter.addEventListener('click', enterExecute = () => {
+                console.log(i)
+                if (i === 0) {
+                    textBottom.value = `${regArray[i]}:${fillZero(reg_value[j]) + fillZero(parseInt(reg_value[1].join(''), 2).toString(16))}`
+                    i += 1
+                    j += 2
+                    k += 2
+                } else {
+                    textBottom.value = `${regArray[i]}:${fillZero(reg_value[j]) + fillZero(reg_value[k])}`
+                    i += 1
+                    j += 2
+                    k += 2
+                    if (i > regArray.length - 1) {
+                        i = 0; j = 0; k = 1;
+                    }
+                }
+            })
+
+            console.log(`A = ${fillZero(reg_value[0])} flag = ${reg_value[1]} = ${fillZero(parseInt(reg_value[1].join(''), 2).toString(16))}`);
             console.log(`B = ${fillZero(reg_value[2])} C = ${fillZero(reg_value[3])}`);
             console.log(`D = ${fillZero(reg_value[4])} E = ${fillZero(reg_value[5])}`);
             console.log(`H = ${fillZero(reg_value[6])} L = ${fillZero(reg_value[7])}`);
