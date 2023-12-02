@@ -81,7 +81,7 @@ let initialMod = (function () {
 
 initialMod()
 
-let A = "0"
+let A = "3"
 let flag = [0, 0, 0, 0, 0, 0, 0, 0]
 let B = "0"
 let C = "0"
@@ -1846,6 +1846,8 @@ function instructionDecoder(mnemonic) {
                 break;
             default:
                 console.log("Unknown instruction...");
+                textTop.innerHTML = "SYNTAX ERROR"
+                textBottom.value = ""
                 return { byte: "Error", machineCode: null, immediateValue: null };
         }
 
@@ -1882,6 +1884,8 @@ function instructionDecoder(mnemonic) {
                 break;
             default:
                 console.log("Unknown instruction...");
+                textTop.innerHTML = "SYNTAX ERROR"
+                textBottom.value = ""
                 return { byte: "Error", machineCode: null, immediateValue: null };
         }
 
@@ -1924,6 +1928,8 @@ function instructionDecoder(mnemonic) {
                 break;
             default:
                 console.log("Unknown instruction...");
+                textTop.innerHTML = "SYNTAX ERROR"
+                textBottom.value = ""
                 return { byte: "Error", machineCode: null, immediateValue: null };
         }
 
@@ -2008,6 +2014,8 @@ function instructionDecoder(mnemonic) {
                 break;
             default:
                 console.log("Unknown instruction...");
+                textTop.innerHTML = "SYNTAX ERROR"
+                textBottom.value = ""
                 return { byte: "Error", machineCode: null, immediateValue: null };
         }
 
@@ -2038,6 +2046,8 @@ function instructionDecoder(mnemonic) {
                 break;
             default:
                 console.log("Unknown instruction...");
+                textTop.innerHTML = "SYNTAX ERROR"
+                textBottom.value = ""
                 return { byte: "Error", machineCode: null, immediateValue: null };
         }
 
@@ -2047,6 +2057,8 @@ function instructionDecoder(mnemonic) {
         return retValue
     } else {
         console.log("Unknown instruction...");
+        textTop.innerHTML = "SYNTAX ERROR"
+        textBottom.value = ""
         return { byte: "Error", machineCode: null, immediateValue: null };
     }
 }
@@ -2243,6 +2255,12 @@ function address8085() {
     modeAddress = 0
     addressActiveStatus = 'active'
 
+    program = []
+    addressList = []
+    machineCodeList = []
+    machineCodeList1 = []
+    programAddressList = []
+
     textTop.innerHTML = "ASSEMBLE"
     textBottom.value = "ADDR:" + hexValue
 
@@ -2263,18 +2281,21 @@ function address8085() {
                 program.push(`${hexValue}:${mnemonic}`);
                 let retValue = MNToMC(hexValue, mnemonic);
                 console.log(retValue)
-                machineCode = retValue[0]
-                nextAddress1 = retValue[1]
-                nextAddress2 = retValue[2]
                 if (nextAddress1 === null && nextAddress2 === null) {
+                    machineCode = retValue[0].toString(16).toUpperCase().padStart(2, '0')
                     console.log(`Machine Code : ${machineCode}`)
                     textTop.innerHTML = `${hexValue}:${machineCode}`
                     textBottom.value = ''
                 } else if (nextAddress2 === null) {
+                    machineCode = retValue[0].toString(16).toUpperCase().padStart(2, '0')
+                    nextAddress1 = retValue[1].toString(16).toUpperCase().padStart(2, '0')
                     console.log(`Machine Code : ${machineCode}:${nextAddress1}`)
                     textTop.innerHTML = `${hexValue}:${machineCode}:${nextAddress1}`
                     textBottom.value = ''
                 } else {
+                    machineCode = retValue[0].toString(16).toUpperCase().padStart(2, '0')
+                    nextAddress1 = retValue[1].toString(16).toUpperCase().padStart(2, '0')
+                    nextAddress2 = retValue[2].toString(16).toUpperCase().padStart(2, '0')
                     console.log(`Machine Code : ${machineCode}:${nextAddress1}:${nextAddress2}`)
                     textTop.innerHTML = `${hexValue}:${machineCode}:${nextAddress1}:${nextAddress2}`
                     textBottom.value = ''
@@ -2579,7 +2600,6 @@ function instructionEncoder(machineCode) {
 
 function MC_to_MN(startAddress) {
     console.log("Converting to Mnemonic...");
-    let addressList = []
     let programCount = 0
     let address = parseInt(startAddress, 16).toString(16).toUpperCase().padStart(4, '0')
     console.log(address)
@@ -2665,7 +2685,7 @@ function MC_to_MN(startAddress) {
 function execute8085() {
     let ret_address
     console.log("-----EXECUTE-----")
-    let p_c = 0
+    p_c = 0
     textTop.innerHTML = "GO EXECUTE"
     textBottom.value = "ADDR:" + hexValue
     modeAddress = 0
@@ -2673,7 +2693,7 @@ function execute8085() {
 
     enter.addEventListener('click', enterExecute = () => {
         if (initialMode === false && memoryActiveStatus !== 'active') {
-            startAddress = textBottom.value.split(": ")[1]
+            startAddress = textBottom.value.split(":")[1]
             console.log(startAddress)
             let addressPlace = textBottom.value
             hexValue = addressPlace.split(":")[1]
