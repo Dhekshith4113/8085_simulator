@@ -1,6 +1,7 @@
 let textLCD = document.getElementById('lcd')
 
 let hexButtons = document.querySelectorAll('.hex')
+let regButtons = document.querySelectorAll('.reg')
 let spclButtons = document.querySelectorAll('.spclbtn')
 
 let reset = document.querySelector('#reset')
@@ -11,7 +12,7 @@ let go = document.querySelector('#go')
 let decrement = document.querySelector('#decrement')
 
 console.log("Hola!")
-let string = '00'
+let string = ''
 let hexValue = '0000'
 let hexAddress = '0000'
 let addressList, machineCodeList, machineCodeList1, byte, machineCode, ivMl, retValue, nextAddress1, nextAddress2
@@ -29,7 +30,7 @@ let memoryLocationList, memoryLocationValue
 let initialMod = (function () {
     let done = false
     return function () {
-        textLCD.value = '.    '
+        textLCD.value = '.  '
         done = true
         initialMode = true
         mode = 0
@@ -82,6 +83,7 @@ let reg_list = ["A", "flag", "B", "C", "D", "E", "H", "L", "M"]
 let addressValue = 0
 let memoryLocationIndex = 0
 let memoryLocation
+let regActiveStatus = 'inactive'
 
 let address_list = []
 let address_location_list = []
@@ -1290,7 +1292,7 @@ function memory8085() {
     console.log("-----MEMORY VIEW/EDIT-----")
     console.log("If you want to change the value, type the desired value. Otherwise hit enter.")
 
-    textLCD.value = '0000.    '
+    textLCD.value = '0000.  '
 
     mode = 0
     let addressPlace = textLCD.value
@@ -1299,7 +1301,7 @@ function memory8085() {
     hexValue = (parseInt(hexValue, 16)).toString(16).padStart(4, '0')
     memoryLocationIndex = memoryLocationList.indexOf(hexValue)
     addressValue = memoryLocationValue[memoryLocationIndex]
-    string = addressValue
+    // string = addressValue
 
     next.addEventListener('click', nextMemory = () => {
         mode = 1
@@ -1309,7 +1311,6 @@ function memory8085() {
         addressValue = memoryLocationValue[memoryLocationIndex]
 
         if (initialMode === false) {
-            hexValue = hexValue
             console.log(`hexValue = ${hexValue}`)
             memoryLocationIndex = memoryLocationList.indexOf(hexValue)
             let addressValue = memoryLocationValue[memoryLocationIndex]
@@ -1319,7 +1320,8 @@ function memory8085() {
             console.log(string.length)
             if (l !== 0) {
                 newValue = string.padStart(2, '0')
-                string = addressValue
+                string = newValue
+                string = ''
             }
             console.log(`string = ${string}`)
             console.log(`currentValue = ${addressValue}`)
@@ -1344,7 +1346,7 @@ function memory8085() {
                 addressLocationList.pop()
                 addressValueListBefore.pop()
                 hexValue = (parseInt(hexValue, 16) - 1).toString(16).toUpperCase().padStart(4, '0')
-                hexValue = hexValue
+                console.log(hexValue)
                 memoryLocationIndex = memoryLocationList.indexOf(hexValue)
                 addressValueListBefore.push(memoryLocationValue[memoryLocationIndex])
                 let addressLocationIndex = addressLocationList.indexOf(hexValue);
@@ -1753,7 +1755,7 @@ function execute8085() {
     let ret_address
     console.log("-----EXECUTE-----")
     p_c = 0
-    textLCD.value = '0000.    '
+    textLCD.value = '0000.  '
     mode = 0
 
     execute.addEventListener('click', enterExecute = () => {
@@ -1766,7 +1768,7 @@ function execute8085() {
             console.log(program)
             program_1 = program.slice() // Assuming `program` is a global variable
             MC_to_MN(startAddress);
-            textLCD.value = "     .     "
+            textLCD.value = " .     "
             while (true) {
                 let machine_code = program[p_c];
                 let mnemonic = machine_code.split(":");
@@ -2021,26 +2023,54 @@ function memory_address_M(mode) {
     }
 }
 
+function registers() {
+    regActiveStatus = 'active'
+    let regArray = ["A", "FL", "B", "C", "D", "E", "H", "L"]
+    console.log("Hello")
+    console.log(`A = ${fillZero(reg_value[0])} flag = ${reg_value[1]} = ${fillZero(parseInt(reg_value[1].join(''), 2).toString(16))}`);
+    console.log(`B = ${fillZero(reg_value[2])} C = ${fillZero(reg_value[3])}`);
+    console.log(`D = ${fillZero(reg_value[4])} E = ${fillZero(reg_value[5])}`);
+    console.log(`H = ${fillZero(reg_value[6])} L = ${fillZero(reg_value[7])}`);
+    regButtons.forEach(reg => {
+        reg.addEventListener('click', regFunc = () => {
+            console.log(reg.innerHTML.split("<br>")[0])
+            let regString = reg.innerHTML.split("<br>")[0]
+            let regValue = regString.split(" ")[1]
+            let i = regArray.indexOf(regValue)
+            if (i !== -1) {
+                console.log(i)
+                textLCD.value = `${regArray[i]}.${fillZero(reg_value[i])}`
+            } else {
+                console.log(i)
+                textLCD.value = `.    `
+            }
+        })
+    })
+    reset.addEventListener('click', escapeRegisters = () => {
+        initialMode === true
+        regActiveStatus = 'inactive'
+    })
+}
 ////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////
 
 hexButtons.forEach(hex => {
     hex.addEventListener('click', hexFunc = () => {
         // console.log(hex.innerHTML)
-        if (mode === 0 && initialMode === false) {
+        if (mode === 0 && initialMode === false && regActiveStatus !== 'active') {
             if (hexValue.length > 3) {
                 hexValue = hexValue.slice(1)
                 console.log(hexValue)
                 hexValue += hex.innerHTML.slice(0, 1)
                 console.log(hexValue)
-                textLCD.value = `${hexValue}.   `
+                textLCD.value = `${hexValue}.  `
             } else if (hex.innerHTML === 'NEXT') {
-                textLCD.value = `${hexValue}.   `
+                textLCD.value = `${hexValue}.  `
             } else if (hex.id !== 'NEXT') {
                 hexValue += hex.innerHTML.slice(0, 1)
-                textLCD.value = `${hexValue}.   `
+                textLCD.value = `${hexValue}.  `
             }
-        } else if (mode === 1 && initialMode === false) {
+        } else if (mode === 1 && initialMode === false && regActiveStatus !== 'active') {
             if (string.length > 1) {
                 string = string.slice(1)
                 string += hex.innerHTML.slice(0, 1)
@@ -2049,6 +2079,7 @@ hexButtons.forEach(hex => {
             } else if (hex.id === 'NEXT') {
                 textLCD.value = `${hexValue}.${string}`
             } else if (hex.id !== 'NEXT') {
+                console.log("this one")
                 let address1 = (parseInt(hexValue, 16) - 1).toString(16).toUpperCase().padStart(4, '0')
                 string += hex.innerHTML.slice(0, 1)
                 textLCD.value = `${address1}.${string}`
@@ -2064,33 +2095,16 @@ spclButtons.forEach(spclbtn => {
         if (spclbtn.innerHTML.split("<br>")[1] === 'SUB' && initialMode === true) {
             console.log(spclbtn.innerHTML.split("<br>")[1])
             initialMode = false
-            textLCD.value = "0000.    "
+            textLCD.value = "0000.  "
             memory8085()
         } else if (spclbtn.innerHTML.split("<br>")[1] === 'GO' && initialMode === true) {
             initialMode = false
-            textLCD.value = "0000.    "
+            textLCD.value = "0000.  "
             execute8085()
         } else if (spclbtn.innerHTML.split("<br>")[1] === 'REG' && initialMode === true) {
             initialMode = false
-            let regArray = ["A", "FL", "B", "C", "D", "E", "H", "L"]
-            let i = 0
-            textLCD.value = `${regArray[i]}.${fillZero(reg_value[i])}`
-            next.addEventListener('click', nextreg = () => {
-                console.log(i)
-                if (i === 1) {
-                    textLCD.value = `${regArray[1]}.${fillZero(parseInt(reg_value[1].join(''), 2).toString(16))}`
-                } else {
-                    textLCD.value = `${regArray[i]}.${fillZero(reg_value[i])}`
-                }
-                i += 1
-                if (i > regArray.length - 1) {
-                    i = 0;
-                }
-            })
-            console.log(`A = ${fillZero(reg_value[0])} flag = ${reg_value[1]} = ${fillZero(parseInt(reg_value[1].join(''), 2).toString(16))}`);
-            console.log(`B = ${fillZero(reg_value[2])} C = ${fillZero(reg_value[3])}`);
-            console.log(`D = ${fillZero(reg_value[4])} E = ${fillZero(reg_value[5])}`);
-            console.log(`H = ${fillZero(reg_value[6])} L = ${fillZero(reg_value[7])}`);
+            textLCD.value = ".  "
+            registers()
         }
     })
 })
