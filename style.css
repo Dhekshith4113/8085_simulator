@@ -74,9 +74,9 @@ input::placeholder {
 }
 
 button {
-    margin: 2px;
+    margin: 1px;
     padding: 0;
-    width: 25px;
+    width: 24px;
     height: 25px;
     display: inline;
     font-size: 18px;
