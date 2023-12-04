@@ -2079,7 +2079,8 @@ function MNToMC(address1, mnemonic) {
         machineCodeList1.push(machineCode);
         let memoryLocationIndex = memoryLocationList.indexOf(address1);
         memoryLocationValue[memoryLocationIndex] = machineCode;
-        return [machineCode, null, null];
+        let retValue = [machineCode, null, null];
+        return retValue
     } else if (byte === "TWO") {
         machineCode = fillZero(machineCode);
         addressList.push(`${address1}`);
@@ -2095,7 +2096,8 @@ function MNToMC(address1, mnemonic) {
         machineCodeList1.push(filledImmediateValue);
         let immediateMemoryLocationIndex = memoryLocationList.indexOf(address1);
         memoryLocationValue[immediateMemoryLocationIndex] = filledImmediateValue;
-        return [machineCode, filledImmediateValue, null];
+        let retValue = [machineCode, filledImmediateValue, null];
+        return retValue
     } else if (byte === "THREE") {
         machineCode = fillZero(machineCode);
         addressList.push(`${address1}`);
@@ -2282,20 +2284,14 @@ function address8085() {
                 let retValue = MNToMC(hexValue, mnemonic);
                 console.log(retValue)
                 if (nextAddress1 === null && nextAddress2 === null) {
-                    machineCode = retValue[0].toString(16).toUpperCase().padStart(2, '0')
                     console.log(`Machine Code : ${machineCode}`)
                     textTop.innerHTML = `${hexValue}:${machineCode}`
                     textBottom.value = ''
                 } else if (nextAddress2 === null) {
-                    machineCode = retValue[0].toString(16).toUpperCase().padStart(2, '0')
-                    nextAddress1 = retValue[1].toString(16).toUpperCase().padStart(2, '0')
                     console.log(`Machine Code : ${machineCode}:${nextAddress1}`)
                     textTop.innerHTML = `${hexValue}:${machineCode}:${nextAddress1}`
                     textBottom.value = ''
                 } else {
-                    machineCode = retValue[0].toString(16).toUpperCase().padStart(2, '0')
-                    nextAddress1 = retValue[1].toString(16).toUpperCase().padStart(2, '0')
-                    nextAddress2 = retValue[2].toString(16).toUpperCase().padStart(2, '0')
                     console.log(`Machine Code : ${machineCode}:${nextAddress1}:${nextAddress2}`)
                     textTop.innerHTML = `${hexValue}:${machineCode}:${nextAddress1}:${nextAddress2}`
                     textBottom.value = ''
