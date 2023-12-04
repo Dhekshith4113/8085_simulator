@@ -19,7 +19,7 @@ let addressList, machineCodeList, machineCodeList1, byte, machineCode, ivMl, ret
 let memoryActiveStatus = 'inactive'
 let addressActiveStatus = 'inactive'
 let executeActiveStatus = 'inactive'
-let initialMode, p_c, ret_address, program_1, startAddress, byte1
+let initialMode, p_c, ret_address, program_1, startAddress
 let programAddressList = []
 let program = []
 let addressLocationList = []
@@ -28,7 +28,7 @@ let addressValueListBefore = []
 let one_byte, mnemonic, modeAddress, modeExecute, modeMemory
 let two_byte
 let three_byte
-let memoryLocationList, memoryLocationValue, mnemonic
+let memoryLocationList, memoryLocationValue
 
 let initialMod = (function () {
     let done = false
@@ -2251,6 +2251,7 @@ function memory8085() {
 
 function address8085() {
     console.log("-----ADDRESS-----")
+    let byte1
     modeAddress = 0
     addressActiveStatus = 'active'
 
@@ -2268,7 +2269,7 @@ function address8085() {
             textBottom.value = ''
             modeAddress = 1
             textTop.innerHTML = `ASSEMBLE:${hexValue}`
-            textBottom.value = `${string}`
+            textBottom.value += `${string}`
             string = ''
             mnemonic = textBottom.value
             console.log(mnemonic)
@@ -3012,7 +3013,7 @@ buttons.forEach(btn => {
                 console.log(`string: ${string}`)
             } else {
                 string += btn.innerHTML
-                // textTop.innerHTML = `ASSEMBLE:${hexValue}`
+                textTop.innerHTML = `ASSEMBLE:${hexValue}`
                 textBottom.value = `${string}`
             }
         }
