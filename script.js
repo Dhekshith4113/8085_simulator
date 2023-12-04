@@ -2266,7 +2266,7 @@ function address8085() {
 
     enter.addEventListener('click', enterAddress = () => {
         if (initialMode === false && memoryActiveStatus !== 'active' && executeActiveStatus !== 'active') {
-            textBottom.value = ''
+            // textBottom.value = ''
             modeAddress = 1
             textTop.innerHTML = `ASSEMBLE:${hexValue}`
             textBottom.value += `${string}`
