@@ -2602,7 +2602,7 @@ function MC_to_MN(startAddress) {
     let address = parseInt(startAddress, 16).toString(16).toUpperCase().padStart(4, '0')
     console.log(address)
 
-    while (programCount < program_1.length) {
+    while (true) {
         programCount += 1;
         address = parseInt(address, 16).toString(16).toUpperCase().padStart(4, '0')
         let addressIndex = memoryLocationList.indexOf(address);
@@ -2673,6 +2673,9 @@ function MC_to_MN(startAddress) {
         } else if (byte === null) {
             addressList.push(address);
             address = (parseInt(address, 16) + 1).toString(16).toUpperCase().padStart(4, '0')
+        }
+        if (machineCode === "76") {
+            break;
         }
     }
 
