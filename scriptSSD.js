@@ -1369,7 +1369,7 @@ function memory8085() {
     reset.addEventListener('click', escapeMemory = () => {
         next.removeEventListener('click', nextMemory)
         if (initialMode === false) {
-            textLCD.value = '.    '
+            textLCD.value = '.  '
             console.log(`Address location list = [${addressLocationList}]`)
             console.log(`Address value list before = [${addressValueListBefore}]`)
             console.log(`Address value list after = [${addressValueList}]`)
@@ -1766,7 +1766,7 @@ function execute8085() {
 
     execute.addEventListener('click', enterExecute = () => {
         if (initialMode === false) {
-            startAddress = textLCD.value.split(":")[1]
+            startAddress = textLCD.value.split(".")[0]
             console.log(startAddress)
             let addressPlace = textLCD.value
             hexValue = addressPlace.split(".")[0]
@@ -1774,7 +1774,7 @@ function execute8085() {
             console.log(program)
             program_1 = program.slice() // Assuming `program` is a global variable
             MC_to_MN(startAddress);
-            textLCD.value = " .     "
+            textLCD.value = ".  "
             while (true) {
                 let machine_code = program[p_c];
                 let mnemonic = machine_code.split(":");
@@ -2039,16 +2039,18 @@ function registers() {
     console.log(`H = ${fillZero(reg_value[6])} L = ${fillZero(reg_value[7])}`);
     regButtons.forEach(reg => {
         reg.addEventListener('click', regFunc = () => {
-            console.log(reg.innerHTML.split("<br>")[0])
-            let regString = reg.innerHTML.split("<br>")[0]
-            let regValue = regString.split(" ")[1]
-            let i = regArray.indexOf(regValue)
-            if (i !== -1) {
-                console.log(i)
-                textLCD.value = `${regArray[i]}.${fillZero(reg_value[i])}`
-            } else {
-                console.log(i)
-                textLCD.value = `.    `
+            if (regActiveStatus === 'active') {
+                console.log(reg.innerHTML.split("<br>")[0])
+                let regString = reg.innerHTML.split("<br>")[0]
+                let regValue = regString.split(" ")[1]
+                let i = regArray.indexOf(regValue)
+                if (i !== -1) {
+                    console.log(i)
+                    textLCD.value = `${regArray[i]}.${fillZero(reg_value[i])}`
+                } else {
+                    console.log(i)
+                    textLCD.value = `.  `
+                }
             }
         })
     })
