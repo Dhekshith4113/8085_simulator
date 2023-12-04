@@ -96,7 +96,6 @@ let addressValue = 0
 let memoryLocationIndex = 0
 let memoryLocation
 
-let address_list = []
 let address_location_list = []
 let address_value_list = []
 let machine_code_list = []
@@ -2607,11 +2606,10 @@ function MC_to_MN(startAddress) {
         address = parseInt(address, 16).toString(16).toUpperCase().padStart(4, '0')
         let addressIndex = memoryLocationList.indexOf(address);
         let machineCode = memoryLocationValue[addressIndex]
-        console.log(machineCode)
-        let machineCodeHex = fillZero(machineCode).toUpperCase();
-        console.log(`Machine code = ${machineCodeHex}`);
+        machineCode = fillZero(machineCode).toUpperCase();
+        console.log(`Machine code = ${machineCode}`);
 
-        let [byte, mnemonicOpcode] = instructionEncoder(machineCodeHex);
+        let [byte, mnemonicOpcode] = instructionEncoder(machineCode);
 
         if (byte === "ONE") {
             addressList.push(address);
@@ -2619,31 +2617,33 @@ function MC_to_MN(startAddress) {
             program.push(`${address}:${mnemonicOpcode}`);
             address = (parseInt(address, 16) + 1).toString(16).toUpperCase().padStart(4, '0')
         } else if (byte === "TWO_1") {
+            let address1 = address;
             addressList.push(address);
+            address = (parseInt(address, 16) + 1).toString(16).toUpperCase().padStart(4, '0');
             let machineCodeValue = memoryLocationValue[parseInt(address, 16)];
             let mnemonic = `${mnemonicOpcode} ${machineCodeValue.toString().padStart(2, '0')}`;
-            console.log(`${address}:${mnemonic}`);
-            program.push(`${address}:${mnemonic}`);
-            address = (parseInt(address, 16) + 1).toString(16).toUpperCase().padStart(4, '0');
-            addressList.push(address.slice(2));
+            console.log(`${address1}:${mnemonic}`);
+            program.push(`${address1}:${mnemonic}`);
+            // addressList.push(address);
             address = (parseInt(address, 16) + 1).toString(16).toUpperCase().padStart(4, '0')
         } else if (byte === "TWO_2") {
+            let address1 = address;
             addressList.push(address);
+            address = (parseInt(address, 16) + 1).toString(16).toUpperCase().padStart(4, '0')
             let machineCodeValue = memoryLocationValue[parseInt(address, 16)];
             let mnemonic = `${mnemonicOpcode},${machineCodeValue.toString().padStart(2, '0')}`;
-            console.log(`${address}:${mnemonic}`);
-            program.push(`${address}:${mnemonic}`);
-            address = (parseInt(address, 16) + 1).toString(16).toUpperCase().padStart(4, '0')
-            addressList.push(address.slice(2));
+            console.log(`${address1}:${mnemonic}`);
+            program.push(`${address1}:${mnemonic}`);
+            // addressList.push(address);
             address = (parseInt(address, 16) + 1).toString(16).toUpperCase().padStart(4, '0')
         } else if (byte === "THREE_1") {
             let address1 = address;
             addressList.push(address);
-            address = (parseInt(address, 16) + 2).toString(16).toUpperCase().padStart(4, '0')
+            address = (parseInt(address, 16) + 3).toString(16).toUpperCase().padStart(4, '0')
             let machineCode1 = memoryLocationValue[parseInt(address, 16) - 1];
             let machineCodeHex1 = fillZero(machineCode1).toUpperCase();
             let mnemonic1 = machineCodeHex1.padStart(2, '0');
-            addressList.push(address);
+            // addressList.push(address);
             address = (parseInt(address, 16) - 1).toString(16).toUpperCase().padStart(4, '0')
             let machineCode2 = memoryLocationValue[parseInt(address, 16) - 1];
             let machineCodeHex2 = fillZero(machineCode2).toUpperCase();
@@ -2652,24 +2652,27 @@ function MC_to_MN(startAddress) {
             let mnemonic = `${mnemonicOpcode} ${combinedMnemonic}`;
             console.log(`${address1}:${mnemonic}`);
             program.push(`${address1}:${mnemonic}`);
-            address = (parseInt(address, 16) + 2).toString(16).toUpperCase().padStart(4, '0')
+            address = (parseInt(address, 16) + 1).toString(16).toUpperCase().padStart(4, '0')
         } else if (byte === "THREE_2") {
             let address1 = address;
             addressList.push(address);
-            address = (parseInt(address, 16) + 2).toString(16).toUpperCase().padStart(4, '0')
-            let machineCode1 = memoryLocationValue[parseInt(address, 16) - 1];
-            let machineCodeHex1 = fillZero(machineCode1).toUpperCase();
-            let mnemonic1 = machineCodeHex1.padStart(2, '0');
-            addressList.push(address);
+            address = (parseInt(address, 16) + 3).toString(16).toUpperCase().padStart(4, '0')
+            let machineCode = memoryLocationValue[parseInt(address, 16) - 1];
+            console.log(`Higher byte: ${machineCode}`)
+            machineCode = fillZero(machineCode).toUpperCase();
+            let mnemonic = machineCode.padStart(2, '0');
+            // addressList.push(address);
             address = (parseInt(address, 16) - 1).toString(16);
-            let machineCode2 = memoryLocationValue[parseInt(address, 16) - 1];
-            let machineCodeHex2 = fillZero(machineCode2).toUpperCase();
-            let mnemonic2 = machineCodeHex2.padStart(2, '0');
-            let combinedMnemonic = (parseInt(`${mnemonic1}${mnemonic2}`, 16)).toString(16).toUpperCase().padStart(4, '0')
-            let mnemonic = `${mnemonicOpcode},${combinedMnemonic}`;
+            machineCode = memoryLocationValue[parseInt(address, 16) - 1];
+            console.log(`Lower byte: ${machineCode}`)
+            machineCode = fillZero(machineCode).toUpperCase();
+            mnemonic = mnemonic + machineCode
+            mnemonic = mnemonic.toString(16).toUpperCase().padStart(4, '0')
+            console.log(`Operand: ${mnemonic}`)
+            mnemonic = `${mnemonicOpcode},${mnemonic}`;
             console.log(`${address1}:${mnemonic}`);
             program.push(`${address1}:${mnemonic}`);
-            address = (parseInt(address, 16) + 2).toString(16).toUpperCase().padStart(4, '0');
+            address = (parseInt(address, 16) + 1).toString(16).toUpperCase().padStart(4, '0');
         } else if (byte === null) {
             addressList.push(address);
             address = (parseInt(address, 16) + 1).toString(16).toUpperCase().padStart(4, '0')
@@ -2678,7 +2681,6 @@ function MC_to_MN(startAddress) {
             break;
         }
     }
-
     console.log(`Address List = [${addressList.join(', ')}]`);
     console.log(`Program = [${program.join(', ')}]`);
 }
