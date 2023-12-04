@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>8085 SSD Kit Simulator</title>
+    <link rel="stylesheet" href="stylesSSD.css">
+    <link rel="stylesheet" media="screen" href="https://fontlibrary.org//face/segment7" type="text/css" />
+</head>
+
+<body>
+    <div class="keypad">
+        <a href="https://dhekshith4113.github.io/8085_simulator/" target="_blank">Try 8085 LCD kit Simulator</a>
+        <h2>8085 SSD Kit Simulator</h2>
+        <div>
+            <input id="lcd" placeholder=".    "></input>
+        </div>
+        <button id="execute" class="btn spclbtn">EXEC</button>
+        <div class="row1">
+            <button class="btn hex">C SH<br>MOV</button>
+            <button class="btn hex">D<br>CMP</button>
+            <button class="btn hex">E<br>INS</button>
+            <button class="btn hex">F<br>DEL</button>
+        </div>
+        <button id="reset" class="btn spclbtn">RES</button>
+        <div class="row2">
+            <button id="go" class="btn hex spclbtn">8 L<br>GO</button>
+            <button class="btn hex">9 PL<br>SNG</button>
+            <button class="btn hex">A PH<br>F3</button>
+            <button class="btn hex">B SL<br>BC</button>
+        </div>
+        <div class="row3">
+            <button id="decrement" class="btn spclbtn">DEC</button>
+            <button class="btn hex reg">4 F<br>BLOC</button>
+            <button class="btn hex reg">5 A<br>FILL</button>
+            <button class="btn hex reg">6 L<br>SER</button>
+            <button class="btn hex reg">7 H<br>F2</button>
+        </div>
+        <button id="int" class="btn spclbtn">INT</button>
+        <div class="row4">
+            <button id="next" class="btn spclbtn">NEXT</button>
+            <button id="sub" class="btn hex spclbtn reg">0 E<br>SUB</button>
+            <button id="reg" class="btn hex spclbtn reg">1 D<br>REG</button>
+            <button class="btn hex reg">2 C<br>TW</button>
+            <button class="btn hex reg">3 B<br>TR</button>
+        </div>
+    </div>
+    <script src="scriptSSD.js"></script>
+</body>
+
+</html>
