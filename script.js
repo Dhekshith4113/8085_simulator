@@ -2272,7 +2272,6 @@ function address8085() {
             modeAddress = 1
             textTop.innerHTML = `ASSEMBLE:${hexValue}`
             textBottom.value += `${string}`
-            string = ''
             mnemonic = textBottom.value
             console.log(mnemonic)
 
@@ -2283,6 +2282,9 @@ function address8085() {
                 program.push(`${hexValue}:${mnemonic}`);
                 let retValue = MNToMC(hexValue, mnemonic);
                 console.log(retValue)
+                let machineCode = retValue[0]
+                let nextAddress1 = retValue[1]
+                let nextAddress2 = retValue[2]
                 if (nextAddress1 === null && nextAddress2 === null) {
                     console.log(`Machine Code : ${machineCode}`)
                     textTop.innerHTML = `${hexValue}:${machineCode}`
