@@ -1,8 +1,8 @@
 import random
 
 global A, flag, B, C, D, E, H, L, M
-global reg_list, reg_value, address_location_list, address_value_list, address_list, machine_code_list, machine_code_list_1
-global program, program_1, program_counter, p_c, flag_status, memory_location_list, memory_location_value
+global reg_list, reg_value, single_step_active
+global address, flag_status, memory_location_value
 global stack, stack_value, stack_pointer
 A = hex(0)[2:]
 flag = [0, 0, 0, 0, 0, 0, 0, 0]
@@ -10,41 +10,28 @@ B = hex(0)[2:]
 C = hex(0)[2:]
 D = hex(0)[2:]
 E = hex(0)[2:]
-H = hex(255)[2:]
-L = hex(255)[2:]
+H = hex(0)[2:]
+L = hex(0)[2:]
 M = hex(0)[2:]
 reg_list = ["A", "flag", "B", "C", "D", "E", "H", "L", "M"]
-address_list = []
-address_location_list = []
-address_value_list = []
-machine_code_list = []
-machine_code_list_1 = [] # To display the machine code as a list
 reg_value = [A, flag, B, C, D, E, H, L, M]
-M_address = str(reg_value[6]) + str(reg_value[7])
-program = []
+single_step_active = "inactive"
 
 stack = ["0FFF"]
 stack_value = []
 stack_pointer = "0FFF"
 
-memory_location_list = []
-n = 0
-for i in range(65535):
-    n = int(str(n), 16) + 1
-    n = hex(n)[2:]
-    memory_location_list.append(n)
-    
 memory_location_value = []
 n = 0
-for i in range(65535):
+for i in range(65536):
     n = random.randint(0, 255)
     n = hex(n)[2:]
     if int(n, 16) < 16:
         n = str(n).zfill(2)
-    memory_location_value.append(n)
+    memory_location_value.append(n.upper())
     
 def ADD(mnemonic):
-    print("\n""-----ADD-----")
+    print("-----ADD-----")
     mnemonic = mnemonic.split()
     reg_1 = mnemonic[1]
     reg_1 = reg_list.index(reg_1)
@@ -54,11 +41,11 @@ def ADD(mnemonic):
     if int(reg_value[0], 16) > 255:
         check_accumulator()
         reg_value[0] = hex(int(reg_value[0], 16) - int("100", 16))[2:]
-    reg_value[0] = fill_zero(reg_value[0])
+    reg_value[0] = str(reg_value[0]).zfill(2).upper()
     print(f"[A] = {reg_value[0]}")
     
 def ADI(mnemonic):
-    print("\n""-----ADI-----")
+    print("-----ADI-----")
     mnemonic = mnemonic.split()
     immediate_value = mnemonic[1]
     if len(str(immediate_value)) == 2:
@@ -68,11 +55,11 @@ def ADI(mnemonic):
             reg_value[0] = hex(int(reg_value[0], 16) - int("100", 16))[2:]
     else:
         print("Invalid value: Expected value is one byte hexadecimal value")
-    reg_value[0] = fill_zero(reg_value[0])
+    reg_value[0] = str(reg_value[0]).zfill(2).upper()
     print(f"[A] = {reg_value[0]}")
 
 def ANA(mnemonic):
-    print("\n""-----ANA-----")
+    print("-----ANA-----")
     mnemonic = mnemonic.split()
     reg_1 = mnemonic[1]
     reg_1 = reg_list.index(reg_1)
@@ -80,11 +67,11 @@ def ANA(mnemonic):
         memory_address_M(1)
     reg_value[0] = int(reg_value[0], 16) & int(reg_value[reg_1], 16)
     check_accumulator()
-    reg_value[0] = fill_zero(reg_value[0])
+    reg_value[0] = str(reg_value[0]).zfill(2).upper()
     print(f"[A] = {reg_value[0]}")
     
 def ANI(mnemonic):
-    print("\n""-----ANI-----")
+    print("-----ANI-----")
     mnemonic = mnemonic.split()
     immediate_value = mnemonic[1]
     if len(str(immediate_value)) == 2:
@@ -92,244 +79,224 @@ def ANI(mnemonic):
         check_accumulator()
     else:
         print("Invalid value: Expected value is one byte hexadecimal value")
-    reg_value[0] = fill_zero(reg_value[0])
+    reg_value[0] = str(reg_value[0]).zfill(2).upper()
     print(f"[A] = {reg_value[0]}")
 
 def CALL(mnemonic):
     global ret_address, stack_pointer
-    global p_c
-    print("\n""-----CALL-----")
+    global address
+    print("-----CALL-----")
     mnemonic = mnemonic.split()
     call_address = mnemonic[1]
-    ret_address = program_address_list[p_c + 1]
+    ret_address = str(hex(int(address, 16) + 1)[2:]).zfill(4).upper()
     higher_byte, lower_byte = split_address(ret_address)
     stack_value.append(higher_byte)
-    stack_pointer = hex(int(stack_pointer, 16) - 1)[2:]
-    stack_pointer = fill_zero(stack_pointer)
+    stack_pointer = str(hex(int(stack_pointer, 16) - 1)[2:]).zfill(4).upper()
     stack_value.append(lower_byte)
-    call_address = hex(int(call_address, 16))[2:]
-    p_c = program_address_list.index(call_address)
+    address = str(hex(int(call_address, 16))[2:]).zfill(4).upper()
     print(f"Going to {call_address}")
     print(f"Stack pointer = {stack_pointer}")
     print(f"Stack = {stack}")
     print(f"Stack value = {stack_value}")
-    return p_c
+    return address
     
 def CC(mnemonic):
     global ret_address, stack_pointer
-    global p_c
-    print("\n""-----CC-----")
+    global address
+    print("-----CC-----")
     if flag[7] == 1:
         mnemonic = mnemonic.split()
         call_address = mnemonic[1]
-        ret_address = program_address_list[p_c + 1]
+        ret_address = str(hex(int(call_address, 16) + 1)[2:]).zfill(4).upper()
         higher_byte, lower_byte = split_address(ret_address)
         if stack == []:
             stack_pointer = "0FFF"
             stack.append(stack_pointer)
             stack_value.append(higher_byte)
-            stack_pointer = hex(int(stack_pointer, 16) - 1)[2:]
-            stack_pointer = fill_zero(stack_pointer)
+            stack_pointer = str(hex(int(stack_pointer, 16) - 1)[2:]).zfill(4).upper()
             stack_value.append(lower_byte)
         elif stack != []:    
             stack.append(stack_pointer)
             stack_value.append(higher_byte)
-            stack_pointer = hex(int(stack_pointer, 16) - 1)[2:]
-            stack_pointer = fill_zero(stack_pointer)
+            stack_pointer = str(hex(int(stack_pointer, 16) - 1)[2:]).zfill(4).upper()
             stack_value.append(lower_byte)
         else:
             print("Stack error: Stack not initialized")    
-        call_address = hex(int(call_address, 16))[2:]
-        p_c = program_address_list.index(call_address)
+        address = str(hex(int(call_address, 16))[2:]).zfill(4).upper()
         print(f"Going to {call_address}")
         print(f"Stack pointer = {stack_pointer}")
         print(f"Stack = {stack}")
         print(f"Stack value = {stack_value}")
-        return p_c
+        return address
     else:
-        return p_c + 1
+        return str(address + 1).zfill(4).upper()
         
 def CNC(mnemonic):
     global ret_address, stack_pointer
-    global p_c
-    print("\n""-----CNC-----")
+    global address
+    print("-----CNC-----")
     if flag[7] == 0:
         mnemonic = mnemonic.split()
         call_address = mnemonic[1]
-        ret_address = program_address_list[p_c + 1]
+        ret_address = str(hex(int(call_address, 16) + 1)[2:]).zfill(4).upper()
         higher_byte, lower_byte = split_address(ret_address)
         if stack == []:
             stack_pointer = "0FFF"
             stack.append(stack_pointer)
             stack_value.append(higher_byte)
-            stack_pointer = hex(int(stack_pointer, 16) - 1)[2:]
-            stack_pointer = fill_zero(stack_pointer)
+            stack_pointer = str(hex(int(stack_pointer, 16) - 1)[2:]).zfill(4).upper()
             stack_value.append(lower_byte)
         elif stack != []:    
             stack.append(stack_pointer)
             stack_value.append(higher_byte)
-            stack_pointer = hex(int(stack_pointer, 16) - 1)[2:]
-            stack_pointer = fill_zero(stack_pointer)
+            stack_pointer = str(hex(int(stack_pointer, 16) - 1)[2:]).zfill(4).upper()
             stack_value.append(lower_byte)
         else:
             print("Stack error: Stack not initialized")    
-        call_address = hex(int(call_address, 16))[2:]
-        p_c = program_address_list.index(call_address)
+        address = str(hex(int(call_address, 16))[2:]).zfill(4).upper()
         print(f"Going to {call_address}")
         print(f"Stack pointer = {stack_pointer}")
         print(f"Stack = {stack}")
         print(f"Stack value = {stack_value}")
-        return p_c
+        return address
     else:
-        return p_c + 1
+        return str(address + 1).zfill(4).upper()
         
 def CP(mnemonic):
     global ret_address, stack_pointer
-    global p_c
-    print("\n""-----CP-----")
+    global address
+    print("-----CP-----")
     if flag[0] == 0:
         mnemonic = mnemonic.split()
         call_address = mnemonic[1]
-        ret_address = program_address_list[p_c + 1]
+        ret_address = str(hex(int(call_address, 16) + 1)[2:]).zfill(4).upper()
         higher_byte, lower_byte = split_address(ret_address)
         if stack == []:
             stack_pointer = "0FFF"
             stack.append(stack_pointer)
             stack_value.append(higher_byte)
-            stack_pointer = hex(int(stack_pointer, 16) - 1)[2:]
-            stack_pointer = fill_zero(stack_pointer)
+            stack_pointer = str(hex(int(stack_pointer, 16) - 1)[2:]).zfill(4).upper()
             stack_value.append(lower_byte)
         elif stack != []:    
             stack.append(stack_pointer)
             stack_value.append(higher_byte)
-            stack_pointer = hex(int(stack_pointer, 16) - 1)[2:]
-            stack_pointer = fill_zero(stack_pointer)
+            stack_pointer = str(hex(int(stack_pointer, 16) - 1)[2:]).zfill(4).upper()
             stack_value.append(lower_byte)
         else:
             print("Stack error: Stack not initialized")    
-        call_address = hex(int(call_address, 16))[2:]
-        p_c = program_address_list.index(call_address)
+        address = str(hex(int(call_address, 16))[2:]).zfill(4).upper()
         print(f"Going to {call_address}")
         print(f"Stack pointer = {stack_pointer}")
         print(f"Stack = {stack}")
         print(f"Stack value = {stack_value}")
-        return p_c
+        return address
     else:
-        return p_c + 1
+        return str(address + 1).zfill(4).upper()
         
 def CM(mnemonic):
     global ret_address, stack_pointer
-    global p_c
-    print("\n""-----CM-----")
+    global address
+    print("-----CM-----")
     if flag[0] == 1:
         mnemonic = mnemonic.split()
         call_address = mnemonic[1]
-        ret_address = program_address_list[p_c + 1]
+        ret_address = str(hex(int(call_address, 16) + 1)[2:]).zfill(4).upper()
         higher_byte, lower_byte = split_address(ret_address)
         if stack == []:
             stack_pointer = "0FFF"
             stack.append(stack_pointer)
             stack_value.append(higher_byte)
-            stack_pointer = hex(int(stack_pointer, 16) - 1)[2:]
-            stack_pointer = fill_zero(stack_pointer)
+            stack_pointer = str(hex(int(stack_pointer, 16) - 1)[2:]).zfill(4).upper()
             stack_value.append(lower_byte)
         elif stack != []:    
             stack.append(stack_pointer)
             stack_value.append(higher_byte)
-            stack_pointer = hex(int(stack_pointer, 16) - 1)[2:]
-            stack_pointer = fill_zero(stack_pointer)
+            stack_pointer = str(hex(int(stack_pointer, 16) - 1)[2:]).zfill(4).upper()
             stack_value.append(lower_byte)
         else:
             print("Stack error: Stack not initialized")    
-        call_address = hex(int(call_address, 16))[2:]
-        p_c = program_address_list.index(call_address)
+        address = str(hex(int(call_address, 16))[2:]).zfill(4).upper()
         print(f"Going to {call_address}")
         print(f"Stack pointer = {stack_pointer}")
         print(f"Stack = {stack}")
         print(f"Stack value = {stack_value}")
-        return p_c
+        return address
     else:
-        return p_c + 1
+        return str(address + 1).zfill(4).upper()
         
 def CPE(mnemonic):
     global ret_address, stack_pointer
-    global p_c
-    print("\n""-----CPE-----")
+    global address
+    print("-----CPE-----")
     if flag[5] == 1:
         mnemonic = mnemonic.split()
         call_address = mnemonic[1]
-        ret_address = program_address_list[p_c + 1]
+        ret_address = str(hex(int(call_address, 16) + 1)[2:]).zfill(4).upper()
         higher_byte, lower_byte = split_address(ret_address)
         if stack == []:
             stack_pointer = "0FFF"
             stack.append(stack_pointer)
             stack_value.append(higher_byte)
-            stack_pointer = hex(int(stack_pointer, 16) - 1)[2:]
-            stack_pointer = fill_zero(stack_pointer)
+            stack_pointer = str(hex(int(stack_pointer, 16) - 1)[2:]).zfill(4).upper()
             stack_value.append(lower_byte)
         elif stack != []:    
             stack.append(stack_pointer)
             stack_value.append(higher_byte)
-            stack_pointer = hex(int(stack_pointer, 16) - 1)[2:]
-            stack_pointer = fill_zero(stack_pointer)
+            stack_pointer = str(hex(int(stack_pointer, 16) - 1)[2:]).zfill(4).upper()
             stack_value.append(lower_byte)
         else:
             print("Stack error: Stack not initialized")    
-        call_address = hex(int(call_address, 16))[2:]
-        p_c = program_address_list.index(call_address)
+        address = str(hex(int(call_address, 16))[2:]).zfill(4).upper()
         print(f"Going to {call_address}")
         print(f"Stack pointer = {stack_pointer}")
         print(f"Stack = {stack}")
         print(f"Stack value = {stack_value}")
-        return p_c
+        return address
     else:
-        return p_c + 1
+        return str(address + 1).zfill(4).upper()
         
 def CPO(mnemonic):
     global ret_address, stack_pointer
-    global p_c
-    print("\n""-----CPO-----")
+    global address
+    print("-----CPO-----")
     if flag[5] == 0:
         mnemonic = mnemonic.split()
         call_address = mnemonic[1]
-        ret_address = program_address_list[p_c + 1]
+        ret_address = str(hex(int(call_address, 16) + 1)[2:]).zfill(4).upper()
         higher_byte, lower_byte = split_address(ret_address)
         if stack == []:
             stack_pointer = "0FFF"
             stack.append(stack_pointer)
             stack_value.append(higher_byte)
-            stack_pointer = hex(int(stack_pointer, 16) - 1)[2:]
-            stack_pointer = fill_zero(stack_pointer)
+            stack_pointer = str(hex(int(stack_pointer, 16) - 1)[2:]).zfill(4).upper()
             stack_value.append(lower_byte)
         elif stack != []:    
             stack.append(stack_pointer)
             stack_value.append(higher_byte)
-            stack_pointer = hex(int(stack_pointer, 16) - 1)[2:]
-            stack_pointer = fill_zero(stack_pointer)
+            stack_pointer = str(hex(int(stack_pointer, 16) - 1)[2:]).zfill(4).upper()
             stack_value.append(lower_byte)
         else:
             print("Stack error: Stack not initialized")    
-        call_address = hex(int(call_address, 16))[2:]
-        p_c = program_address_list.index(call_address)
+        address = str(hex(int(call_address, 16))[2:]).zfill(4).upper()
         print(f"Going to {call_address}")
         print(f"Stack pointer = {stack_pointer}")
         print(f"Stack = {stack}")
         print(f"Stack value = {stack_value}")
-        return p_c
+        return address
     else:
-        return p_c + 1                              
+        return str(address + 1).zfill(4).upper()     
     
 def CMA(mnemonic):
-    print("\n""-----CMA-----")
+    print("-----CMA-----")
     reg_value[0] = hex(0 - int(reg_value[0], 16))
     reg_value[0] = hex(int(reg_value[0], 16) + int("FF", 16))[2:]
     flag[0] = 1
     flag[7] = 1
-    reg_value[0] = fill_zero(reg_value[0])
+    reg_value[0] = str(reg_value[0]).zfill(2).upper()
     print(f"[A] = {reg_value[0]}")
     
 def CMP(mnemonic):
-    print("\n""-----CMP-----")
+    print("-----CMP-----")
     mnemonic = mnemonic.split()
     reg_1 = mnemonic[1]
     reg_1 = reg_list.index(reg_1)
@@ -347,10 +314,9 @@ def CMP(mnemonic):
         flag[1] = 0
         flag[7] = 0
         print(f"[A] > [{reg_list[reg_1]}]")
-    print(flag)    
     
 def CPI(mnemonic):
-    print("\n""-----CPI-----")
+    print("-----CPI-----")
     mnemonic = mnemonic.split()
     immediate_value = mnemonic[1]
     if int(reg_value[0], 16) < int(immediate_value, 16):
@@ -365,34 +331,36 @@ def CPI(mnemonic):
         flag[1] = 0
         flag[7] = 0
         print(f"[A] > {immediate_value}")
-    print(flag)    
     
 def DAD(mnemonic):
-    print("\n""-----DAD-----")
+    print("-----DAD-----")
     mnemonic = mnemonic.split()
     reg_1 = mnemonic[1]
-    reg_1_index = reg_list.index(reg_1)
-    reg_2_index = reg_1_index + 1
-    reg_value[7] = hex(int(reg_value[7], 16) + int(reg_value[reg_2_index], 16))[2:]
-    if int(reg_value[7], 16) > 255:
-        check_flag(reg_value[7])
-        reg_value[7] = hex(int(reg_value[7], 16) - int("100", 16))[2:]
-        reg_value[6] = hex(int(reg_value[6], 16) + int(reg_value[reg_1_index], 16) + 1)[2:]
-        if int(reg_value[6], 16) > 255:
-            check_flag(reg_value[6])
-            reg_value[6] = hex(int(reg_value[6], 16) - int("100", 16))[2:]
-    else:
-        reg_value[6] = hex(int(reg_value[6], 16) + int(reg_value[reg_1_index], 16))[2:]
-        if int(reg_value[6], 16) > 255:
-            check_flag(reg_value[6])
-            reg_value[6] = hex(int(reg_value[6], 16) - int("100", 16))[2:]
-    reg_value[6] = fill_zero(reg_value[6])
-    reg_value[7] = fill_zero(reg_value[7])
+    if reg_1 == "SP":
+        pass
+    else:    
+        reg_1_index = reg_list.index(reg_1)
+        reg_2_index = reg_1_index + 1
+        reg_value[7] = hex(int(reg_value[7], 16) + int(reg_value[reg_2_index], 16))[2:]
+        if int(reg_value[7], 16) > 255:
+            check_flag(reg_value[7])
+            reg_value[7] = hex(int(reg_value[7], 16) - int("100", 16))[2:]
+            reg_value[6] = hex(int(reg_value[6], 16) + int(reg_value[reg_1_index], 16) + 1)[2:]
+            if int(reg_value[6], 16) > 255:
+                check_flag(reg_value[6])
+                reg_value[6] = hex(int(reg_value[6], 16) - int("100", 16))[2:]
+        else:
+            reg_value[6] = hex(int(reg_value[6], 16) + int(reg_value[reg_1_index], 16))[2:]
+            if int(reg_value[6], 16) > 255:
+                check_flag(reg_value[6])
+                reg_value[6] = hex(int(reg_value[6], 16) - int("100", 16))[2:]
+    reg_value[6] = str(reg_value[6]).zfill(2).upper()
+    reg_value[7] = str(reg_value[7]).zfill(2).upper()
     print(f"[H] = {reg_value[6]}")
     print(f"[L] = {reg_value[7]}")
 
 def DCR(mnemonic):
-    print("\n""-----DCR-----")
+    print("-----DCR-----")
     mnemonic = mnemonic.split()
     reg_1 = mnemonic[1]
     reg_index = reg_list.index(reg_1)
@@ -403,28 +371,26 @@ def DCR(mnemonic):
         memory_address_M(0)
     print(f"[{reg_list[reg_index]}] = {reg_value[reg_index]}")
     check_flag(reg_value[reg_index])
-    reg_value[reg_index] = fill_zero(reg_value[reg_index])
+    reg_value[reg_index] = str(reg_value[reg_index]).zfill(2).upper()
     
 def DCX(mnemonic):
-    print("\n""-----DCX-----")
+    print("-----DCX-----")
     mnemonic = mnemonic.split()
     reg_1 = mnemonic[1]
     reg_1_index = reg_list.index(reg_1)
-    print(reg_value[reg_1_index])
     reg_2_index = reg_1_index + 1
-    print(reg_value[reg_2_index])
     if int(reg_value[reg_2_index], 16) == 0:
         reg_value[reg_1_index] = hex(int(reg_value[reg_1_index], 16) - int("1", 16))[2:]
         reg_value[reg_2_index] = hex(255)[2:]
     else:
         reg_value[reg_2_index] = hex(int(reg_value[reg_2_index], 16) - int("1", 16))[2:]
-    reg_value[reg_1_index] = fill_zero(reg_value[reg_1_index])
-    reg_value[reg_2_index] = fill_zero(reg_value[reg_2_index])
+    reg_value[reg_1_index] = str(reg_value[reg_1_index]).zfill(2).upper()
+    reg_value[reg_2_index] = str(reg_value[reg_2_index]).zfill(2).upper()
     print(f"[{reg_list[reg_1_index]}] = {reg_value[reg_1_index]}")
     print(f"[{reg_list[reg_2_index]}] = {reg_value[reg_2_index]}") 
     
 def INR(mnemonic):
-    print("\n""-----INR-----")
+    print("-----INR-----")
     mnemonic = mnemonic.split()
     reg_1 = mnemonic[1]
     reg_index = reg_list.index(reg_1)
@@ -435,238 +401,199 @@ def INR(mnemonic):
         memory_address_M(0)
     print(f"[{reg_list[reg_index]}] = {reg_value[reg_index]}")    
     check_flag(reg_value[reg_index])
-    reg_value[reg_index] = fill_zero(reg_value[reg_index])
+    reg_value[reg_index] = str(reg_value[reg_index]).zfill(2).upper()
     
 def INX(mnemonic):
-    print("\n""-----INX-----")
+    print("-----INX-----")
     mnemonic = mnemonic.split()
     reg_1 = mnemonic[1]
     reg_1_index = reg_list.index(reg_1)
-    print(reg_value[reg_1_index])
     reg_2_index = reg_1_index + 1
-    print(reg_value[reg_2_index])
     if int(reg_value[reg_2_index], 16)  == 255:
         reg_value[reg_1_index] = hex(int(reg_value[reg_1_index], 16) + int("1", 16))[2:]
         reg_value[reg_2_index] = str("00").zfill(1)
     else:
         reg_value[reg_2_index] = hex(int(reg_value[reg_2_index], 16) + int("1", 16))[2:]
-    reg_value[reg_1_index] = fill_zero(reg_value[reg_1_index])
-    reg_value[reg_2_index] = fill_zero(reg_value[reg_2_index])
+    reg_value[reg_1_index] = str(reg_value[reg_1_index]).zfill(2).upper()
+    reg_value[reg_2_index] = str(reg_value[reg_2_index]).zfill(2).upper()
     if reg_1 == "H":
-        if address_location_list == []:
-            pass
-        else:
-            M = str(reg_value[6]) + str(reg_value[7])
-            M_index = memory_location_list.index(M)
-            reg_value[8] = memory_location_value[M_index]
-            reg_value[8] = fill_zero(reg_value[8])
+         M = str(reg_value[6]) + str(reg_value[7])
+         reg_value[8] = str(memory_location_value[int(M, 16)]).zfill(2).upper()
     print(f"[{reg_list[reg_1_index]}] = {reg_value[reg_1_index]}") 
     print(f"[{reg_list[reg_2_index]}] = {reg_value[reg_2_index]}") 
         
 def JMP(mnemonic):
-    print("\n""-----JMP-----")
+    print("-----JMP-----")
     mnemonic = mnemonic.split()
     jmp_address = mnemonic[1]
-    jmp_address = hex(int(jmp_address, 16))[2:]
-    p_c = program_address_list.index(jmp_address)
-    print(f"Jump to {jmp_address}")
-    return p_c
+    print(f"Jumping to {jmp_address}")
+    return jmp_address
     
 def JP(mnemonic):
-    print("\n""-----JP-----")
+    print("-----JP-----")
     mnemonic = mnemonic.split()
     jmp_address = mnemonic[1]
-    jmp_address = hex(int(jmp_address, 16))[2:]
     if flag[0] == 0:
-        p_c = program_address_list.index(jmp_address)
-        print(f"Jump to {jmp_address}")
-        return p_c
+        print(f"Jumping to {jmp_address}")
+        return None, jmp_address
     elif flag[0] == 1:
-        print("Jump completed...")
-        return "A"    
+        print("No jumping!")
+        bit = "no jump"
+        return bit, None 
 
 def JM(mnemonic):
-    print("\n""-----JM-----")
+    print("-----JM-----")
     mnemonic = mnemonic.split()
     jmp_address = mnemonic[1]
-    jmp_address = hex(int(jmp_address, 16))[2:]
     if flag[0] == 1:
-        p_c = program_address_list.index(jmp_address)
-        print(f"Jump to {jmp_address}")
-        return p_c
+        print(f"Jumping to {jmp_address}")
+        return None, jmp_address
     elif flag[0] == 0:
-        print("Jump completed...")
-        return "A"
+        print("No jumping!")
+        bit = "no jump"
+        return bit, None
 
 def JPE(mnemonic):
-    print("\n""-----JPE-----")
+    print("-----JPE-----")
     mnemonic = mnemonic.split()
     jmp_address = mnemonic[1]
-    jmp_address = hex(int(jmp_address, 16))[2:]
     if flag[5] == 1:
-        p_c = program_address_list.index(jmp_address)
-        print(f"Jump to {jmp_address}")
-        return p_c
+        print(f"Jumping to {jmp_address}")
+        return None, jmp_address
     elif flag[5] == 0:
-        print("Jump completed...")
-        return "A"
+        print("No jumping!")
+        bit = "no jump"
+        return bit, None
 
 def JPO(mnemonic):
-    print("\n""-----JPO-----")
+    print("-----JPO-----")
     mnemonic = mnemonic.split()
     jmp_address = mnemonic[1]
-    jmp_address = hex(int(jmp_address, 16))[2:]
     if flag[5] == 0:
-        p_c = program_address_list.index(jmp_address)
-        print(f"Jump to {jmp_address}")
-        return p_c
+        print(f"Jumping to {jmp_address}")
+        return None, jmp_address
     elif flag[5] == 1:
-        print("Jump completed...")
-        return "A"
+        print("No jumping!")
+        bit = "no jump"
+        return bit, None
     
 def JC(mnemonic):
-    print("\n""-----JC-----")
+    print("-----JC-----")
     mnemonic = mnemonic.split()
     jmp_address = mnemonic[1]
-    jmp_address = hex(int(jmp_address, 16))[2:]
     if flag[7] == 1:
-        p_c = program_address_list.index(jmp_address)
-        print(f"Jump to {jmp_address}")
-        return p_c
+        print(f"Jumping to {jmp_address}")
+        return None, jmp_address
     elif flag[7] == 0:
-        print("Jump completed...")
-        return "A"    
+        print("No jumping!")
+        bit = "no jump"
+        return bit, None    
     
 def JNC(mnemonic):
-    print("\n""-----JNC-----")
+    print("-----JNC-----")
     mnemonic = mnemonic.split()
     jmp_address = mnemonic[1]
-    jmp_address = hex(int(jmp_address, 16))[2:]
     if flag[7] == 0:
-        p_c = program_address_list.index(jmp_address)
-        print(f"Jump to {jmp_address}")
-        return p_c
+        print(f"Jumping to {jmp_address}")
+        return None, jmp_address
     elif flag[7] == 1:
-        print("Jump completed...")
-        return "A"    
+        print("No jumping!")
+        bit = "no jump"
+        return bit, None
     
 def JZ(mnemonic):
-    print("\n""-----JZ-----")
+    print("-----JZ-----")
     mnemonic = mnemonic.split()
     jmp_address = mnemonic[1]
-    jmp_address = hex(int(jmp_address, 16))[2:]
     if flag[1] == 1:
-        p_c = program_address_list.index(jmp_address)
-        print(f"Jump to {jmp_address}")
-        return p_c
+        print(f"Jumping to {jmp_address}")
+        return None, jmp_address
     elif flag[1] == 0:
-        print("Jump completed...")
-        return "A"   
+        print("No jumping!")
+        bit = "no jump"
+        return bit, None   
     
 def JNZ(mnemonic):
-    print("\n""-----JNZ-----")
+    print("-----JNZ-----")
     mnemonic = mnemonic.split()
     jmp_address = mnemonic[1]
-    jmp_address = hex(int(jmp_address, 16))[2:]
     if flag[1] == 0:
-        p_c = program_address_list.index(jmp_address)
-        print(f"Jump to {jmp_address}")
-        return p_c
+        print(f"Jumping to {jmp_address}")
+        return None, jmp_address
     elif flag[1] == 1:
-        print("\n""Jump completed...")
-        return "A"
+        print("No jumping!")
+        bit = "no jump"
+        return bit, None
         
 def LDA(mnemonic):
-    print("\n""-----LDA-----")
+    print("-----LDA-----")
     mnemonic = mnemonic.split()
     address = mnemonic[1]
-    address_index = memory_location_list.index(address)
-    reg_value[0] = hex(int(memory_location_value[address_index], 16))[2:]
-    reg_value[0] = fill_zero(reg_value[0])
+    reg_value[0] = str(hex(int(memory_location_value[int(address, 16)], 16))[2:]).zfill(4).upper()
     print(f"[{address}] = {memory_location_value[address_index]}")
     print(f"[A] = {reg_value[0]}")
     
 def LDAX(mnemonic):
-    print("\n""-----LDAX-----")
+    print("-----LDAX-----")
     mnemonic = mnemonic.split()
     reg_1 = mnemonic[1]
     reg_1 = reg_list.index(reg_1)
-    higher_byte = reg_value[reg_1]
-    higher_byte = fill_zero(higher_byte)
+    higher_byte = str(reg_value[reg_1]).zfill(2).upper()
     reg_2 = reg_1 + 1
-    lower_byte = reg_value[reg_2]
-    lower_byte = fill_zero(lower_byte)
-    address = str(higher_byte) + str(lower_byte)
-    address_index = memory_location_list.index(address)
-    reg_value[0] = memory_location_value[address_index]
-    reg_value[0] = fill_zero(reg_value[0])
+    lower_byte = str(reg_value[reg_2]).zfill(2).upper()
+    address = higher_byte + lower_byte
+    reg_value[0] = str(memory_location_value[int(address, 16)]).zfill(2).upper()
     print(f"[{reg_list[reg_1]}] = {reg_value[reg_1]}")
     print(f"[{reg_list[reg_2]}] = {reg_value[reg_2]}")
     print(f"[{address}] = {memory_location_value[address_index]}")
     print(f"[A] = {reg_value[0]}")    
     
 def LXI(mnemonic):
-    print("\n""-----LXI-----")
+    print("-----LXI-----")
     global stack_pointer
     mnemonic = mnemonic.split()
     operand = mnemonic[1].split(",")
     higher_byte, lower_byte = split_address(operand[1])
     if operand[0] == "B" or operand[0] == "D" or operand[0] == "H":
         reg_1 = reg_list.index(operand[0])
-        reg_value[reg_1] = hex(int(higher_byte, 16))[2:]
-        reg_value[reg_1] = fill_zero(reg_value[reg_1])
+        reg_value[reg_1] = str(hex(int(higher_byte, 16))[2:]).zfill(2).upper()
         reg_2 = reg_1 + 1
-        reg_value[reg_2] = hex(int(lower_byte, 16))[2:]
-        reg_value[reg_2] = fill_zero(reg_value[reg_2])
+        reg_value[reg_2] = str(hex(int(lower_byte, 16))[2:]).zfill(2).upper()
         print(f"Address = {operand[1]}")
         print(f"[{reg_list[reg_1]}] = {reg_value[reg_1]}")
         print(f"[{reg_list[reg_2]}] = {reg_value[reg_2]}")
     elif operand[0] == "SP":
-        stack_pointer = operand[1]
-        stack_pointer = fill_zero(stack_pointer)
-        stack[0] = stack_pointer
+        stack[0] = str(operand[1]).zfill(4).upper()
     else:
         print("Register invalid")
     if operand[0] == "H":
-        if address_location_list == []:
-            pass
-        else:
-            M = str(reg_value[6]) + str(reg_value[7])
-            M_index = memory_location_list.index(M)
-            reg_value[8] = memory_location_value[M_index]
-            reg_value[8] = fill_zero(reg_value[8])
-            print(f"[M] = [{operand[1]}] = {reg_value[8]}")
+        reg_value[8] = str(memory_location_value[int(operand[1], 16)]).zfill(2).upper()
+        print(f"[M] = [{operand[1]}] = {reg_value[8]}")
         
 def LHLD(mnemonic):
-    print("\n""-----LHLD-----")
+    print("-----LHLD-----")
     mnemonic = mnemonic.split()
     address = mnemonic[1]
-    address_index = memory_location_list.index(address)
-    reg_value[7] = memory_location_value[address_index]
-    reg_value[7] = fill_zero(reg_value[7])
-    address_index += 1
-    reg_value[6] = memory_location_value[address_index]
-    reg_value[6] = fill_zero(reg_value[6])
-    print(f"[{address}] = {memory_location_value[address_index]}")
+    reg_value[7] = str(memory_location_value[int(address, 16)]).zfill(2).upper()
+    address += 1
+    reg_value[6] = str(memory_location_value[int(address, 16)]).zfill(2).upper()
+    print(f"[{address}] = {memory_location_value[int(address, 16)]}")
     print(f"[H] = {reg_value[6]}")
     print(f"[L] = {reg_value[7]}")
     
 def SHLD(mnemonic):
-    print("\n""-----SHLD-----")
+    print("-----SHLD-----")
     mnemonic = mnemonic.split()
     address = mnemonic[1]
-    address_index = memory_location_list.index(address)
-    memory_location_value[address_index] = reg_value[7]
-    memory_location_value[address_index] = fill_zero(memory_location_value[address_index])
-    address_index += 1
-    memory_location_value[address_index] = reg_value[6]
-    memory_location_value[address_index] = fill_zero(memory_location_value[address_index])
+    memory_location_value[int(address, 16)] = str(reg_value[7]).zfill(2).upper()
+    address += 1
+    memory_location_value[int(address, 16)] = str(reg_value[6]).zfill(2).upper()
     print(f"[H] = {reg_value[6]}")
     print(f"[L] = {reg_value[7]}")
-    print(f"[{address}] = {memory_location_value[address_index]}")
+    print(f"[{address}] = {memory_location_value[int(address, 16)]}")
     
 def MOV(mnemonic):
-    print("\n""-----MOV-----")
+    print("-----MOV-----")
     mnemonic = mnemonic.split()
     mnemonic = mnemonic[1].split(",")
     reg_1 = mnemonic[0]
@@ -682,24 +609,17 @@ def MOV(mnemonic):
     print(f"[{reg_list[reg_1_index]}] = {reg_value[reg_1_index]}")
 
 def MVI(mnemonic, address_location_list=None, address_value_list=None):
-    print("\n""-----MVI-----")
+    print("-----MVI-----")
     mnemonic = mnemonic.split()
     operand = mnemonic[1].split(",")
     reg_1 = reg_list.index(operand[0])
     if reg_1 == "M":
         memory_address_M(0)
-    if len(operand[1]) == 2:
-        operand[1] = hex(int(operand[1], 16))[2:]
-        reg_value[reg_1] = operand[1]
-    elif len(operand[1]) == 4:
-        reg_temp = memory_location_list.index(operand[1])
-        reg_value[reg_1] = memory_location__value[reg_temp]
-        print(f"[{operand[1]}] = {address_value_list[reg_temp]}")
-    reg_value[reg_1] = fill_zero(reg_value[reg_1])
+    reg_value[reg_1] = str(hex(int(operand[1], 16))[2:]).zfill(2).upper()
     print(f"[{reg_list[reg_1]}] = {reg_value[reg_1]}")
         
 def ORA(mnemonic):
-    print("\n""-----ORA-----")
+    print("-----ORA-----")
     mnemonic = mnemonic.split()
     reg_1 = mnemonic[1]
     reg_1 = reg_list.index(reg_1)
@@ -708,10 +628,10 @@ def ORA(mnemonic):
     reg_value[0] = hex(int(reg_value[0], 16) | int(reg_value[reg_1], 16))[2:]
     print(f"[A] = {reg_value[0]}")
     check_accumulator()
-    reg_value[0] = fill_zero(reg_value[0])
+    reg_value[0] = str(reg_value[0]).zfill(2).upper()
     
 def ORI(mnemonic):
-    print("\n""-----ORI-----")
+    print("-----ORI-----")
     mnemonic = mnemonic.split()
     immediate_value = mnemonic[1]
     if len(str(immediate_value)) == 2:
@@ -720,42 +640,34 @@ def ORI(mnemonic):
         print("Invalid value: Expected value is one byte hexadecimal value")
     print(f"[A] = {reg_value[0]}")
     check_accumulator()
-    reg_value[0] = fill_zero(reg_value[0])
+    reg_value[0] = str(reg_value[0]).zfill(2).upper()
 
 def PUSH(mnemonic):
     global stack, stack_pointer, stack_value
-    print("\n""-----PUSH-----")
+    print("-----PUSH-----")
     mnemonic = mnemonic.split()
     reg_1 = mnemonic[1]
     if reg_1 == "PSW":
-        higher_byte = reg_value[0]
-        higher_byte = fill_zero(higher_byte)
+        higher_byte = str(reg_value[0]).zfill(2).upper()
         stack_value.append(higher_byte)
         lower_byte = ''.join([str(elem) for elem in reg_value[1]])
-        lower_byte = hex(int(lower_byte, 2))[2:]
-        lower_byte = fill_zero(lower_byte)
-        stack_pointer = hex(int(stack_pointer, 16) - 1)[2:]
-        stack_pointer = fill_zero(stack_pointer)
+        lower_byte = str(hex(int(lower_byte, 2))[2:]).zfill(2).upper()
+        stack_pointer = str(hex(int(stack_pointer, 16) - 1)[2:]).zfill(4).upper()
         stack.append(stack_pointer)
         stack_value.append(lower_byte)
-        stack_pointer = hex(int(stack_pointer, 16) - 1)[2:]
-        stack_pointer = fill_zero(stack_pointer)
+        stack_pointer = str(hex(int(stack_pointer, 16) - 1)[2:]).zfill(4).upper()
         print(f"Higher byte = [A] = {higher_byte}")
         print(f"Lower byte = flag = {lower_byte}")
     else:    
         reg_1 = reg_list.index(reg_1)
-        higher_byte = reg_value[reg_1]
-        higher_byte = fill_zero(higher_byte)
+        higher_byte = str(reg_value[reg_1]).zfill(2).upper()
         reg_2 = reg_1 + 1
-        lower_byte = reg_value[reg_2]
-        lower_byte = fill_zero(lower_byte)
+        lower_byte = str(reg_value[reg_2]).zfill(2).upper()
         stack_value.append(higher_byte)
-        stack_pointer = hex(int(stack_pointer, 16) - 1)[2:]
-        stack_pointer = fill_zero(stack_pointer)
+        stack_pointer = str(hex(int(stack_pointer, 16) - 1)[2:]).zfill(4).upper()
         stack.append(stack_pointer)
         stack_value.append(lower_byte)
-        stack_pointer = hex(int(stack_pointer, 16) - 1)[2:]
-        stack_pointer = fill_zero(stack_pointer)
+        stack_pointer = str(hex(int(stack_pointer, 16) - 1)[2:]).zfill(4).upper()
         print(f"Higher byte = [{reg_list[reg_1]}] = {higher_byte}")
         print(f"Lower byte = [{reg_list[reg_2]}] = {lower_byte}")
     print(f"Stack pointer = {stack_pointer}")
@@ -764,262 +676,194 @@ def PUSH(mnemonic):
     
 def POP(mnemonic):
     global stack, stack_pointer, stack_value 
-    print("\n""-----POP-----")
+    print("-----POP-----")
     mnemonic = mnemonic.split()
     reg_1 = mnemonic[1]
     if reg_1 == "PSW":
-        
-        lower_byte = stack_value.pop()
-        lower_byte = fill_zero(lower_byte)
+        lower_byte = str(stack_value.pop()).zfill(2).upper()
         flag = bin(int(lower_byte, 16))[2:]
         flag = flag.zfill(8)
         stack.pop()
         print(f"Flag_binary = {flag}")
         reg_value[1] = [i for i in flag]
         print(f"Flag = {reg_value[1]}")
-        
-        stack_pointer = fill_zero(stack_pointer)
-        stack_pointer = hex(int(str(stack_pointer), 16) + 1)[2:]
-        stack_pointer = fill_zero(stack_pointer)
-        
-        higher_byte = stack_value.pop()
-        higher_byte = fill_zero(higher_byte)
-        reg_value[0] = higher_byte
-    
-        stack_pointer = fill_zero(stack_pointer)
-        stack_pointer = hex(int(str(stack_pointer), 16) + 1)[2:]
-        stack_pointer = fill_zero(stack_pointer)
+        stack_pointer = str(hex(int(str(stack_pointer), 16) + 1)[2:]).zfill(4).upper()
+        reg_value[0] = str(stack_value.pop()).zfill(2).upper() # higher_byte
+        stack_pointer = str(hex(int(str(stack_pointer), 16) + 1)[2:]).zfill(4).upper()
         print(f"Higher byte = [A] = {higher_byte}")
         print(f"Lower byte = flag = {lower_byte}")
     else:    
         reg_1 = reg_list.index(reg_1)
         reg_2 = reg_1 + 1
-    
-        lower_byte = stack_value.pop()
-        lower_byte = fill_zero(lower_byte)
-        reg_value[reg_2] = lower_byte
+        reg_value[reg_2] = str(stack_value.pop()).zfill(2).upper() # lower_byte
         stack.pop()
-    
-        stack_pointer = fill_zero(stack_pointer)
-        stack_pointer = hex(int(str(stack_pointer), 16) + 1)[2:]
-        stack_pointer = fill_zero(stack_pointer)
-    
-        higher_byte = stack_value.pop()
-        higher_byte = fill_zero(higher_byte)
-        reg_value[reg_1] = higher_byte
-    
-        stack_pointer = fill_zero(stack_pointer)
-        stack_pointer = hex(int(str(stack_pointer), 16) + 1)[2:]
-        stack_pointer = fill_zero(stack_pointer)
-        print(f"Higher byte = [{reg_list[reg_1]}] = {higher_byte}")
-        print(f"Lower byte = [{reg_list[reg_2]}] = {lower_byte}")
+        stack_pointer = str(hex(int(str(stack_pointer), 16) + 1)[2:]).zfill(4).upper()
+        reg_value[reg_1] = str(stack_value.pop()).zfill(2).upper() # higher_byte
+        stack_pointer = str(hex(int(str(stack_pointer), 16) + 1)[2:]).zfill(4).upper()
+        print(f"Higher byte = [{reg_list[reg_1]}] = {reg_value[reg_1]}") # higher_byte
+        print(f"Lower byte = [{reg_list[reg_2]}] = {reg_value[reg_2]}") # lower_byte
     print(f"Stack pointer = {stack_pointer}")
     print(f"Stack = {stack}")
     print(f"Stack value = {stack_value}")    
 
 def RET(mnemonic):
     global ret_address, stack, stack_pointer, stack_value 
-    print("\n""-----RET-----")
-    lower_byte = stack_value.pop()
-    lower_byte = fill_zero(lower_byte)
-    stack_pointer = fill_zero(stack_pointer)
-    stack_pointer = hex(int(str(stack_pointer), 16) + 1)[2:]
-    stack_pointer = fill_zero(stack_pointer)
-    higher_byte = stack_value.pop()
-    higher_byte = fill_zero(higher_byte)
-    ret_address = higher_byte + lower_byte
-    ret_address = fill_zero(ret_address)
+    print("-----RET-----")
+    lower_byte = str(stack_value.pop()).zfill(2).upper()
+    stack_pointer = str(hex(int(str(stack_pointer), 16) + 1)[2:]).zfill(4).upper()
+    higher_byte = str(stack_value.pop()).zfill(2).upper()
+    ret_address = str(higher_byte + lower_byte).zfill(4).upper()
     print(f"Returning to {ret_address}")
     
 def RC(mnemonic):
     global ret_address, stack, stack_pointer, stack_value 
-    print("\n""-----RC-----")
+    print("-----RC-----")
     if flag[7] == 1:
-        lower_byte = stack_value.pop()
-        lower_byte = fill_zero(lower_byte)
-        stack_pointer = fill_zero(stack_pointer)
-        stack_pointer = hex(int(str(stack_pointer), 16) + 1)[2:]
-        stack_pointer = fill_zero(stack_pointer)
-        higher_byte = stack_value.pop()
-        higher_byte = fill_zero(higher_byte)
-        ret_address = higher_byte + lower_byte
-        ret_address = fill_zero(ret_address)
+        lower_byte = str(stack_value.pop()).zfill(2).upper()
+        stack_pointer = str(hex(int(str(stack_pointer), 16) + 1)[2:]).zfill(4).upper()
+        higher_byte = str(stack_value.pop()).zfill(2).upper()
+        ret_address = str(higher_byte + lower_byte).zfill(4).upper()
         print(f"Returning to {ret_address}")
         return_value = True
     else:
         return_value = False
+    return return_value    
         
 def RNC(mnemonic):
     global ret_address, stack, stack_pointer, stack_value 
-    print("\n""-----RNC-----")
+    print("-----RNC-----")
     if flag[7] == 0:
-        lower_byte = stack_value.pop()
-        lower_byte = fill_zero(lower_byte)
-        stack_pointer = fill_zero(stack_pointer)
-        stack_pointer = hex(int(str(stack_pointer), 16) + 1)[2:]
-        stack_pointer = fill_zero(stack_pointer)
-        higher_byte = stack_value.pop()
-        higher_byte = fill_zero(higher_byte)
-        ret_address = higher_byte + lower_byte
-        ret_address = fill_zero(ret_address)
+        lower_byte = str(stack_value.pop()).zfill(2).upper()
+        stack_pointer = str(hex(int(str(stack_pointer), 16) + 1)[2:]).zfill(4).upper()
+        higher_byte = str(stack_value.pop()).zfill(2).upper()
+        ret_address = str(higher_byte + lower_byte).zfill(4).upper()
         print(f"Returning to {ret_address}")
         return_value = True
     else:
         return_value = False
+    return return_value    
         
 def RP(mnemonic):
     global ret_address, stack, stack_pointer, stack_value 
-    print("\n""-----RP-----")
+    print("-----RP-----")
     if flag[0] == 0:
-        lower_byte = stack_value.pop()
-        lower_byte = fill_zero(lower_byte)
-        stack_pointer = fill_zero(stack_pointer)
-        stack_pointer = hex(int(str(stack_pointer), 16) + 1)[2:]
-        stack_pointer = fill_zero(stack_pointer)
-        higher_byte = stack_value.pop()
-        higher_byte = fill_zero(higher_byte)
-        ret_address = higher_byte + lower_byte
-        ret_address = fill_zero(ret_address)
+        lower_byte = str(stack_value.pop()).zfill(2).upper()
+        stack_pointer = str(hex(int(str(stack_pointer), 16) + 1)[2:]).zfill(4).upper()
+        higher_byte = str(stack_value.pop()).zfill(2).upper()
+        ret_address = str(higher_byte + lower_byte).zfill(4).upper()
         print(f"Returning to {ret_address}")
         return_value = True
     else:
         return_value = False
+    return return_value    
         
 def RM(mnemonic):
     global ret_address, stack, stack_pointer, stack_value 
-    print("\n""-----RM-----")
+    print("-----RM-----")
     if flag[0] == 1:
-        lower_byte = stack_value.pop()
-        lower_byte = fill_zero(lower_byte)
-        stack_pointer = fill_zero(stack_pointer)
-        stack_pointer = hex(int(str(stack_pointer), 16) + 1)[2:]
-        stack_pointer = fill_zero(stack_pointer)
-        higher_byte = stack_value.pop()
-        higher_byte = fill_zero(higher_byte)
-        ret_address = higher_byte + lower_byte
-        ret_address = fill_zero(ret_address)
+        lower_byte = str(stack_value.pop()).zfill(2).upper()
+        stack_pointer = str(hex(int(str(stack_pointer), 16) + 1)[2:]).zfill(4).upper()
+        higher_byte = str(stack_value.pop()).zfill(2).upper()
+        ret_address = str(higher_byte + lower_byte).zfill(4).upper()
         print(f"Returning to {ret_address}")
         return_value = True
     else:
         return_value = False
+    return return_value    
         
 def RPE(mnemonic):
     global ret_address, stack, stack_pointer, stack_value 
-    print("\n""-----RPE-----")
+    print("-----RPE-----")
     if flag[5] == 1:
-        lower_byte = stack_value.pop()
-        lower_byte = fill_zero(lower_byte)
-        stack_pointer = fill_zero(stack_pointer)
-        stack_pointer = hex(int(str(stack_pointer), 16) + 1)[2:]
-        stack_pointer = fill_zero(stack_pointer)
-        higher_byte = stack_value.pop()
-        higher_byte = fill_zero(higher_byte)
-        ret_address = higher_byte + lower_byte
-        ret_address = fill_zero(ret_address)
+        lower_byte = str(stack_value.pop()).zfill(2).upper()
+        stack_pointer = str(hex(int(str(stack_pointer), 16) + 1)[2:]).zfill(4).upper()
+        higher_byte = str(stack_value.pop()).zfill(2).upper()
+        ret_address = str(higher_byte + lower_byte).zfill(4).upper()
         print(f"Returning to {ret_address}")
         return_value = True
     else:
         return_value = False
+    return return_value    
         
 def RPO(mnemonic):
     global ret_address, stack, stack_pointer, stack_value 
-    print("\n""-----RPO-----")
+    print("-----RPO-----")
     if flag[5] == 0:
-        lower_byte = stack_value.pop()
-        lower_byte = fill_zero(lower_byte)
-        stack_pointer = fill_zero(stack_pointer)
-        stack_pointer = hex(int(str(stack_pointer), 16) + 1)[2:]
-        stack_pointer = fill_zero(stack_pointer)
-        higher_byte = stack_value.pop()
-        higher_byte = fill_zero(higher_byte)
-        ret_address = higher_byte + lower_byte
-        ret_address = fill_zero(ret_address)
+        lower_byte = str(stack_value.pop()).zfill(2).upper()
+        stack_pointer = str(hex(int(str(stack_pointer), 16) + 1)[2:]).zfill(4).upper()
+        higher_byte = str(stack_value.pop()).zfill(2).upper()
+        ret_address = str(higher_byte + lower_byte).zfill(4).upper()
         print(f"Returning to {ret_address}")
         return_value = True
     else:
         return_value = False
+    return return_value    
         
 def RZ(mnemonic):
     global ret_address, stack, stack_pointer, stack_value 
-    print("\n""-----RZ-----")
+    print("-----RZ-----")
     if flag[1] == 1:
-        lower_byte = stack_value.pop()
-        lower_byte = fill_zero(lower_byte)
-        stack_pointer = fill_zero(stack_pointer)
-        stack_pointer = hex(int(str(stack_pointer), 16) + 1)[2:]
-        stack_pointer = fill_zero(stack_pointer)
-        higher_byte = stack_value.pop()
-        higher_byte = fill_zero(higher_byte)
-        ret_address = higher_byte + lower_byte
-        ret_address = fill_zero(ret_address)
+        lower_byte = str(stack_value.pop()).zfill(2).upper()
+        stack_pointer = str(hex(int(str(stack_pointer), 16) + 1)[2:]).zfill(4).upper()
+        higher_byte = str(stack_value.pop()).zfill(2).upper()
+        ret_address = str(higher_byte + lower_byte).zfill(4).upper()
         print(f"Returning to {ret_address}")
         return_value = True
     else:
         return_value = False
+    return return_value    
         
 def RNZ(mnemonic):
     global ret_address, stack, stack_pointer, stack_value 
-    print("\n""-----RNZ-----")
+    print("-----RNZ-----")
     if flag[1] == 0:
-        lower_byte = stack_value.pop()
-        lower_byte = fill_zero(lower_byte)
-        stack_pointer = fill_zero(stack_pointer)
-        stack_pointer = hex(int(str(stack_pointer), 16) + 1)[2:]
-        stack_pointer = fill_zero(stack_pointer)
-        higher_byte = stack_value.pop()
-        higher_byte = fill_zero(higher_byte)
-        ret_address = higher_byte + lower_byte
-        ret_address = fill_zero(ret_address)
+        lower_byte = str(stack_value.pop()).zfill(2).upper()
+        stack_pointer = str(hex(int(str(stack_pointer), 16) + 1)[2:]).zfill(4).upper()
+        higher_byte = str(stack_value.pop()).zfill(2).upper()
+        ret_address = str(higher_byte + lower_byte).zfill(4).upper()
         print(f"Returning to {ret_address}")
         return_value = True
     else:
-        return_value = False                                                           
+        return_value = False
+    return return_value                                                       
     
 def RLC(mnemonic):
-    print("\n""-----RLC-----")
+    print("-----RLC-----")
     reg_value[0] = int(reg_value[0], 16) << 1
-    reg_value[0] = hex(reg_value[0])[2:]
-    reg_value[0] = fill_zero(reg_value[0])
+    reg_value[0] = str(hex(reg_value[0])[2:]).zfill(2).upper()
     print(f"[A] = {reg_value[0]}")
     
 def RRC(instruction):
-    print("\n""-----RRC-----")
+    print("-----RRC-----")
     reg_value[0] = int(reg_value[0], 16) >> 1
-    reg_value[0] = hex(reg_value[0])[2:]
-    reg_value[0] = fill_zero(reg_value[0])
+    reg_value[0] = str(hex(reg_value[0])[2:]).zfill(2).upper()
     print(f"[A] = {reg_value[0]}")          
 
 def STA(mnemonic):
-    print("\n""-----STA-----")
+    print("-----STA-----")
     mnemonic = mnemonic.split()
     address = mnemonic[1]
-    address_index = memory_location_list.index(address)
-    memory_location_value[address_index] = reg_value[0]
-    memory_location_value[address_index] = fill_zero(memory_location_value[address_index])
+    memory_location_value[int(address, 16)] = str(reg_value[0]).zfill(2).upper()
     print(f"[A] = {reg_value[0]}")    
-    print(f"[{address}] = {memory_location_value[address_index]}")
+    print(f"[{address}] = {memory_location_value[int(address, 16)]}")
 
 def STAX(mnemonic):
-    print("\n""-----STAX-----")
+    print("-----STAX-----")
     mnemonic = mnemonic.split()
     reg_1 = mnemonic[1]
     reg_1 = reg_list.index(reg_1)
-    higher_byte = reg_value[reg_1]
-    higher_byte = fill_zero(higher_byte)
+    higher_byte = str(reg_value[reg_1]).zfill(2).upper()
     reg_2 = reg_1 + 1
-    lower_byte = reg_value[reg_2]
-    lower_byte = fill_zero(lower_byte)
+    lower_byte = str(reg_value[reg_2]).zfill(2).upper()
     address = str(higher_byte) + str(lower_byte)
-    address_index = memory_location_list.index(address)
-    reg_value[0] = fill_zero(reg_value[0])
-    memory_location_value[address_index] = reg_value[0]
+    memory_location_value[int(address, 16)] = reg_value[0]
     print(f"[A] = {reg_value[0]}")
     print(f"[{reg_list[reg_1]}] = {reg_value[reg_1]}")
     print(f"[{reg_list[reg_2]}] = {reg_value[reg_2]}")
-    print(f"[{address}] = {memory_location_value[address_index]}")
+    print(f"[{address}] = {memory_location_value[int(address, 16)]}")
     
 def SUB(mnemonic):
-    print("\n""-----SUB-----")
+    print("-----SUB-----")
     mnemonic = mnemonic.split()
     reg_1 = mnemonic[1]
     reg_1_index = reg_list.index(reg_1)
@@ -1028,35 +872,39 @@ def SUB(mnemonic):
     if int(reg_value[0], 16) > int(reg_value[reg_1_index], 16):    
         reg_value[0] = hex(int(reg_value[0], 16) - int(reg_value[reg_1_index], 16))[2:]
     elif int(reg_value[0], 16) == int(reg_value[reg_1_index], 16):    
-        reg_value[0] = 0
+        reg_value[0] = hex(0)[2:]
+        flag[1] = 1
     elif int(reg_value[0], 16) < int(reg_value[reg_1_index], 16):
         reg_value[0] = hex(int(reg_value[0], 16) - int(reg_value[reg_1_index], 16))
         reg_value[0] = hex(int(reg_value[0], 16) + int("100", 16))[2:]
         flag[0] = 1
         flag[7] = 1
-    reg_value[0] = fill_zero(reg_value[0])    
+    reg_value[0] = str(reg_value[0]).zfill(2).upper()
     print(f"[A] = {reg_value[0]}")
     print(flag)
     
 def SUI(mnemonic):
-    print("\n""-----SUI-----")
+    print("-----SUI-----")
     mnemonic = mnemonic.split()
     immediate_value = mnemonic[1]
     if len(str(immediate_value)) == 2:
         if int(reg_value[0], 16) > int(str(immediate_value), 16):
             reg_value[0] = hex(int(reg_value[0], 16) - int(str(immediate_value), 16))[2:]
-        else:
+        elif int(reg_value[0], 16) == int(str(immediate_value), 16):
+            reg_value[0] = hex(0)[2:]
+            flag[1] = 1
+        elif int(reg_value[0], 16) < int(str(immediate_value), 16):
             reg_value[0] = hex(int(reg_value[0], 16) - int(str(immediate_value), 16))
             reg_value[0] = hex(int(reg_value[0], 16) + int("100", 16))[2:]
             flag[0] = 1
             flag[7] = 1
     else:
         print("Invalid value: Expected value is one byte hexadecimal value")
+    reg_value[0] = str(reg_value[0]).zfill(2).upper()    
     print(f"[A] = {reg_value[0]}")
-    reg_value[0] = fill_zero(reg_value[0])
 
 def XCHG(mnemonic):
-    print("\n""-----XCHG-----")
+    print("-----XCHG-----")
     print("Before: ")
     print(f"[H] = {reg_value[6]}")
     print(f"[L] = {reg_value[7]}")
@@ -1070,18 +918,18 @@ def XCHG(mnemonic):
     reg_value[7] = reg_value[5]
     reg_value[4] = reg_H
     reg_value[5] = reg_L
-    reg_value[4] = fill_zero(reg_value[4])
-    reg_value[5] = fill_zero(reg_value[5])
-    reg_value[6] = fill_zero(reg_value[6])
-    reg_value[7] = fill_zero(reg_value[7])
-    print("\n""After: ")
+    reg_value[4] = str(reg_value[4]).zfill(2).upper()
+    reg_value[5] = str(reg_value[5]).zfill(2).upper()
+    reg_value[6] = str(reg_value[6]).zfill(2).upper()
+    reg_value[7] = str(reg_value[7]).zfill(2).upper()
+    print("After: ")
     print(f"[H] = {reg_value[6]}")
     print(f"[L] = {reg_value[7]}")
     print(f"[D] = {reg_value[4]}")
     print(f"[E] = {reg_value[5]}")
     
 def XRA(mnemonic):
-    print("\n""-----XRA-----")
+    print("-----XRA-----")
     mnemonic = mnemonic.split()
     reg_1 = mnemonic[1]
     reg_1 = reg_list.index(reg_1)
@@ -1090,10 +938,10 @@ def XRA(mnemonic):
     reg_value[0] = hex(int(reg_value[0], 16) ^ int(reg_value[reg_1], 16))[2:]
     print(f"[A] = {reg_value[0]}")
     check_accumulator()
-    reg_value[0] = fill_zero(reg_value[0])
+    reg_value[0] = str(reg_value[0]).zfill(2).upper()
     
 def XRI(mnemonic):
-    print("\n""-----XRI-----")
+    print("-----XRI-----")
     mnemonic = mnemonic.split()
     immediate_value = mnemonic[1]
     if len(str(immediate_value)) == 2:
@@ -1102,10 +950,10 @@ def XRI(mnemonic):
         print("Invalid value: Expected value is one byte hexadecimal value")
     print(f"[A] = {reg_value[0]}")
     check_accumulator()
-    reg_value[0] = fill_zero(reg_value[0])   
+    reg_value[0] = str(reg_value[0]).zfill(2).upper() 
     
 def check_accumulator():
-    print("-----Check Accumulator-----")
+    print(f"Checking Accumulator...")
     if int(reg_value[0], 16) == 0:
         flag[1] = 1
     elif int(reg_value[0], 16) != 0:
@@ -1114,10 +962,10 @@ def check_accumulator():
         flag[7] = 1
     elif int(reg_value[0], 16) <= 255:
         flag[7] = 0
-    print(f"Flag = {flag}")    
-        
+    print(f"Flag = {flag}")
+    
 def check_flag(reg_name):
-    print("-----Check Flag-----")
+    print(f"Checking Flag...")
     if int(reg_name, 16) == 0:
         flag[1] = 1
     elif int(reg_name, 16) != 0:
@@ -1126,24 +974,13 @@ def check_flag(reg_name):
         flag[7] = 1
     elif int(reg_name, 16) <= 255:
         flag[7] = 0
-    print(f"Flag = {flag}")    
-        
-def fill_zero(reg_name):
-    if reg_name == None:
-        return reg_name
-    else:    
-        if len(reg_name) == 1:
-            return str(reg_name).zfill(2)
-        elif len(reg_name) == 3:
-            return str(reg_name).zfill(4)   
-        else:
-            return reg_name              
+    print(f"Flag = {flag}")
         
 def split_address(address):
-    print("-----Split Address-----")
-    higher_byte = address[0:len(address)//2] 
-    lower_byte = address[len(address)//2 if len(address)%2 == 0 else ((len(address)//2)+1):]
-    return higher_byte, lower_byte    
+    # print("-----Split Address-----")
+    higher_byte = str(address[0:len(address)//2]).zfill(2).upper()
+    lower_byte = str(address[len(address)//2 if len(address)%2 == 0 else ((len(address)//2)+1):]).zfill(2).upper()
+    return higher_byte, lower_byte
 
 def byte_8085(mnemonic):
     global one_byte
@@ -1152,7 +989,7 @@ def byte_8085(mnemonic):
     t = 0
     mnemonic = mnemonic.split()
     opcode = mnemonic[0]
-    one_byte = ["MOV", "ADD", "CMP", "CMA", "INR", "INX", "DCR", "DCX", "DAD", "LDAX", "STAX", "HLT", "SUB", "XCHG", "ANA", "ORA", "XRA", "RRC", "RLC", "RET", "RC", "RNC", "RP", "RM", "RPE", "RPO", "RZ", "RNZ", "PUSH", "POP"]
+    one_byte = ["MOV", "ADD", "CMP", "CMA", "INR", "INX", "DCR", "DCX", "DAD", "LDAX", "STAX", "HLT", "SUB", "XCHG", "ANA", "ORA", "XRA", "RRC", "RLC", "RET", "RC", "RNC", "RP", "RM", "RPE", "RPO", "RZ", "RNZ", "PUSH", "POP", "NOP"]
     two_byte = ["MVI", "ADI", "ANI", "ORI", "XRI", "ACI", "SUI", "CPI"]
     three_byte = ["LDA", "LXI", "STA", "JMP", "CALL", "CC", "CNC", "CP", "CM", "CPE", "CPO", "CZ", "CNZ", "LHLD", "SHLD", "JC", "JNC", "JZ", "JNZ", "JP", "JM", "JPE", "JPO"]
     if opcode in one_byte:
@@ -1170,51 +1007,25 @@ def byte_8085(mnemonic):
         return t
 
 def memory_8085():
-    print("-----MEMORY/EDIT-----")
+    global memory_location_value
+    print("-----MEMORY VIEW/EDIT-----")
     print("If you want to change the value, type the desired value. Otherwise hit enter.")
-    global address_location_list
-    global address_value_list
-    address_value_list_before = []
-    address_location = input("Enter address: ")
+    address_location = str(input("Enter address: ")).zfill(4).upper()
     while True:
-        address_location = hex(int(address_location, 16))[2:]
-        memory_location_index = memory_location_list.index(address_location)
-        address_value_list_before.append(memory_location_value[memory_location_index ])
-        address_value = input(f"{address_location}: {memory_location_value[memory_location_index]} ")
+        address_value = input(f"{address_location}: {memory_location_value[int(address_location, 16)]} ")
         if address_value == "EXIT":
             break
         elif len(address_value) == 2 :
-            memory_location_value[memory_location_index ] = address_value
+            memory_location_value[int(address_location, 16)] = str(address_value).upper()
         elif len(address_value) == 0:
-            address_value = memory_location_value[memory_location_index]
-            print(address_value)
-        if len(address_value) > 2:
+            address_value = memory_location_value[int(address_location, 16)]
+        elif len(address_value) > 2:
             print("Invalid value: 2-byte hexadecimal value expected")
-        else:
-            address_value = hex(int(address_value, 16))[2:]
-            address_value = fill_zero(address_value)
-            if address_location in address_location_list:
-                address_location_index = address_location_list.index(address_location)
-                address_value_list[address_location_index] = address_value
-            else:
-                address_value_list.append(address_value)
-                address_location_list.append(address_location)
-            address_location = hex(int(address_location, 16) + 1)
-    print(f"Address location list = {address_location_list}")
-    print(f"Address value list before = {address_value_list_before}")
-    print(f"Address value list after = {address_value_list}")      
-    for address in address_location_list:
-        m = address_location_list.index(address)
-        address_value = address_value_list[m]
-        address_value = fill_zero(address_value)
-        memory_location_index = memory_location_list.index(address)
-        memory_location_value[memory_location_index ] = address_value
+        address_location = str(hex(int(address_location, 16) + 1)[2:]).zfill(4).upper()
     
 def instruction_decoder(mnemonic):
-    print("Decoding instruction...")
     instruction  = mnemonic.split()[0]
-    print(f"Mnemonic = {mnemonic}, Instruction = {instruction}")
-    one_byte_list = ["MOV", "ADD", "CMP", "CMA", "INR", "INX", "DCR", "DCX", "DAD", "LDAX", "STAX", "HLT", "SUB", "XCHG", "ANA", "ORA", "XRA", "RRC", "RLC", "RET", "RC", "RNC", "RP", "RM", "RPE", "RPO", "RZ", "RNZ", "PUSH", "POP"]
+    one_byte_list = ["MOV", "ADD", "CMP", "CMA", "INR", "INX", "DCR", "DCX", "DAD", "LDAX", "STAX", "HLT", "SUB", "XCHG", "ANA", "ORA", "XRA", "RRC", "RLC", "RET", "RC", "RNC", "RP", "RM", "RPE", "RPO", "RZ", "RNZ", "PUSH", "POP", "NOP"]
     two_byte_list_1 = ["ADI", "ORI", "ACI", "SUI", "CPI", "ANI", "ORI", "XRI"]
     two_byte_list_2 = ["MVI"]
     three_byte_list_1 = ["LDA", "STA", "JMP", "CALL", "CC", "CNC", "CP", "CM", "CPE", "CPO", "CZ", "CNZ", "LHLD", "SHLD", "JC", "JNC", "JZ", "JNZ", "JP", "JM", "JPE", "JPO"]
@@ -1555,7 +1366,6 @@ def instruction_decoder(mnemonic):
             machine_code = "AD"
         elif mnemonic == "XRA M":
             machine_code = "AE"
-        print(f"Byte = {byte}, Machine code = {machine_code}")                                               
         return byte, machine_code, None   
     elif instruction in two_byte_list_1:
         byte = "TWO"
@@ -1574,14 +1384,11 @@ def instruction_decoder(mnemonic):
             machine_code = "D6" 
         elif opcode == "XRI":
             machine_code = "EE"
-        print(f"Byte = {byte}, Machine code = {machine_code}, Immediate_value = {immediate_value}")                       
         return byte, machine_code, immediate_value
     elif instruction in two_byte_list_2:
         byte = "TWO"
         mnemonic = mnemonic.split(",")
         opcode = mnemonic[0]
-        print(byte)
-        print(opcode)
         immediate_value = mnemonic[1]
         if opcode == "MVI A":
             machine_code = "3E"
@@ -1599,7 +1406,6 @@ def instruction_decoder(mnemonic):
             machine_code = "2E"
         elif opcode == "MVI M":
             machine_code = "36"
-        print(f"Byte = {byte}, Machine code = {machine_code}, Immediate_value = {immediate_value}")    
         return byte, machine_code, immediate_value   
     elif instruction in three_byte_list_1:
         byte = "THREE"
@@ -1650,16 +1456,12 @@ def instruction_decoder(mnemonic):
             machine_code = "2A" 
         elif opcode == "SHLD":
             machine_code = "22"
-        print(f"Byte = {byte}, Machine code = {machine_code}, Memory location = {memory_location}")    
         return byte, machine_code, memory_location
     elif instruction in three_byte_list_2:
         byte = "THREE"
         mnemonic = mnemonic.split(",")
         opcode = mnemonic[0]
-        print(byte)
-        print(opcode)
         memory_location = mnemonic[1]
-        print(memory_location)
         if opcode == "LXI B":
             machine_code = "01"
         elif opcode == "LXI D":
@@ -1668,7 +1470,6 @@ def instruction_decoder(mnemonic):
             machine_code = "21"
         elif opcode == "LXI SP":
             machine_code = "31"
-        print(f"Byte = {byte}, Machine code = {machine_code}, Memory location = {memory_location}")                
         return byte, machine_code, memory_location
     else:
         print("Unknown instruction...")
@@ -1676,93 +1477,57 @@ def instruction_decoder(mnemonic):
         return byte, None, None
 
 def MN_to_MC(address, mnemonic):
-    print("Converting to Machine Code...")
-    global machine_code_list, address_list, memory_location_list, memory_location_value
+    global memory_location_value
     byte, machine_code, iv_ml = instruction_decoder(mnemonic) # iv_ml means immediate_value or memory_location
     if byte == "ONE":
-        machine_code = fill_zero(machine_code)
-        address_list.append(f"{address}")
-        machine_code_list.append(machine_code)
-        machine_code_list_1.append(machine_code)
-        memory_location_index = memory_location_list.index(address)
-        memory_location_value[memory_location_index] = machine_code
+        machine_code = str(machine_code).zfill(2).upper()
+        address = str(hex(int(address, 16))[2:]).zfill(4).upper()
+        memory_location_value[int(address, 16)] = machine_code
         return machine_code, None, None
     elif byte == "TWO":
-        machine_code = fill_zero(machine_code)
-        address_list.append(f"{address}")
-        machine_code_list.append(machine_code)
-        machine_code_list_1.append(machine_code)
-        memory_location_index = memory_location_list.index(address)
-        memory_location_value[memory_location_index] = machine_code
-        immediate_value = hex(int(iv_ml, 16))[2:]
-        immediate_value = fill_zero(immediate_value)
-        address = hex(int(address, 16) + 1)
-        address_list.append(f"{address[2:]}")
-        machine_code_list.append(immediate_value)
-        machine_code_list_1.append(immediate_value)
-        memory_location_index = memory_location_list.index(address[2:])
-        memory_location_value[memory_location_index] = immediate_value
+        machine_code = str(machine_code).zfill(2).upper()
+        address = str(hex(int(address, 16))[2:]).zfill(4).upper()
+        memory_location_value[int(address, 16)] = machine_code
+        immediate_value = str(hex(int(iv_ml, 16))[2:]).zfill(2).upper()
+        address = str(hex(int(address, 16) + 1)[2:]).zfill(4).upper()
+        memory_location_value[int(address, 16)] = immediate_value
         return machine_code, immediate_value, None
     elif byte == "THREE":
-        machine_code = fill_zero(machine_code)
-        address_list.append(f"{address}")
-        memory_location_index = memory_location_list.index(address)
-        memory_location_value[memory_location_index] = machine_code
-        machine_code_list.append(machine_code)
-        machine_code_list_1.append(machine_code)
+        machine_code = str(machine_code).zfill(2).upper()
+        address = str(hex(int(address, 16))[2:]).zfill(4).upper()
+        memory_location_value[int(address, 16)] = machine_code
         memory_location = iv_ml
         higher_byte, lower_byte = split_address(memory_location)
-        lower_byte = hex(int(lower_byte, 16))[2:]
-        lower_byte = fill_zero(lower_byte)
-        higher_byte = hex(int(higher_byte, 16))[2:]
-        higher_byte = fill_zero(higher_byte)
-        machine_code_list.append(lower_byte)
-        machine_code_list_1.append(lower_byte)
-        address = hex(int(address, 16) + 1)
-        address_list.append(f"{address[2:]}")
-        memory_location_index = memory_location_list.index(address[2:])
-        memory_location_value[memory_location_index] = lower_byte
-        address = hex(int(address, 16) + 1)
-        address_list.append(f"{address[2:]}")
-        machine_code_list.append(higher_byte)
-        machine_code_list_1.append(higher_byte)
-        memory_location_index = memory_location_list.index(address[2:])
-        memory_location_value[memory_location_index] = higher_byte
+        lower_byte = str(hex(int(lower_byte, 16))[2:]).zfill(2).upper()
+        higher_byte = str(hex(int(higher_byte, 16))[2:]).zfill(2).upper()
+        address = str(hex(int(address, 16) + 1)[2:]).zfill(4).upper()
+        memory_location_value[int(address, 16)] = lower_byte
+        address = str(hex(int(address, 16) + 1)[2:]).zfill(4).upper()
+        memory_location_value[int(address, 16)] = higher_byte
         return machine_code, lower_byte, higher_byte
     elif byte == None:
         return machine_code, None, None
 
 def address_8085():
     print("-----ADDRESS-----")
-    global address_list
     global mnemonic
-    global program_address_list
-    program_address_list = []
-    address = hex(int((input("Enter address: ")), 16))
+    address = input("Enter address: ")
+    address = str(hex(int(address, 16))[2:]).zfill(4).upper()
     while True:
-        mnemonic = input("\n"f"{address[2:]}: ")
+        mnemonic = input(f"{address}: ")
         if mnemonic == "EXIT":
             break
         byte = byte_8085(mnemonic)
         if byte != "error":
-            program_address_list.append(f"{address[2:]}")    
-            program.append(f"{address[2:]}:{mnemonic}")    
-            machine_code, next_address_1, next_address_2 = MN_to_MC(address[2:], mnemonic)
-            print(machine_code, next_address_1, next_address_2)  
+            machine_code, next_address_1, next_address_2 = MN_to_MC(address, mnemonic)
         if byte == 1:
-            address = hex(int(address, 16) + int("1",16))
+            address = str(hex(int(address, 16) + int("1",16))[2:]).zfill(4).upper()
         elif byte == 2:
-            address = hex(int(address, 16) + int("2",16))
+            address = str(hex(int(address, 16) + int("2",16))[2:]).zfill(4).upper()
         elif byte == 3:
-            address = hex(int(address, 16) + int("3",16))
-    print(f"Program = {program}")
-    print(f"Address list = {address_list}")
-    print(f"Machine code list = {machine_code_list_1}")
-    print(f"Program address list = {program_address_list}")
+            address = str(hex(int(address, 16) + int("3",16))[2:]).zfill(4).upper()
 
 def instruction_encoder(machine_code):
-    print("Encoding Instruction...")
-    print(f"Machine code = {machine_code}")
     one_byte_list = ["00", "80", "81", "82", "83", "84", "85", "86", "87", "AO", "A1", "A2", "A3", "A4", "A5", "A6", "A7", "2F", "B8", "B9", "BA", "BB", "BC", "BD", "BE", "BF", "09", "19", "29", "39", "05", "0D", "15", "1D", "25", "2D", "35", "3D", "0B", "1B", "2B", "3B", "76", "04", "0C", "14", "1C", "24", "2C", "34", "3C", "03", "13", "23", "33", "0A", "1A", "78", "79", "7A", "7B", "7C", "7D", "7E", "7F", "40", "41", "42", "43", "44", "45", "46", "47", "48", "49", "4A", "4B", "4C", "4D", "4E", "4F", "50", "51", "52", "53", "54", "55", "56", "57", "58", "59", "5A", "5B" ,"5C", "5D", "5E", "5F", "60", "61", "62", "63", "64", "65", "66", "67", "68", "69", "6A", "6B", "6C", "6D", "6E", "6F", "70", "71", "72", "73", "74", "75", "76", "77", "07", "0F", "B0", "B1", "B2", "B3", "B4", "B5", "B6", "B7", "02", "12", "90", "91", "92", "93", "94", "95", "96", "97", "EB", "A8", "A9", "AA", "AB", "AC", "AD", "AE", "AF", "C9", "D8", "F8", "C0", "D0", "F0", "E8", "E0", "C8", "C1", "C5", "D1", "D5", "E1", "E5", "F1", "F5"]
     two_byte_list_1 = ["C6", "D6", "E6", "F6", "EE", "FE"]
     two_byte_list_2 = ["06", "0E", "16", "1E", "26", "2E", "36", "3E"]
@@ -2202,100 +1967,63 @@ def instruction_encoder(machine_code):
         opcode = None
         return byte, opcode    
 
-def MC_to_MN(start_address):
-    print("Converting to Mnemonic...")
-    global program, address_list, program_1
-    program = []
-    program_count = 0
-    address = hex(int(start_address, 16))[2:]
-    while program_count < len(program_1):
-        program_count += 1
-        address_index = memory_location_list.index(address)
-        machine_code = memory_location_value[address_index]
-        machine_code = fill_zero(machine_code)
-        machine_code = machine_code.upper()
-        print(f"Machine code = {machine_code}")
-        byte, mnemonic_opcode = instruction_encoder(machine_code) # iv_ml means immediate_value or memory_location
-        if byte == "ONE":
-            address_list.append(f"{address}")
-            print(f"{address}:{mnemonic_opcode}")
-            program.append(f"{address}:{mnemonic_opcode}")
-            address = hex(int(address, 16) + 1)[2:]
-        elif byte == "TWO_1":
-            address_list.append(f"{address}")
-            machine_code = memory_location_value[int(address, 16)]
-            mnemonic = mnemonic_opcode + " " + str(machine_code).zfill(2)
-            print(f"{address}:{mnemonic}")
-            program.append(f"{address}:{mnemonic}")
-            address = hex(int(address, 16) + 1)[2:]
-            address_list.append(f"{address[2:]}")
-            address = hex(int(address, 16) + 1)[2:]
-        elif byte == "TWO_2":
-            address_list.append(f"{address}")
-            machine_code = memory_location_value[int(address, 16)]
-            mnemonic = mnemonic_opcode + "," + str(machine_code).zfill(2)
-            print(f"{address}:{mnemonic}")
-            program.append(f"{address}:{mnemonic}")
-            address = hex(int(address, 16) + 1)[2:]
-            address_list.append(f"{address[2:]}")
-            address = hex(int(address, 16) + 1)[2:]
-        elif byte == "THREE_1":
-            address_1 = address
-            address_list.append(f"{address}")
-            address = hex(int(address, 16) + 2)[2:]
-            machine_code = memory_location_value[int(address, 16) - 1]
-            machine_code = fill_zero(machine_code)
-            machine_code = machine_code.upper()
-            mnemonic = str(machine_code).zfill(2)
-            address_list.append(f"{address}")
-            address = hex(int(address, 16) - 1)[2:]
-            machine_code = memory_location_value[int(address, 16) - 1]
-            machine_code = fill_zero(machine_code)
-            machine_code = machine_code.upper()
-            mnemonic = mnemonic + str(machine_code).zfill(2)
-            mnemonic = hex(int(mnemonic, 16))[2:]
-            mnemonic = mnemonic_opcode + " " + mnemonic
-            print(f"{address_1}:{mnemonic}")
-            program.append(f"{address_1}:{mnemonic}")
-            address = hex(int(address, 16) + 2)[2:]
-        elif byte == "THREE_2":
-            address_1 = address
-            address_list.append(f"{address}")
-            address = hex(int(address, 16) + 2)[2:]
-            machine_code = memory_location_value[int(address, 16) - 1]
-            machine_code = fill_zero(machine_code)
-            machine_code = machine_code.upper()
-            mnemonic = str(machine_code).zfill(2)
-            address_list.append(f"{address}")
-            address = hex(int(address, 16) - 1)[2:]
-            machine_code = memory_location_value[int(address, 16) - 1]
-            machine_code = fill_zero(machine_code)
-            machine_code = machine_code.upper()
-            mnemonic = mnemonic + str(machine_code).zfill(2)
-            mnemonic = hex(int(mnemonic, 16))[2:]
-            mnemonic = mnemonic_opcode + "," + mnemonic
-            print(f"{address_1}:{mnemonic}")
-            program.append(f"{address_1}:{mnemonic}")
-            address = hex(int(address, 16) + 2)[2:]
-        elif byte == None:
-            address_list.append(f"{address}")
-            address = hex(int(address, 16) + 1)[2:]
-            
-    print(f"Address List = {address_list}")
-    print(f"Program = {program}")
+def MC_to_MN(address):
+    machine_code = memory_location_value[int(address, 16)]
+    machine_code = str(machine_code).zfill(2).upper()
+    byte, mnemonic_opcode = instruction_encoder(machine_code) # iv_ml means immediate_value or memory_location
+    if byte == "ONE":
+        mnemonic = mnemonic_opcode
+        print("\n"f"{address}:{mnemonic_opcode}")
+        address = str(hex(int(address, 16))[2:]).zfill(4).upper()
+    elif byte == "TWO_1":
+        address = str(hex(int(address, 16) + 1)[2:]).zfill(4).upper()
+        machine_code = memory_location_value[int(address, 16)]
+        mnemonic = mnemonic_opcode + " " + str(machine_code).zfill(2)
+        print("\n"f"{address}:{mnemonic}")
+    elif byte == "TWO_2":
+        address = str(hex(int(address, 16) + 1)[2:]).zfill(4).upper()
+        machine_code = memory_location_value[int(address, 16)]
+        mnemonic = mnemonic_opcode + "," + str(machine_code).zfill(2)
+        print("\n"f"{address}:{mnemonic}")
+    elif byte == "THREE_1":
+        address_1 = address
+        address = str(hex(int(address, 16) + 3)[2:]).zfill(4).upper()
+        machine_code = memory_location_value[int(address, 16) - 1]
+        mnemonic = str(machine_code).zfill(2).upper()
+        address = str(hex(int(address, 16) - 1)[2:]).zfill(4).upper()
+        machine_code = memory_location_value[int(address, 16) - 1]
+        machine_code = str(machine_code).zfill(2).upper()
+        mnemonic = mnemonic + machine_code
+        mnemonic = str(hex(int(mnemonic, 16))[2:]).zfill(4).upper()
+        mnemonic = mnemonic_opcode + " " + mnemonic
+        print("\n"f"{address_1}:{mnemonic}")
+        address = str(hex(int(address, 16))[2:]).zfill(4).upper()
+    elif byte == "THREE_2":
+        address_1 = address
+        address = str(hex(int(address, 16) + 3)[2:]).zfill(4).upper()
+        machine_code = memory_location_value[int(address, 16) - 1]
+        mnemonic = str(machine_code).zfill(2).upper()
+        address = str(hex(int(address, 16) - 1)[2:]).zfill(4).upper()
+        machine_code = memory_location_value[int(address, 16) - 1]
+        machine_code = str(machine_code).zfill(2).upper()
+        mnemonic = mnemonic + machine_code
+        mnemonic = str(hex(int(mnemonic, 16))[2:]).zfill(4).upper()
+        mnemonic = mnemonic_opcode + "," + mnemonic
+        print("\n"f"{address_1}:{mnemonic}")
+        address = str(hex(int(address, 16))[2:]).zfill(4).upper()
+    elif byte == None:
+        mnemonic = "No Mnemonic"
+        address = str(hex(int(address, 16))[2:]).zfill(4).upper()
+    return mnemonic, address
 
 def execute_8085():
-    print("-----EXECUTE-----")
-    global p_c, program_1, ret_address
-    start_address = input("Start address: ")
-    p_c = 0
-    program_1 = program
-    MC_to_MN(start_address)
+    global ret_address, address, flag, single_step_active
+    address = input("Start address: ")
+    address = str(hex(int(address, 16))[2:]).zfill(4).upper()
+    if single_step_active == "inactive":
+        print("Executing...")
     while True:
-        machine_code = program[p_c]
-        mnemonic = machine_code.split(":")
-        address_code = mnemonic[0]
-        instruction = mnemonic[1]
+        instruction, address = MC_to_MN(address)
         opcode = instruction.split()[0]
         if opcode == "ADD":
             ADD(instruction)
@@ -2306,23 +2034,32 @@ def execute_8085():
         elif opcode == "ANI":
             ANI(instruction)
         elif opcode == "CALL":
-            p_c = CALL(instruction)
+            address = CALL(instruction)
+            address = str(address).zfill(4).upper()
         elif opcode == "CC":
-            p_c = CC(instruction)
+            address = CC(instruction)
+            address = str(address).zfill(4).upper()
         elif opcode == "CNC":
-            p_c = CNC(instruction)
+            address = CNC(instruction)
+            address = str(address).zfill(4).upper()
         elif opcode == "CP":
-            p_c = CP(instruction)
+            address = CP(instruction)
+            address = str(address).zfill(4).upper()
         elif opcode == "CM":
-            p_c = CM(instruction)
+            address = CM(instruction)
+            address = str(address).zfill(4).upper()
         elif opcode == "CPE":
-            p_c = CPE(instruction)
+            address = CPE(instruction)
+            address = str(address).zfill(4).upper()
         elif opcode == "CPO":
-            p_c = CPO(instruction)
+            address = CPO(instruction)
+            address = str(address).zfill(4).upper()
         elif opcode == "CZ":
-            p_c = CZ(instruction)
+            address = CZ(instruction)
+            address = str(address).zfill(4).upper()
         elif opcode == "CNZ":
-            p_c = CNZ(instruction)            
+            address = CNZ(instruction)
+            address = str(address).zfill(4).upper()            
         elif opcode == "CMA":
             CMA(instruction)
         elif opcode == "CMP":
@@ -2340,47 +2077,56 @@ def execute_8085():
         elif opcode == "INX":
             INX(instruction)        
         elif opcode == "JMP":
-            p_c = JMP(instruction)
+            address = JMP(instruction)
+            address = str(address).zfill(4).upper()
         elif opcode == "JP":
-            p_c = JC(instruction)
-            if p_c == "A":
-                p_c = program_address_list.index(address_code)
-                p_c = p_c + 1
+            address_1 = address
+            bit, address = JP(instruction)
+            address = str(address).zfill(4).upper()
+            if bit == "no jump":
+                address = str(hex(int(address_1, 16) + 1)[2:]).zfill(4).upper()
         elif opcode == "JM":
-            p_c = JC(instruction)
-            if p_c == "A":
-                p_c = program_address_list.index(address_code)
-                p_c = p_c + 1
+            address_1 = address
+            bit, address = JM(instruction)
+            address = str(address).zfill(4).upper()
+            if bit == "no jump":
+                address = str(hex(int(address_1, 16) + 1)[2:]).zfill(4).upper()
         elif opcode == "JPE":
-            p_c = JC(instruction)
-            if p_c == "A":
-                p_c = program_address_list.index(address_code)
-                p_c = p_c + 1
+            address_1 = address
+            bit, address = JPE(instruction)
+            address = str(address).zfill(4).upper()
+            if bit == "no jump":
+                address = str(hex(int(address_1, 16) + 1)[2:]).zfill(4).upper()
         elif opcode == "JPO":
-            p_c = JC(instruction)
-            if p_c == "A":
-                p_c = program_address_list.index(address_code)
-                p_c = p_c + 1                            
+            address_1 = address
+            bit, address = JPO(instruction)
+            address = str(address).zfill(4).upper()
+            if bit == "no jump":
+                address = str(hex(int(address_1, 16) + 1)[2:]).zfill(4).upper()
         elif opcode == "JC":
-            p_c = JC(instruction)
-            if p_c == "A":
-                p_c = program_address_list.index(address_code)
-                p_c = p_c + 1
+            address_1 = address
+            bit, address = JC(instruction)
+            address = str(address).zfill(4).upper()
+            if bit == "no jump":
+                address = str(hex(int(address_1, 16) + 1)[2:]).zfill(4).upper()
         elif opcode == "JNC":
-            p_c = JNC(instruction)
-            if p_c == "A":
-                p_c = program_address_list.index(address_code)
-                p_c = p_c + 1
+            address_1 = address
+            bit, address = JNC(instruction)
+            address = str(address).zfill(4).upper()
+            if bit == "no jump":
+                address = str(hex(int(address_1, 16) + 1)[2:]).zfill(4).upper()
         elif opcode == "JZ":
-            p_c = JZ(instruction)
-            if p_c == "A":
-                p_c = program_address_list.index(address_code)
-                p_c = p_c + 1
+            address_1 = address
+            bit, address = JZ(instruction)
+            address = str(address).zfill(4).upper()
+            if bit == "no jump":
+                address = str(hex(int(address_1, 16) + 1)[2:]).zfill(4).upper()
         elif opcode == "JNZ":
-            p_c = JNZ(instruction)
-            if p_c == "A":
-                p_c = program_address_list.index(address_code)
-                p_c = p_c + 1
+            address_1 = address
+            bit, address = JNZ(instruction)
+            address = str(address).zfill(4).upper()
+            if bit == "no jump":
+                address = str(hex(int(address_1, 16) + 1)[2:]).zfill(4).upper()
         elif opcode == "LDA":
             LDA(instruction)
         elif opcode == "LDAX":
@@ -2405,55 +2151,64 @@ def execute_8085():
             POP(instruction)    
         elif opcode == "RET":
             RET(instruction)
-            p_c = program_address_list.index(ret_address)
+            address = ret_address
+            address = str(address).zfill(4).upper()
         elif opcode == "RC":
             return_value = RC(instruction)
             if return_value == True:
-                p_c = program_address_list.index(ret_address)
+                address = ret_address
+                address = str(address).zfill(4).upper()
             else:
-                p_c = p_c + 1    
+                address = str(hex(int(address, 16) + 1)[2:]).zfill(4).upper()
         elif opcode == "RNC":
             return_value = RNC(instruction)
             if return_value == True:
-                p_c = program_address_list.index(ret_address)
+                address = ret_address
+                address = str(address).zfill(4).upper()
             else:
-                p_c = p_c + 1 
+                address = str(hex(int(address, 16) + 1)[2:]).zfill(4).upper()
         elif opcode == "RP":
             return_value = RP(instruction)
             if return_value == True:
-                p_c = program_address_list.index(ret_address)
+                address = ret_address
+                address = str(address).zfill(4).upper()
             else:
-                p_c = p_c + 1 
+                address = str(hex(int(address, 16) + 1)[2:]).zfill(4).upper()
         elif opcode == "RM":
             return_value = RM(instruction)
             if return_value == True:
-                p_c = program_address_list.index(ret_address)
+                address = ret_address
+                address = str(address).zfill(4).upper()
             else:
-                p_c = p_c + 1 
+                address = str(hex(int(address, 16) + 1)[2:]).zfill(4).upper()
         elif opcode == "RPE":
             return_value = RPE(instruction)
             if return_value == True:
-                p_c = program_address_list.index(ret_address)
+                address = ret_address
+                address = str(address).zfill(4).upper()
             else:
-                p_c = p_c + 1
+                address = str(hex(int(address, 16) + 1)[2:]).zfill(4).upper()
         elif opcode == "RPO":
             return_value = RPO(instruction)
             if return_value == True:
-                p_c = program_address_list.index(ret_address)
+                address = ret_address
+                address = str(address).zfill(4).upper()
             else:
-                p_c = p_c + 1
+                address = str(hex(int(address, 16) + 1)[2:]).zfill(4).upper()
         elif opcode == "RZ":
             return_value = RZ(instruction)
             if return_value == True:
-                p_c = program_address_list.index(ret_address)
+                address = ret_address
+                address = str(address).zfill(4).upper()
             else:
-                p_c = p_c + 1
+                address = str(hex(int(address, 16) + 1)[2:]).zfill(4).upper()
         elif opcode == "RNZ":
             return_value = RNZ(instruction)
             if return_value == True:
-                p_c = program_address_list.index(ret_address)
+                address = ret_address
+                address = str(address).zfill(4).upper()
             else:
-                p_c = p_c + 1                                                 
+                address = str(hex(int(address, 16) + 1)[2:]).zfill(4).upper()    
         elif opcode == "RLC":
             RLC(instruction)    
         elif opcode == "RRC":
@@ -2475,47 +2230,63 @@ def execute_8085():
         elif opcode == "HLT":
             print("-----HLT-----")
             break
+        else:
+            print(f"The instruction {instruction} at memory location {address.zfill(4).upper()} is not provided by the developer.")    
         if opcode != "CALL" and opcode != "CC" and opcode != "CNC" and opcode != "CP" and opcode != "CM" and opcode != "CPE" and opcode != "CPO" and opcode != "CZ" and opcode != "CNZ" and opcode != "JMP" and opcode != "JC" and opcode != "JNC" and opcode != "JZ" and opcode != "JNZ" and opcode != "RET" and opcode != "RC" and opcode != "RNC" and opcode != "RP" and opcode != "RM" and opcode != "RPE" and opcode != "RPO" and opcode != "RZ" and opcode != "RNZ":
-            p_c = p_c + 1
-                
+            address = str(hex(int(address, 16) + 1)[2:]).zfill(4).upper()
+        if single_step_active == "active":
+            input()
+            
+    print("\n""Executed Successfully...")        
     details = input("Do you want to see more details? [Y/N] : ")
     if details == "Y":
-        print(f"A = {fill_zero(reg_value[0])} flag = {reg_value[1]}")
-        print(f"B = {fill_zero(reg_value[2])} C = {fill_zero(reg_value[3])}")
-        print(f"D = {fill_zero(reg_value[4])} E = {fill_zero(reg_value[5])}")
-        print(f"H = {fill_zero(reg_value[6])} L = {fill_zero(reg_value[7])}")
+        flag_bin= ''.join([str(elem) for elem in reg_value[1]])
+        flag_hex = str(hex(int(flag_bin, 2))[2:]).zfill(2).upper()
+        print(f"A = {str(reg_value[0]).zfill(2).upper()}  Flag = {flag_hex} = {flag_bin}")
+        print(f"B = {str(reg_value[2]).zfill(2).upper()}     C = {str(reg_value[3]).zfill(2).upper()}")
+        print(f"D = {str(reg_value[4]).zfill(2).upper()}     E = {str(reg_value[5]).zfill(2).upper()}")
+        print(f"H = {str(reg_value[6]).zfill(2).upper()}     L = {str(reg_value[7]).zfill(2).upper()}")
+    flag = [0, 0, 0, 0, 0, 0, 0, 0]
+    single_step_active = "inactive"
 
 def memory_address_M(mode):
     if mode == 0:
         print("Storing the value to Memory address...")
-        reg_value[6] = fill_zero(reg_value[6])
-        reg_value[7] = fill_zero(reg_value[7])
+        reg_value[6] = str(reg_value[6]).zfill(2).upper()
+        reg_value[7] = str(reg_value[7]).zfill(2).upper()
         M_address = str(reg_value[6]) + str(reg_value[7])
-        M_index = memory_location_list.index(M_address)
-        memory_location_value[M_index] = reg_value[8]
+        memory_location_value[int(M_address, 16)] = reg_value[8]
         print(f"[H] = {reg_value[6]}, [L] = {reg_value[7]}")
         print(f"[M] = [{M_address}] = {reg_value[8]}")
     elif mode == 1:
         print("Retrieving the value from Memory address...")
-        reg_value[6] = fill_zero(reg_value[6])
-        reg_value[7] = fill_zero(reg_value[7])
+        reg_value[6] = str(reg_value[6]).zfill(2).upper()
+        reg_value[7] = str(reg_value[7]).zfill(2).upper()
         M_address = str(reg_value[6]) + str(reg_value[7])
-        M_index = memory_location_list.index(M_address)
-        reg_value[8] = memory_location_value[M_index]
+        reg_value[8] = memory_location_value[int(M_address, 16)]
         print(f"[M] = [{M_address}] = {reg_value[8]}")
         print(f"[H] = {reg_value[6]}, [L] = {reg_value[7]}")
 
 while True:
-    print("\n""Press any of the given key: A - Address, G - Execute, M - Memory, R - Register")
+    print("\n""Press any of the given key: A - Address, G - Execute, S - Single Step, M - Memory, R - Register")
     key = input()
     if key == "A":
         address_8085()
     elif key == "G":
+        single_step_active = "inactive"
+        print("-----EXECUTE-----")
         execute_8085()
     elif key == "M":
         memory_8085()
+    elif key == "S":
+        single_step_active = "active"
+        print("----- SINGLE STEP-----")
+        execute_8085()
     elif key == "R":
-        print(f"A = {fill_zero(reg_value[0])} flag = {reg_value[1]}")
-        print(f"B = {fill_zero(reg_value[2])} C = {fill_zero(reg_value[3])}")
-        print(f"D = {fill_zero(reg_value[4])} E = {fill_zero(reg_value[5])}")
-        print(f"H = {fill_zero(reg_value[6])} L = {fill_zero(reg_value[7])}")
+        print("-----REG VIEW/EDIT-----")
+        flag_bin= ''.join([str(elem) for elem in reg_value[1]])
+        flag_hex = str(hex(int(flag_bin, 2))[2:]).zfill(2).upper()
+        print(f"A = {str(reg_value[0]).zfill(2).upper()}  Flag = {flag_hex} = {flag_bin}")
+        print(f"B = {str(reg_value[2]).zfill(2).upper()}     C = {str(reg_value[3]).zfill(2).upper()}")
+        print(f"D = {str(reg_value[4]).zfill(2).upper()}     E = {str(reg_value[5]).zfill(2).upper()}")
+        print(f"H = {str(reg_value[6]).zfill(2).upper()}     L = {str(reg_value[7]).zfill(2).upper()}")
