@@ -11,77 +11,46 @@ let backSpace = document.querySelector('#backspace')
 let enter = document.querySelector('#enter')
 let space = document.querySelector('#space')
 
-console.log("Hola!")
 let string = ''
-let hexValue = '8000'
+let address = '8000'
+let address_location = '8000'
 let hexAddress = '0000'
-let addressList, machineCodeList, machineCodeList1, byte, machineCode, ivMl, retValue, nextAddress1, nextAddress2
+let byte, machine_code, ivMl, ret_value, nextAddress1, nextAddress2, address_value, address_1
 let memoryActiveStatus = 'inactive'
 let addressActiveStatus = 'inactive'
 let executeActiveStatus = 'inactive'
-let initialMode, p_c, ret_address, program_1, startAddress
-let programAddressList = []
-let program = []
-let addressLocationList = []
-let addressValueList = []
-let addressValueListBefore = []
-let one_byte, mnemonic, modeAddress, modeExecute, modeMemory
+let single_step_active = 'inactive'
+let proceedMemory = true
+let initialMode = true
+let modeMemory = 0
+let modeAddress = 0
+let modeExecute = 0
+let ret_address, startAddress
+let one_byte, mnemonic
 let two_byte
 let three_byte
-let memoryLocationList, memoryLocationValue
 
-let initialMod = (function () {
-    let done = false
-    return function () {
-        setTimeout(() => {
-            textTop.innerHTML = "SCIENTIFIC TECH"
-            textBottom.value = "8085 TRAINER KIT"
-            setTimeout(() => {
-                textTop.innerHTML = "MENU:   A,D,M,F, "
-                textBottom.value = "C,G,S,R,I,E,P"
-            }, 1000)
-        }, 500)
-        done = true
-        initialMode = true
-        modeMemory = 0
-        modeAddress = 0
-        modeExecute = 0
-        addressList = []
-        machineCodeList = []
-        machineCodeList1 = []
-        let n = 0
-        memoryLocationList = []
-        for (let i = 0; i < 65535; i++) {
-            if (parseInt(n, 16) < 16) {
-                n = n.toString(16).padStart(4, '0')
-            } else if (parseInt(n, 16) < 255) {
-                n = n.toString(16).padStart(4, '0')
-            } else if (parseInt(n, 16) < 4095) {
-                n = n.toString(16).padStart(4, '0')
-            }
-            n = n.toString(16)
-            memoryLocationList.push(n.toUpperCase())
-            n = parseInt(n, 16) + 1
-        }
-        console.log(memoryLocationList)
+setTimeout(() => {
+    textTop.innerHTML = "SCIENTIFIC TECH"
+    textBottom.value = "8085 TRAINER KIT"
+    setTimeout(() => {
+        textTop.innerHTML = "MENU:   A,D,M,F, "
+        textBottom.value = "C,G,S,R,I,E,P"
+    }, 1000)
+}, 500)
 
-        memoryLocationValue = []
-        n = 0;
-        for (let i = 0; i < 65535; i++) {
-            n = Math.floor(Math.random() * 256).toString(16)
-            if (parseInt(n, 16) < 16) {
-                n = n.padStart(2, '0')
-            }
-            memoryLocationValue.push(n.toUpperCase())
-        }
-        console.log(memoryLocationValue)
-
+let memory_location_value = []
+n = 0;
+for (let i = 0; i < 65535; i++) {
+    n = Math.floor(Math.random() * 255).toString(16)
+    if (parseInt(n, 16) < 16) {
+        n = n.padStart(2, '0')
     }
-})()
+    memory_location_value.push(n.toUpperCase())
+}
+console.log(memory_location_value)
 
-initialMod()
-
-let A = "3"
+let A = "0"
 let flag = [0, 0, 0, 0, 0, 0, 0, 0]
 let B = "0"
 let C = "0"
@@ -92,14 +61,6 @@ let L = "0"
 let M = "0"
 let reg_list = ["A", "flag", "B", "C", "D", "E", "H", "L", "M"]
 
-let addressValue = 0
-let memoryLocationIndex = 0
-let memoryLocation
-
-let address_location_list = []
-let address_value_list = []
-let machine_code_list = []
-let machine_code_list_1 = []
 let reg_value = [A, flag, B, C, D, E, H, L, M]
 let M_address = reg_value[6] + reg_value[7]
 let M_index
@@ -111,362 +72,330 @@ let stack_pointer = "0FFF"
 ////////////////////////////////////////////////////////////////////////////////////
 
 function ADD(mnemonic) {
-    console.log("\n-----ADD-----");
-    let mnemonicParts = mnemonic.split(" ");
-    let reg_1 = mnemonicParts[1];
-
-    if (reg_1 === "M") {
+    console.log("-----ADD-----");
+    mnemonic = mnemonic.split(' ');
+    let reg_1 = mnemonic[1];
+    reg_1 = reg_list.indexOf(reg_1);
+    if (reg_1 === 8) {
         memory_address_M(1);
     }
-
-    reg_1 = reg_list.indexOf(reg_1);
-    console.log(`[A] = [${reg_value[0]} + ${reg_value[reg_1]}]`)
-    reg_value[0] = (parseInt(reg_value[0], 16) + parseInt(reg_value[reg_1], 16)).toString(16).toUpperCase().padStart(2, '0')
+    reg_value[0] = (parseInt(reg_value[0], 16) + parseInt(reg_value[reg_1], 16)).toString(16);
     if (parseInt(reg_value[0], 16) > 255) {
-        checkAccumulator();
-        reg_value[0] = (parseInt(reg_value[0], 16) - parseInt("100", 16)).toString(16).toUpperCase().padStart(2, '0')
+        check_accumulator();
+        reg_value[0] = (parseInt(reg_value[0], 16) - parseInt("100", 16)).toString(16);
     }
-    reg_value[0] = fillZero(reg_value[0]);
+    reg_value[0] = reg_value[0].padStart(2, '0').toUpperCase();
     console.log(`[A] = ${reg_value[0]}`);
 }
 
 function ADI(mnemonic) {
-    console.log("\n-----ADI-----");
-    let mnemonicParts = mnemonic.split(" ");
-    let immediate_value = mnemonicParts[1];
-
-    if (immediate_value.length === 2) {
-        console.log(`[A] = [${reg_value[0]} + ${immediate_value}]`)
+    console.log("-----ADI-----");
+    let split_mnemonic = mnemonic.split(" ");
+    let immediate_value = split_mnemonic[1];
+    if (immediate_value.length === 2 && /^[0-9A-Fa-f]{2}$/.test(immediate_value)) {
+        // ChatGPT included the && /^[0-9A-Fa-f]{2}$/.test(immediate_value) in the JavaScript code to validate 
+        // whether the immediate_value extracted from the mnemonic is a valid two-digit hexadecimal value.
         reg_value[0] = (parseInt(reg_value[0], 16) + parseInt(immediate_value, 16)).toString(16);
+        console.log(reg_value[0])
 
         if (parseInt(reg_value[0], 16) > 255) {
-            checkAccumulator();
+            check_accumulator();
             reg_value[0] = (parseInt(reg_value[0], 16) - parseInt("100", 16)).toString(16);
         }
-    } else {
-        console.log("Invalid value: Expected value is one byte hexadecimal value");
     }
-
-    reg_value[0] = fillZero(reg_value[0]);
+    reg_value[0] = reg_value[0].padStart(2, "0").toUpperCase();
     console.log(`[A] = ${reg_value[0]}`);
 }
-
 function ANA(mnemonic) {
-    console.log("\n-----ANA-----");
-    let mnemonicParts = mnemonic.split(" ");
-    let reg_1 = mnemonicParts[1];
-
+    console.log("-----ANA-----");
+    let split_mnemonic = mnemonic.split(' ');
+    let reg_1 = split_mnemonic[1];
+    let reg_index = reg_list.indexOf(reg_1);
     if (reg_1 === "M") {
         memory_address_M(1);
     }
-
-    reg_1 = reg_list.indexOf(reg_1);
-    console.log(`[A] = [${reg_value[0]} & ${reg_value[reg_1]}]`)
-    reg_value[0] = (parseInt(reg_value[0], 16) & parseInt(reg_value[reg_1], 16)).toString(16);
-    checkAccumulator();
-    reg_value[0] = fillZero(reg_value[0]);
-
+    reg_value[0] = parseInt(reg_value[0], 16) && parseInt(reg_value[reg_index], 16);
+    check_accumulator();
+    reg_value[0] = reg_value[0].toString(16).padStart(2, '0').toUpperCase();
     console.log(`[A] = ${reg_value[0]}`);
 }
 
 function ANI(mnemonic) {
-    console.log("\n-----ANI-----");
-    let mnemonicParts = mnemonic.split(" ");
-    let immediate_value = mnemonicParts[1];
-
+    console.log("-----ANI-----");
+    let split_mnemonic = mnemonic.split(' ');
+    let immediate_value = split_mnemonic[1];
     if (immediate_value.length === 2) {
-        console.log(`[A] = [${reg_value[0]} & ${immediate_value}]`)
-        reg_value[0] = (parseInt(reg_value[0], 16) & parseInt(immediate_value, 16)).toString(16);
-        checkAccumulator();
+        reg_value[0] = (parseInt(reg_value[0], 16) && parseInt(immediate_value, 16)).toString(16);
+        check_accumulator();
     } else {
         console.log("Invalid value: Expected value is one byte hexadecimal value");
+        return;
     }
-
-    reg_value[0] = fillZero(reg_value[0]);
+    reg_value[0] = reg_value[0].toString(16).padStart(2, '0').toUpperCase();
     console.log(`[A] = ${reg_value[0]}`);
 }
 
 function CALL(mnemonic) {
-    console.log("\n-----CALL-----");
-    let splitMnemonic = mnemonic.split(" ");
-    let call_address = splitMnemonic[1];
-    ret_address = programAddressList[p_c + 1];
-    let [higher_byte, lower_byte] = splitAddress(ret_address);
+    let call_address = mnemonic.split(' ')[1];
+    ret_address = (parseInt(address, 16) + 1).toString(16).padStart(4, '0').toUpperCase();
+    let [higher_byte, lower_byte] = split_address(ret_address);
     stack_value.push(higher_byte);
-    stack_pointer = (parseInt(stack_pointer, 16) - 1).toString(16);
-    stack_pointer = fillZero(stack_pointer);
+    stack_pointer = (parseInt(stack_pointer, 16) - 1).toString(16).padStart(4, '0').toUpperCase();
     stack_value.push(lower_byte);
-    call_address = parseInt(call_address, 16).toString(16);
-    p_c = programAddressList.indexOf(call_address);
+    address = parseInt(call_address, 16).toString(16).padStart(4, '0').toUpperCase();
+
     console.log(`Going to ${call_address}`);
     console.log(`Stack pointer = ${stack_pointer}`);
     console.log(`Stack = ${stack}`);
     console.log(`Stack value = ${stack_value}`);
-    return p_c;
+
+    return address;
 }
 
 function CC(mnemonic) {
-    console.log("\n-----CC-----");
+    console.log("-----CC-----");
     if (flag[7] === 1) {
-        let splitMnemonic = mnemonic.split(" ");
-        let call_address = splitMnemonic[1];
-        ret_address = programAddressList[p_c + 1];
-        let [higher_byte, lower_byte] = splitAddress(ret_address);
+        let split_mnemonic = mnemonic.split(' ');
+        let call_address = split_mnemonic[1];
+        ret_address = (parseInt(call_address, 16) + 1).toString(16).toUpperCase().padStart(4, '0');
+        let [higher_byte, lower_byte] = split_address(ret_address);
 
         if (stack.length === 0) {
             stack_pointer = "0FFF";
             stack.push(stack_pointer);
             stack_value.push(higher_byte);
-            stack_pointer = (parseInt(stack_pointer, 16) - 1).toString(16);
-            stack_pointer = fillZero(stack_pointer);
-            stack_value.push(lower_byte);
-        } else if (stack.length !== 0) {
-            stack.push(stack_pointer);
-            stack_value.push(higher_byte);
-            stack_pointer = (parseInt(stack_pointer, 16) - 1).toString(16);
-            stack_pointer = fillZero(stack_pointer);
+            stack_pointer = (parseInt(stack_pointer, 16) - 1).toString(16).toUpperCase().padStart(4, '0');
             stack_value.push(lower_byte);
         } else {
-            console.log("Stack error: Stack not initialized");
+            stack.push(stack_pointer);
+            stack_value.push(higher_byte);
+            stack_pointer = (parseInt(stack_pointer, 16) - 1).toString(16).toUpperCase().padStart(4, '0');
+            stack_value.push(lower_byte);
         }
 
-        call_address = parseInt(call_address, 16).toString(16);
-        p_c = programAddressList.indexOf(call_address);
+        address = (parseInt(call_address, 16)).toString(16).toUpperCase().padStart(4, '0');
         console.log(`Going to ${call_address}`);
         console.log(`Stack pointer = ${stack_pointer}`);
         console.log(`Stack = ${stack}`);
         console.log(`Stack value = ${stack_value}`);
-        return p_c;
+        return address;
     } else {
-        return p_c + 1;
+        return (parseInt(address, 16) + 1).toString(16).toUpperCase().padStart(4, '0');
     }
 }
 
 function CNC(mnemonic) {
-    console.log("\n-----CNC-----");
+    console.log("-----CNC-----");
     if (flag[7] === 0) {
-        let splitMnemonic = mnemonic.split(" ");
-        let call_address = splitMnemonic[1];
-        ret_address = programAddressList[p_c + 1];
-        let [higher_byte, lower_byte] = splitAddress(ret_address);
+        let split_mnemonic = mnemonic.split(' ');
+        let call_address = split_mnemonic[1];
+        ret_address = (parseInt(call_address, 16) + 1).toString(16).toUpperCase().padStart(4, '0');
+        let [higher_byte, lower_byte] = split_address(ret_address);
 
         if (stack.length === 0) {
             stack_pointer = "0FFF";
             stack.push(stack_pointer);
             stack_value.push(higher_byte);
-            stack_pointer = (parseInt(stack_pointer, 16) - 1).toString(16);
-            stack_pointer = fillZero(stack_pointer);
-            stack_value.push(lower_byte);
-        } else if (stack.length !== 0) {
-            stack.push(stack_pointer);
-            stack_value.push(higher_byte);
-            stack_pointer = (parseInt(stack_pointer, 16) - 1).toString(16);
-            stack_pointer = fillZero(stack_pointer);
+            stack_pointer = (parseInt(stack_pointer, 16) - 1).toString(16).toUpperCase().padStart(4, '0');
             stack_value.push(lower_byte);
         } else {
-            console.log("Stack error: Stack not initialized");
+            stack.push(stack_pointer);
+            stack_value.push(higher_byte);
+            stack_pointer = (parseInt(stack_pointer, 16) - 1).toString(16).toUpperCase().padStart(4, '0');
+            stack_value.push(lower_byte);
         }
 
-        call_address = parseInt(call_address, 16).toString(16);
-        p_c = programAddressList.indexOf(call_address);
+        address = (parseInt(call_address, 16)).toString(16).toUpperCase().padStart(4, '0');
         console.log(`Going to ${call_address}`);
         console.log(`Stack pointer = ${stack_pointer}`);
         console.log(`Stack = ${stack}`);
         console.log(`Stack value = ${stack_value}`);
-        return p_c;
+        return address;
     } else {
-        return p_c + 1;
+        return (parseInt(address, 16) + 1).toString(16).toUpperCase().padStart(4, '0');
     }
 }
-
 function CP(mnemonic) {
-    console.log("\n-----CP-----");
+    console.log("-----CP-----");
     if (flag[0] === 0) {
-        let splitMnemonic = mnemonic.split(" ");
-        let call_address = splitMnemonic[1];
-        ret_address = programAddressList[p_c + 1];
-        let [higher_byte, lower_byte] = splitAddress(ret_address);
+        let split_mnemonic = mnemonic.split(' ');
+        let call_address = split_mnemonic[1];
+        ret_address = (parseInt(call_address, 16) + 1).toString(16).padStart(4, '0').toUpperCase();
+        let [higher_byte, lower_byte] = split_address(ret_address);
 
         if (stack.length === 0) {
             stack_pointer = "0FFF";
             stack.push(stack_pointer);
             stack_value.push(higher_byte);
-            stack_pointer = (parseInt(stack_pointer, 16) - 1).toString(16);
-            stack_pointer = fillZero(stack_pointer);
+            stack_pointer = (parseInt(stack_pointer, 16) - 1).toString(16).padStart(4, '0').toUpperCase();
             stack_value.push(lower_byte);
         } else if (stack.length !== 0) {
             stack.push(stack_pointer);
             stack_value.push(higher_byte);
-            stack_pointer = (parseInt(stack_pointer, 16) - 1).toString(16);
-            stack_pointer = fillZero(stack_pointer);
+            stack_pointer = (parseInt(stack_pointer, 16) - 1).toString(16).padStart(4, '0').toUpperCase();
             stack_value.push(lower_byte);
         } else {
             console.log("Stack error: Stack not initialized");
         }
 
-        call_address = parseInt(call_address, 16).toString(16);
-        p_c = programAddressList.indexOf(call_address);
+        address = (parseInt(call_address, 16)).toString(16).padStart(4, '0').toUpperCase();
         console.log(`Going to ${call_address}`);
         console.log(`Stack pointer = ${stack_pointer}`);
         console.log(`Stack = ${stack}`);
         console.log(`Stack value = ${stack_value}`);
-        return p_c;
+        return address;
     } else {
-        return p_c + 1;
+        return (parseInt(address, 16) + 1).toString(16).padStart(4, '0').toUpperCase();
     }
 }
 
 function CM(mnemonic) {
-    console.log("\n-----CM-----");
+    console.log("-----CM-----");
     if (flag[0] === 1) {
-        let splitMnemonic = mnemonic.split(" ");
-        let call_address = splitMnemonic[1];
-        ret_address = programAddressList[p_c + 1];
-        let [higher_byte, lower_byte] = splitAddress(ret_address);
+        let split_mnemonic = mnemonic.split(' ');
+        let call_address = split_mnemonic[1];
+        ret_address = (parseInt(call_address, 16) + 1).toString(16).padStart(4, '0').toUpperCase();
+        let [higher_byte, lower_byte] = split_address(ret_address);
 
         if (stack.length === 0) {
             stack_pointer = "0FFF";
             stack.push(stack_pointer);
             stack_value.push(higher_byte);
-            stack_pointer = (parseInt(stack_pointer, 16) - 1).toString(16);
-            stack_pointer = fillZero(stack_pointer);
+            stack_pointer = (parseInt(stack_pointer, 16) - 1).toString(16).padStart(4, '0').toUpperCase();
             stack_value.push(lower_byte);
         } else if (stack.length !== 0) {
             stack.push(stack_pointer);
             stack_value.push(higher_byte);
-            stack_pointer = (parseInt(stack_pointer, 16) - 1).toString(16);
-            stack_pointer = fillZero(stack_pointer);
+            stack_pointer = (parseInt(stack_pointer, 16) - 1).toString(16).padStart(4, '0').toUpperCase();
             stack_value.push(lower_byte);
         } else {
             console.log("Stack error: Stack not initialized");
         }
 
-        call_address = parseInt(call_address, 16).toString(16);
-        p_c = programAddressList.indexOf(call_address);
+        address = (parseInt(call_address, 16)).toString(16).padStart(4, '0').toUpperCase();
         console.log(`Going to ${call_address}`);
         console.log(`Stack pointer = ${stack_pointer}`);
         console.log(`Stack = ${stack}`);
         console.log(`Stack value = ${stack_value}`);
-        return p_c;
+        return address;
     } else {
-        return p_c + 1;
+        return (parseInt(address, 16) + 1).toString(16).padStart(4, '0').toUpperCase();
     }
 }
 
 function CPE(mnemonic) {
-    console.log("\n-----CPE-----");
+    console.log("-----CPE-----");
     if (flag[5] === 1) {
-        let splitMnemonic = mnemonic.split();
-        let call_address = splitMnemonic[1];
-        ret_address = programAddressList[p_c + 1];
-        let [higher_byte, lower_byte] = splitAddress(ret_address);
+        let split_mnemonic = mnemonic.split(' ');
+        let call_address = split_mnemonic[1];
+        ret_address = (parseInt(call_address, 16) + 1).toString(16).padStart(4, '0').toUpperCase();
+        let [higher_byte, lower_byte] = split_address(ret_address);
 
         if (stack.length === 0) {
             stack_pointer = "0FFF";
             stack.push(stack_pointer);
             stack_value.push(higher_byte);
-            stack_pointer = (parseInt(stack_pointer, 16) - 1).toString(16);
-            stack_pointer = fillZero(stack_pointer);
+            stack_pointer = (parseInt(stack_pointer, 16) - 1).toString(16).padStart(4, '0').toUpperCase();
             stack_value.push(lower_byte);
         } else if (stack.length !== 0) {
             stack.push(stack_pointer);
             stack_value.push(higher_byte);
-            stack_pointer = (parseInt(stack_pointer, 16) - 1).toString(16);
-            stack_pointer = fillZero(stack_pointer);
+            stack_pointer = (parseInt(stack_pointer, 16) - 1).toString(16).padStart(4, '0').toUpperCase();
             stack_value.push(lower_byte);
         } else {
             console.log("Stack error: Stack not initialized");
         }
 
-        call_address = parseInt(call_address, 16).toString(16);
-        p_c = programAddressList.indexOf(call_address);
+        address = (parseInt(call_address, 16)).toString(16).padStart(4, '0').toUpperCase();
         console.log(`Going to ${call_address}`);
         console.log(`Stack pointer = ${stack_pointer}`);
         console.log(`Stack = ${stack}`);
         console.log(`Stack value = ${stack_value}`);
-        return p_c;
+        return address;
     } else {
-        return p_c + 1;
+        return (parseInt(address, 16) + 1).toString(16).padStart(4, '0').toUpperCase();
     }
 }
 
 function CPO(mnemonic) {
-    console.log("\n-----CPO-----");
+    console.log("-----CPO-----");
     if (flag[5] === 0) {
-        let splitMnemonic = mnemonic.split();
-        let call_address = splitMnemonic[1];
-        ret_address = programAddressList[p_c + 1];
-        let [higher_byte, lower_byte] = splitAddress(ret_address);
+        let split_mnemonic = mnemonic.split(' ');
+        let call_address = split_mnemonic[1];
+        ret_address = (parseInt(call_address, 16) + 1).toString(16).padStart(4, '0').toUpperCase();
+        let [higher_byte, lower_byte] = split_address(ret_address);
 
         if (stack.length === 0) {
             stack_pointer = "0FFF";
             stack.push(stack_pointer);
             stack_value.push(higher_byte);
-            stack_pointer = (parseInt(stack_pointer, 16) - 1).toString(16);
-            stack_pointer = fillZero(stack_pointer);
+            stack_pointer = (parseInt(stack_pointer, 16) - 1).toString(16).padStart(4, '0').toUpperCase();
             stack_value.push(lower_byte);
         } else if (stack.length !== 0) {
             stack.push(stack_pointer);
             stack_value.push(higher_byte);
-            stack_pointer = (parseInt(stack_pointer, 16) - 1).toString(16);
-            stack_pointer = fillZero(stack_pointer);
+            stack_pointer = (parseInt(stack_pointer, 16) - 1).toString(16).padStart(4, '0').toUpperCase();
             stack_value.push(lower_byte);
         } else {
             console.log("Stack error: Stack not initialized");
         }
 
-        call_address = parseInt(call_address, 16).toString(16);
-        p_c = programAddressList.indexOf(call_address);
+        address = (parseInt(call_address, 16)).toString(16).padStart(4, '0').toUpperCase();
         console.log(`Going to ${call_address}`);
         console.log(`Stack pointer = ${stack_pointer}`);
         console.log(`Stack = ${stack}`);
         console.log(`Stack value = ${stack_value}`);
-        return p_c;
+        return address;
     } else {
-        return p_c + 1;
+        return (parseInt(address, 16) + 1).toString(16).padStart(4, '0').toUpperCase();
     }
 }
 
-function CMA() {
-    console.log("\n-----CMA-----");
-    reg_value[0] = (0 - parseInt(reg_value[0], 16)).toString(16);
-    reg_value[0] = (parseInt(reg_value[0], 16) + parseInt("FF", 16)).toString(16).slice(-2);
+function CMA(mnemonic) {
+    console.log("-----CMA-----");
+    reg_value[0] = (0 - parseInt(reg_value[0], 16)).toString(16); // Negating value
+    reg_value[0] = (parseInt(reg_value[0], 16) + parseInt("FF", 16)).toString(16).padStart(2, '0').toUpperCase(); // Adding FF
     flag[0] = 1;
     flag[7] = 1;
-    reg_value[0] = fillZero(reg_value[0]);
+    reg_value[0] = reg_value[0].padStart(2, '0').toUpperCase();
     console.log(`[A] = ${reg_value[0]}`);
 }
 
 function CMP(mnemonic) {
-    console.log("\n-----CMP-----");
-    mnemonic = mnemonic.split(" ");
-    let reg_1 = mnemonic[1];
+    console.log("-----CMP-----");
+    let split_mnemonic = mnemonic.split(' ');
+    let reg_1 = split_mnemonic[1];
+    let reg_index = reg_list.indexOf(reg_1);
+
+    if (reg_index === -1) {
+        console.log("Invalid register");
+        return;
+    }
 
     if (reg_1 === "M") {
-        memory_address_M(1);
+        memory_address_M(1); // Assuming memory_address_M is defined elsewhere
     }
 
-    reg_1 = reg_list.indexOf(reg_1);
-    if (parseInt(reg_value[0], 16) < parseInt(reg_value[reg_1], 16)) {
+    if (parseInt(reg_value[0], 16) < parseInt(reg_value[reg_index], 16)) {
         flag[1] = 0;
         flag[7] = 1;
-        console.log(`[A] < [${reg_list[reg_1]}]`);
-    } else if (parseInt(reg_value[0], 16) === parseInt(reg_value[reg_1], 16)) {
+        console.log(`[A] < [${reg_list[reg_index]}]`);
+    } else if (parseInt(reg_value[0], 16) === parseInt(reg_value[reg_index], 16)) {
         flag[1] = 1;
         flag[7] = 0;
-        console.log(`[A] = [${reg_list[reg_1]}]`);
-    } else if (parseInt(reg_value[0], 16) > parseInt(reg_value[reg_1], 16)) {
+        console.log(`[A] = [${reg_list[reg_index]}]`);
+    } else if (parseInt(reg_value[0], 16) > parseInt(reg_value[reg_index], 16)) {
         flag[1] = 0;
         flag[7] = 0;
-        console.log(`[A] > [${reg_list[reg_1]}]`);
+        console.log(`[A] > [${reg_list[reg_index]}]`);
     }
-    console.log(flag);
 }
 
 function CPI(mnemonic) {
-    console.log("\n-----CPI-----");
-    mnemonic = mnemonic.split(" ");
-    let immediate_value = mnemonic[1];
+    console.log("-----CPI-----");
+    let split_mnemonic = mnemonic.split(' ');
+    let immediate_value = split_mnemonic[1];
+
     if (parseInt(reg_value[0], 16) < parseInt(immediate_value, 16)) {
         flag[1] = 0;
         flag[7] = 1;
@@ -480,43 +409,43 @@ function CPI(mnemonic) {
         flag[7] = 0;
         console.log(`[A] > ${immediate_value}`);
     }
-    console.log(flag);
 }
-
 function DAD(mnemonic) {
-    console.log("\n-----DAD-----");
-    mnemonic = mnemonic.split(" ");
-    let reg_1 = mnemonic[1];
-    let reg_1_index = reg_list.indexOf(reg_1);
-    let reg_2_index = reg_1_index + 1;
-
-    reg_value[7] = (parseInt(reg_value[7], 16) + parseInt(reg_value[reg_2_index], 16)).toString(16);
-    if (parseInt(reg_value[7], 16) > 255) {
-        checkFlag(reg_value[7]);
-        reg_value[7] = (parseInt(reg_value[7], 16) - parseInt("100", 16)).toString(16);
-        reg_value[6] = (parseInt(reg_value[6], 16) + parseInt(reg_value[reg_1_index], 16) + 1).toString(16);
-        if (parseInt(reg_value[6], 16) > 255) {
-            checkFlag(reg_value[6]);
-            reg_value[6] = (parseInt(reg_value[6], 16) - parseInt("100", 16)).toString(16);
-        }
+    console.log("-----DAD-----");
+    let split_mnemonic = mnemonic.split(' ');
+    let reg_1 = split_mnemonic[1];
+    if (reg_1 === "SP") {
+        // Handle SP case if needed
     } else {
-        reg_value[6] = (parseInt(reg_value[6], 16) + parseInt(reg_value[reg_1_index], 16)).toString(16);
-        if (parseInt(reg_value[6], 16) > 255) {
-            checkFlag(reg_value[6]);
-            reg_value[6] = (parseInt(reg_value[6], 16) - parseInt("100", 16)).toString(16);
+        let reg_1_index = reg_list.indexOf(reg_1);
+        let reg_2_index = reg_1_index + 1;
+
+        reg_value[7] = (parseInt(reg_value[7], 16) + parseInt(reg_value[reg_2_index], 16)).toString(16);
+        if (parseInt(reg_value[7], 16) > 255) {
+            check_flag(reg_value[7]);
+            reg_value[7] = (parseInt(reg_value[7], 16) - parseInt("100", 16)).toString(16);
+            reg_value[6] = (parseInt(reg_value[6], 16) + parseInt(reg_value[reg_1_index], 16) + 1).toString(16);
+            if (parseInt(reg_value[6], 16) > 255) {
+                check_flag(reg_value[6]);
+                reg_value[6] = (parseInt(reg_value[6], 16) - parseInt("100", 16)).toString(16);
+            }
+        } else {
+            reg_value[6] = (parseInt(reg_value[6], 16) + parseInt(reg_value[reg_1_index], 16)).toString(16);
+            if (parseInt(reg_value[6], 16) > 255) {
+                check_flag(reg_value[6]);
+                reg_value[6] = (parseInt(reg_value[6], 16) - parseInt("100", 16)).toString(16);
+            }
         }
     }
-
-    reg_value[6] = fillZero(reg_value[6]);
-    reg_value[7] = fillZero(reg_value[7]);
-
+    reg_value[6] = reg_value[6].padStart(2, '0').toUpperCase();
+    reg_value[7] = reg_value[7].padStart(2, '0').toUpperCase();
     console.log(`[H] = ${reg_value[6]}`);
     console.log(`[L] = ${reg_value[7]}`);
 }
 
 function DCR(mnemonic) {
-    console.log("\n-----DCR-----");
-    mnemonic = mnemonic.split(" ");
+    console.log("-----DCR-----");
+    mnemonic = mnemonic.split(' ');
     let reg_1 = mnemonic[1];
     let reg_index = reg_list.indexOf(reg_1);
 
@@ -524,43 +453,41 @@ function DCR(mnemonic) {
         memory_address_M(1);
     }
 
-    reg_value[reg_index] = (parseInt(reg_value[reg_index], 16) - 1).toString(16);
+    reg_value[reg_index] = (parseInt(reg_value[reg_index], 16) - 1).toString(16).toUpperCase();
+
     if (reg_1 === "M") {
         memory_address_M(0);
     }
 
     console.log(`[${reg_list[reg_index]}] = ${reg_value[reg_index]}`);
-    checkFlag(reg_value[reg_index]);
-    reg_value[reg_index] = fillZero(reg_value[reg_index]);
+    check_flag(reg_value[reg_index]);
+    reg_value[reg_index] = reg_value[reg_index].padStart(2, '0').toUpperCase();
 }
 
 function DCX(mnemonic) {
-    console.log("\n-----DCX-----");
-    mnemonic = mnemonic.split(" ");
+    console.log("-----DCX-----");
+    mnemonic = mnemonic.split(' ');
     let reg_1 = mnemonic[1];
     let reg_1_index = reg_list.indexOf(reg_1);
-
-    console.log(reg_value[reg_1_index]);
     let reg_2_index = reg_1_index + 1;
-    console.log(reg_value[reg_2_index]);
 
     if (parseInt(reg_value[reg_2_index], 16) === 0) {
-        reg_value[reg_1_index] = (parseInt(reg_value[reg_1_index], 16) - 1).toString(16);
-        reg_value[reg_2_index] = (255).toString(16);
+        reg_value[reg_1_index] = (parseInt(reg_value[reg_1_index], 16) - 1).toString(16).toUpperCase();
+        reg_value[reg_2_index] = 'FF';
     } else {
-        reg_value[reg_2_index] = (parseInt(reg_value[reg_2_index], 16) - 1).toString(16);
+        reg_value[reg_2_index] = (parseInt(reg_value[reg_2_index], 16) - 1).toString(16).toUpperCase();
     }
 
-    reg_value[reg_1_index] = fillZero(reg_value[reg_1_index]);
-    reg_value[reg_2_index] = fillZero(reg_value[reg_2_index]);
+    reg_value[reg_1_index] = reg_value[reg_1_index].padStart(2, '0').toUpperCase();
+    reg_value[reg_2_index] = reg_value[reg_2_index].padStart(2, '0').toUpperCase();
 
     console.log(`[${reg_list[reg_1_index]}] = ${reg_value[reg_1_index]}`);
     console.log(`[${reg_list[reg_2_index]}] = ${reg_value[reg_2_index]}`);
 }
 
 function INR(mnemonic) {
-    console.log("\n-----INR-----");
-    mnemonic = mnemonic.split(" ");
+    console.log("-----INR-----");
+    mnemonic = mnemonic.split(' ');
     let reg_1 = mnemonic[1];
     let reg_index = reg_list.indexOf(reg_1);
 
@@ -568,43 +495,37 @@ function INR(mnemonic) {
         memory_address_M(1);
     }
 
-    reg_value[reg_index] = (parseInt(reg_value[reg_index], 16) + 1).toString(16);
+    reg_value[reg_index] = (parseInt(reg_value[reg_index], 16) + 1).toString(16).toUpperCase();
+
     if (reg_1 === "M") {
         memory_address_M(0);
     }
 
     console.log(`[${reg_list[reg_index]}] = ${reg_value[reg_index]}`);
-    checkFlag(reg_value[reg_index]);
-    reg_value[reg_index] = fillZero(reg_value[reg_index]);
+    check_flag(reg_value[reg_index]);
+    reg_value[reg_index] = reg_value[reg_index].padStart(2, '0').toUpperCase();
 }
 
 function INX(mnemonic) {
-    console.log("\n-----INX-----");
-    mnemonic = mnemonic.split(" ");
+    console.log("-----INX-----");
+    mnemonic = mnemonic.split(' ');
     let reg_1 = mnemonic[1];
     let reg_1_index = reg_list.indexOf(reg_1);
-
-    console.log(reg_value[reg_1_index]);
     let reg_2_index = reg_1_index + 1;
-    console.log(reg_value[reg_2_index]);
 
     if (parseInt(reg_value[reg_2_index], 16) === 255) {
-        reg_value[reg_1_index] = (parseInt(reg_value[reg_1_index], 16) + 1).toString(16);
+        reg_value[reg_1_index] = (parseInt(reg_value[reg_1_index], 16) + 1).toString(16).toUpperCase();
         reg_value[reg_2_index] = "00";
     } else {
-        reg_value[reg_2_index] = (parseInt(reg_value[reg_2_index], 16) + 1).toString(16);
+        reg_value[reg_2_index] = (parseInt(reg_value[reg_2_index], 16) + 1).toString(16).toUpperCase();
     }
 
-    reg_value[reg_1_index] = fillZero(reg_value[reg_1_index]);
-    reg_value[reg_2_index] = fillZero(reg_value[reg_2_index]);
+    reg_value[reg_1_index] = reg_value[reg_1_index].padStart(2, '0').toUpperCase();
+    reg_value[reg_2_index] = reg_value[reg_2_index].padStart(2, '0').toUpperCase();
 
     if (reg_1 === "H") {
-        if (address_location_list.length !== 0) {
-            let M = reg_value[6] + reg_value[7];
-            let M_index = memoryLocationList.indexOf(M);
-            reg_value[8] = memoryLocationValue[M_index];
-            reg_value[8] = fillZero(reg_value[8]);
-        }
+        M = reg_value[6] + reg_value[7];
+        reg_value[8] = memory_location_value[parseInt(M, 16)].toString(16).padStart(2, '0').toUpperCase();
     }
 
     console.log(`[${reg_list[reg_1_index]}] = ${reg_value[reg_1_index]}`);
@@ -612,236 +533,202 @@ function INX(mnemonic) {
 }
 
 function JMP(mnemonic) {
-    console.log("\n-----JMP-----");
-    mnemonic = mnemonic.split(" ");
+    console.log("-----JMP-----");
+    mnemonic = mnemonic.split(' ');
     let jmp_address = mnemonic[1];
-    jmp_address = parseInt(jmp_address, 16).toString(16).toUpperCase().padStart(4, '0')
-    let p_c = programAddressList.indexOf(jmp_address);
-    console.log(`Jump to ${jmp_address}`);
-    return p_c;
+    console.log(`Jumping to ${jmp_address}`);
+    return jmp_address;
 }
 
 function JP(mnemonic) {
-    console.log("\n-----JP-----");
-    mnemonic = mnemonic.split(" ");
+    console.log("-----JP-----");
+    mnemonic = mnemonic.split(' ');
     let jmp_address = mnemonic[1];
-    jmp_address = parseInt(jmp_address, 16).toString(16).toUpperCase().padStart(4, '0')
     if (flag[0] === 0) {
-        let p_c = programAddressList.indexOf(jmp_address);
-        console.log(`Jump to ${jmp_address}`);
-        return p_c;
+        console.log(`Jumping to ${jmp_address}`);
+        return [null, jmp_address];
     } else if (flag[0] === 1) {
-        console.log("Jump completed...");
-        return "A";
+        console.log("No jumping!");
+        let bit = "no jump";
+        return [bit, null];
     }
 }
 
 function JM(mnemonic) {
-    console.log("\n-----JM-----");
-    mnemonic = mnemonic.split(" ");
+    console.log("-----JM-----");
+    mnemonic = mnemonic.split(' ');
     let jmp_address = mnemonic[1];
-    jmp_address = parseInt(jmp_address, 16).toString(16).toUpperCase().padStart(4, '0')
     if (flag[0] === 1) {
-        let p_c = programAddressList.indexOf(jmp_address);
-        console.log(`Jump to ${jmp_address}`);
-        return p_c;
+        console.log(`Jumping to ${jmp_address}`);
+        return [null, jmp_address];
     } else if (flag[0] === 0) {
-        console.log("Jump completed...");
-        return "A";
+        console.log("No jumping!");
+        let bit = "no jump";
+        return [bit, null];
     }
 }
 
 function JPE(mnemonic) {
-    console.log("\n-----JPE-----");
-    mnemonic = mnemonic.split(" ");
+    console.log("-----JPE-----");
+    mnemonic = mnemonic.split(' ');
     let jmp_address = mnemonic[1];
-    jmp_address = parseInt(jmp_address, 16).toString(16).toUpperCase().padStart(4, '0')
     if (flag[5] === 1) {
-        let p_c = programAddressList.indexOf(jmp_address);
-        console.log(`Jump to ${jmp_address}`);
-        return p_c;
+        console.log(`Jumping to ${jmp_address}`);
+        return [null, jmp_address];
     } else if (flag[5] === 0) {
-        console.log("Jump completed...");
-        return "A";
+        console.log("No jumping!");
+        let bit = "no jump";
+        return [bit, null];
     }
 }
 
 function JPO(mnemonic) {
-    console.log("\n-----JPO-----");
-    mnemonic = mnemonic.split(" ");
+    console.log("-----JPO-----");
+    mnemonic = mnemonic.split(' ');
     let jmp_address = mnemonic[1];
-    jmp_address = parseInt(jmp_address, 16).toString(16).toUpperCase().padStart(4, '0')
     if (flag[5] === 0) {
-        let p_c = programAddressList.indexOf(jmp_address);
-        console.log(`Jump to ${jmp_address}`);
-        return p_c;
+        console.log(`Jumping to ${jmp_address}`);
+        return [null, jmp_address];
     } else if (flag[5] === 1) {
-        console.log("Jump completed...");
-        return "A";
+        console.log("No jumping!");
+        let bit = "no jump";
+        return [bit, null];
     }
 }
 
 function JC(mnemonic) {
-    console.log("\n-----JC-----");
-    mnemonic = mnemonic.split(" ");
+    console.log("-----JC-----");
+    mnemonic = mnemonic.split(' ');
     let jmp_address = mnemonic[1];
-    jmp_address = parseInt(jmp_address, 16).toString(16).toUpperCase().padStart(4, '0')
     if (flag[7] === 1) {
-        let p_c = programAddressList.indexOf(jmp_address);
-        console.log(`Jump to ${jmp_address}`);
-        return p_c;
+        console.log(`Jumping to ${jmp_address}`);
+        return [null, jmp_address];
     } else if (flag[7] === 0) {
-        console.log("Jump completed...");
-        return "A";
+        console.log("No jumping!");
+        let bit = "no jump";
+        return [bit, null];
     }
 }
 
 function JNC(mnemonic) {
-    console.log("\n-----JNC-----");
-    mnemonic = mnemonic.split(" ");
+    console.log("-----JNC-----");
+    mnemonic = mnemonic.split(' ');
     let jmp_address = mnemonic[1];
-    console.log(jmp_address)
-    jmp_address = parseInt(jmp_address, 16).toString(16).toUpperCase().padStart(4, '0')
     if (flag[7] === 0) {
-        let p_c = programAddressList.indexOf(jmp_address);
-        console.log(`Jump to ${jmp_address}`);
-        return p_c;
+        console.log(`Jumping to ${jmp_address}`);
+        return [null, jmp_address];
     } else if (flag[7] === 1) {
-        console.log("Jump completed...");
-        return "A";
+        console.log("No jumping!");
+        let bit = "no jump";
+        return [bit, null];
     }
 }
 
 function JZ(mnemonic) {
-    console.log("\n-----JZ-----");
-    mnemonic = mnemonic.split(" ");
+    console.log("-----JZ-----");
+    mnemonic = mnemonic.split(' ');
     let jmp_address = mnemonic[1];
-    jmp_address = parseInt(jmp_address, 16).toString(16).toUpperCase().padStart(4, '0')
     if (flag[1] === 1) {
-        let p_c = programAddressList.indexOf(jmp_address);
-        console.log(`Jump to ${jmp_address}`);
-        return p_c;
+        console.log(`Jumping to ${jmp_address}`);
+        return [null, jmp_address];
     } else if (flag[1] === 0) {
-        console.log("Jump completed...");
-        return "A";
+        console.log("No jumping!");
+        let bit = "no jump";
+        return [bit, null];
     }
 }
 
 function JNZ(mnemonic) {
-    console.log("\n-----JNZ-----");
-    mnemonic = mnemonic.split(" ");
+    console.log("-----JNZ-----");
+    mnemonic = mnemonic.split(' ');
     let jmp_address = mnemonic[1];
-    jmp_address = parseInt(jmp_address, 16).toString(16).toUpperCase().padStart(4, '0')
     if (flag[1] === 0) {
-        let p_c = programAddressList.indexOf(jmp_address);
-        console.log(`Jump to ${jmp_address}`);
-        return p_c;
+        console.log(`Jumping to ${jmp_address}`);
+        return [null, jmp_address];
     } else if (flag[1] === 1) {
-        console.log("\nJump completed...");
-        return "A";
+        console.log("No jumping!");
+        let bit = "no jump";
+        return [bit, null];
     }
 }
 
 function LDA(mnemonic) {
-    console.log("\n-----LDA-----");
-    mnemonic = mnemonic.split(" ");
+    console.log("-----LDA-----");
+    mnemonic = mnemonic.split(' ');
     let address = mnemonic[1];
-    let address_index = memoryLocationList.indexOf(address);
-    reg_value[0] = parseInt(memoryLocationValue[address_index], 16).toString(16);
-    reg_value[0] = fillZero(reg_value[0]);
-    console.log(`[${address}] = ${memoryLocationValue[address_index]}`);
+    reg_value[0] = parseInt(memory_location_value[parseInt(address, 16)], 16).toString(16).padStart(4, '0').toUpperCase();
+    console.log(`[${address}] = ${memory_location_value[parseInt(address, 16)]}`);
     console.log(`[A] = ${reg_value[0]}`);
 }
 
 function LDAX(mnemonic) {
-    console.log("\n-----LDAX-----");
-    mnemonic = mnemonic.split(" ");
+    console.log("-----LDAX-----");
+    mnemonic = mnemonic.split(' ');
     let reg_1 = mnemonic[1];
     reg_1 = reg_list.indexOf(reg_1);
-    let higher_byte = reg_value[reg_1];
-    higher_byte = fillZero(higher_byte);
+    let higher_byte = reg_value[reg_1].toString(16).padStart(2, '0').toUpperCase();
     let reg_2 = reg_1 + 1;
-    let lower_byte = reg_value[reg_2];
-    lower_byte = fillZero(lower_byte);
-    let address = `${higher_byte}${lower_byte}`;
-    let address_index = memoryLocationList.indexOf(address);
-    reg_value[0] = memoryLocationValue[address_index];
-    reg_value[0] = fillZero(reg_value[0]);
+    let lower_byte = reg_value[reg_2].toString(16).padStart(2, '0').toUpperCase();
+    let address = higher_byte + lower_byte;
+    reg_value[0] = memory_location_value[parseInt(address, 16)].toString(16).padStart(2, '0').toUpperCase();
     console.log(`[${reg_list[reg_1]}] = ${reg_value[reg_1]}`);
     console.log(`[${reg_list[reg_2]}] = ${reg_value[reg_2]}`);
-    console.log(`[${address}] = ${memoryLocationValue[address_index]}`);
+    console.log(`[${address}] = ${memory_location_value[parseInt(address, 16)]}`);
     console.log(`[A] = ${reg_value[0]}`);
 }
 
 function LXI(mnemonic) {
-    console.log("\n-----LXI-----");
-    mnemonic = mnemonic.split(" ");
-    let operand = mnemonic[1].split(",");
-    let [higher_byte, lower_byte] = splitAddress(operand[1]);
+    console.log("-----LXI-----");
+    let operand = mnemonic.split(' ')[1].split(',');
+    let [higher_byte, lower_byte] = split_address(operand[1]);
+
     if (operand[0] === "B" || operand[0] === "D" || operand[0] === "H") {
         let reg_1 = reg_list.indexOf(operand[0]);
-        reg_value[reg_1] = parseInt(higher_byte, 16).toString(16);
-        reg_value[reg_1] = fillZero(reg_value[reg_1]);
+        reg_value[reg_1] = parseInt(higher_byte, 16).toString(16).padStart(2, '0').toUpperCase();
         let reg_2 = reg_1 + 1;
-        reg_value[reg_2] = parseInt(lower_byte, 16).toString(16);
-        reg_value[reg_2] = fillZero(reg_value[reg_2]);
+        reg_value[reg_2] = parseInt(lower_byte, 16).toString(16).padStart(2, '0').toUpperCase();
         console.log(`Address = ${operand[1]}`);
         console.log(`[${reg_list[reg_1]}] = ${reg_value[reg_1]}`);
         console.log(`[${reg_list[reg_2]}] = ${reg_value[reg_2]}`);
     } else if (operand[0] === "SP") {
-        stack_pointer = operand[1];
-        stack_pointer = fillZero(stack_pointer);
-        stack[0] = stack_pointer;
+        stack[0] = parseInt(operand[1], 16).toString(16).padStart(4, '0').toUpperCase();
     } else {
         console.log("Register invalid");
     }
+
     if (operand[0] === "H") {
-        if (address_location_list.length !== 0) {
-            let M = `${reg_value[6]}${reg_value[7]}`;
-            let M_index = memoryLocationList.indexOf(M);
-            reg_value[8] = memoryLocationValue[M_index];
-            reg_value[8] = fillZero(reg_value[8]);
-            console.log(`[M] = [${operand[1]}] = ${reg_value[8]}`);
-        }
+        reg_value[8] = memory_location_value[parseInt(operand[1], 16)].toString(16).padStart(2, '0').toUpperCase();
+        console.log(`[M] = [${operand[1]}] = ${reg_value[8]}`);
     }
 }
-
 function LHLD(mnemonic) {
-    console.log("\n-----LHLD-----");
-    mnemonic = mnemonic.split(" ");
-    let address = mnemonic[1];
-    let address_index = memoryLocationList.indexOf(address);
-    reg_value[7] = memoryLocationValue[address_index];
-    reg_value[7] = fillZero(reg_value[7]);
-    address_index += 1;
-    reg_value[6] = memoryLocationValue[address_index];
-    reg_value[6] = fillZero(reg_value[6]);
-    console.log(`[${address}] = ${memoryLocationValue[address_index]}`);
+    console.log("-----LHLD-----");
+    mnemonic = mnemonic.split(' ');
+    let address = parseInt(mnemonic[1], 16);
+    reg_value[7] = memory_location_value[address].toString(16).padStart(2, '0').toUpperCase();
+    reg_value[6] = memory_location_value[address + 1].toString(16).padStart(2, '0').toUpperCase();
+    console.log(`[${address}] = ${memory_location_value[address]}`);
     console.log(`[H] = ${reg_value[6]}`);
     console.log(`[L] = ${reg_value[7]}`);
 }
 
 function SHLD(mnemonic) {
-    console.log("\n-----SHLD-----");
-    mnemonic = mnemonic.split(" ");
-    let address = mnemonic[1];
-    let address_index = memoryLocationList.indexOf(address);
-    memoryLocationValue[address_index] = reg_value[7];
-    memoryLocationValue[address_index] = fillZero(memoryLocationValue[address_index]);
-    address_index += 1;
-    memoryLocationValue[address_index] = reg_value[6];
-    memoryLocationValue[address_index] = fillZero(memoryLocationValue[address_index]);
+    console.log("-----SHLD-----");
+    mnemonic = mnemonic.split(' ');
+    let address = parseInt(mnemonic[1], 16);
+    memory_location_value[address] = reg_value[7].toString(16).padStart(2, '0').toUpperCase();
+    memory_location_value[address + 1] = reg_value[6].toString(16).padStart(2, '0').toUpperCase();
     console.log(`[H] = ${reg_value[6]}`);
     console.log(`[L] = ${reg_value[7]}`);
-    console.log(`[${address}] = ${memoryLocationValue[address_index]}`);
+    console.log(`[${address}] = ${memory_location_value[address]}`);
 }
 
 function MOV(mnemonic) {
-    console.log("\n-----MOV-----");
-    mnemonic = mnemonic.split(" ");
-    mnemonic = mnemonic[1].split(",");
-    let reg_1 = mnemonic[0];
-    let reg_2 = mnemonic[1];
+    console.log("-----MOV-----");
+    mnemonic = mnemonic.split(' ');
+    let operand = mnemonic[1].split(',');
+    let reg_1 = operand[0];
+    let reg_2 = operand[1];
     if (reg_2 === "M") {
         memory_address_M(1);
     }
@@ -855,78 +742,71 @@ function MOV(mnemonic) {
     console.log(`[${reg_list[reg_1_index]}] = ${reg_value[reg_1_index]}`);
 }
 
-function MVI(mnemonic, addressLocationList = null, addressValueList = null) {
-    console.log("\n-----MVI-----");
-    mnemonic = mnemonic.split(" ");
-    let operand = mnemonic[1].split(",");
-    let reg_1 = reg_list.indexOf(operand[0]);
+function MVI(mnemonic) {
+    console.log("-----MVI-----");
+    mnemonic = mnemonic.split(' ');
+    let operand = mnemonic[1].split(',');
+    let reg_1_index = reg_list.indexOf(operand[0]);
     if (operand[0] === "M") {
         memory_address_M(0);
     }
-    if (operand[1].length === 2) {
-        operand[1] = parseInt(operand[1], 16).toString(16);
-        reg_value[reg_1] = operand[1];
-    } else if (operand[1].length === 4) {
-        let reg_temp = memoryLocationList.indexOf(operand[1]);
-        reg_value[reg_1] = memoryLocationValue[reg_temp];
-        console.log(`[${operand[1]}] = ${addressValueList[reg_temp]}`);
-    }
-    reg_value[reg_1] = fillZero(reg_value[reg_1]);
-    console.log(`[${reg_list[reg_1]}] = ${reg_value[reg_1]}`);
+    reg_value[reg_1_index] = parseInt(operand[1], 16).toString(16).padStart(2, '0').toUpperCase();
+    console.log(`[${reg_list[reg_1_index]}] = ${reg_value[reg_1_index]}`);
 }
 
 function ORA(mnemonic) {
-    console.log("\n-----ORA-----");
-    mnemonic = mnemonic.split(" ");
+    console.log("-----ORA-----");
+    mnemonic = mnemonic.split(' ');
     let reg_1 = mnemonic[1];
     let reg_1_index = reg_list.indexOf(reg_1);
     if (reg_1 === "M") {
         memory_address_M(1);
     }
-    reg_value[0] = (parseInt(reg_value[0], 16) | parseInt(reg_value[reg_1_index], 16)).toString(16);
+    reg_value[0] = (parseInt(reg_value[0], 16) || parseInt(reg_value[reg_1_index], 16)).toString(16);
     console.log(`[A] = ${reg_value[0]}`);
-    checkAccumulator();
-    reg_value[0] = fillZero(reg_value[0]);
+    check_accumulator();
+    reg_value[0] = reg_value[0].padStart(2, '0').toUpperCase();
 }
 
 function ORI(mnemonic) {
-    console.log("\n-----ORI-----");
-    mnemonic = mnemonic.split(" ");
+    console.log("-----ORI-----");
+    mnemonic = mnemonic.split(' ');
     let immediate_value = mnemonic[1];
     if (immediate_value.length === 2) {
-        reg_value[0] = (parseInt(reg_value[0], 16) | parseInt(immediate_value, 16)).toString(16);
+        reg_value[0] = (parseInt(reg_value[0], 16) || parseInt(immediate_value, 16)).toString(16);
     } else {
         console.log("Invalid value: Expected value is one byte hexadecimal value");
     }
     console.log(`[A] = ${reg_value[0]}`);
-    checkAccumulator();
-    reg_value[0] = fillZero(reg_value[0]);
+    check_accumulator();
+    reg_value[0] = reg_value[0].padStart(2, '0').toUpperCase();
 }
 
 function PUSH(mnemonic) {
-    console.log("\n-----PUSH-----");
-    mnemonic = mnemonic.split(" ");
+    console.log("-----PUSH-----");
+    mnemonic = mnemonic.split(' ');
     let reg_1 = mnemonic[1];
     if (reg_1 === "PSW") {
-        let higher_byte = fillZero(reg_value[0]);
-        stack_value.push(higher_byte);
-        let lower_byte = fillZero(parseInt(reg_value[1].join(''), 2).toString(16));
-        stack_pointer = fillZero((parseInt(stack_pointer, 16) - 1).toString(16));
+        let higher_byte = reg_value[0].toString(16).padStart(2, '0').toUpperCase();
+        let lower_byte = reg_value[1].join('').toString(2);
+        let flag = parseInt(lower_byte, 2).toString(16).padStart(2, '0').toUpperCase();
+        stack_value.push(flag);
+        stack_pointer = (parseInt(stack_pointer, 16) - 1).toString(16).padStart(4, '0').toUpperCase();
         stack.push(stack_pointer);
-        stack_value.push(lower_byte);
-        stack_pointer = fillZero((parseInt(stack_pointer, 16) - 1).toString(16));
+        stack_value.push(higher_byte);
+        stack_pointer = (parseInt(stack_pointer, 16) - 1).toString(16).padStart(4, '0').toUpperCase();
         console.log(`Higher byte = [A] = ${higher_byte}`);
-        console.log(`Lower byte = flag = ${lower_byte}`);
+        console.log(`Lower byte = flag = ${flag}`);
     } else {
         reg_1 = reg_list.indexOf(reg_1);
-        let higher_byte = fillZero(reg_value[reg_1]);
+        let higher_byte = reg_value[reg_1].toString(16).padStart(2, '0').toUpperCase();
         let reg_2 = reg_1 + 1;
-        let lower_byte = fillZero(reg_value[reg_2]);
-        stack_value.push(higher_byte);
-        stack_pointer = fillZero((parseInt(stack_pointer, 16) - 1).toString(16));
-        stack.push(stack_pointer);
+        let lower_byte = reg_value[reg_2].toString(16).padStart(2, '0').toUpperCase();
         stack_value.push(lower_byte);
-        stack_pointer = fillZero((parseInt(stack_pointer, 16) - 1).toString(16));
+        stack_pointer = (parseInt(stack_pointer, 16) - 1).toString(16).padStart(4, '0').toUpperCase();
+        stack.push(stack_pointer);
+        stack_value.push(higher_byte);
+        stack_pointer = (parseInt(stack_pointer, 16) - 1).toString(16).padStart(4, '0').toUpperCase();
         console.log(`Higher byte = [${reg_list[reg_1]}] = ${higher_byte}`);
         console.log(`Lower byte = [${reg_list[reg_2]}] = ${lower_byte}`);
     }
@@ -936,112 +816,112 @@ function PUSH(mnemonic) {
 }
 
 function POP(mnemonic) {
-    console.log("\n-----POP-----");
-    mnemonic = mnemonic.split(" ");
+    console.log("-----POP-----");
+    mnemonic = mnemonic.split(' ');
     let reg_1 = mnemonic[1];
     if (reg_1 === "PSW") {
-        let lower_byte = fillZero(stack_value.pop());
-        let flag = (parseInt(lower_byte, 16)).toString(2).padStart(8, '0');
+        let lower_byte = stack_value.pop().toString(16).padStart(2, '0').toUpperCase();
+        let flag = parseInt(lower_byte, 16).toString(2).padStart(8, '0').split('');
         stack.pop();
-        reg_value[1] = flag.split('');
-        stack_pointer = fillZero((parseInt(stack_pointer, 16) + 1).toString(16));
-        let higher_byte = fillZero(stack_value.pop());
-        reg_value[0] = higher_byte;
-        stack_pointer = fillZero((parseInt(stack_pointer, 16) + 1).toString(16));
-        console.log(`Flag_binary = ${flag}`);
-        console.log(`Flag = ${reg_value[1]}`);
+        console.log(`Flag_binary = ${flag.join('')}`);
+        reg_value[1] = flag;
+        stack_pointer = (parseInt(stack_pointer, 16) + 1).toString(16).padStart(4, '0').toUpperCase();
+        let higher_byte = stack_value.pop().toString(16).padStart(2, '0').toUpperCase();
+        stack_pointer = (parseInt(stack_pointer, 16) + 1).toString(16).padStart(4, '0').toUpperCase();
         console.log(`Higher byte = [A] = ${higher_byte}`);
         console.log(`Lower byte = flag = ${lower_byte}`);
     } else {
         reg_1 = reg_list.indexOf(reg_1);
         let reg_2 = reg_1 + 1;
-        let lower_byte = fillZero(stack_value.pop());
-        reg_value[reg_2] = lower_byte;
+        reg_value[reg_2] = stack_value.pop().toString(16).padStart(2, '0').toUpperCase();
         stack.pop();
-        stack_pointer = fillZero((parseInt(stack_pointer, 16) + 1).toString(16));
-        let higher_byte = fillZero(stack_value.pop());
-        reg_value[reg_1] = higher_byte;
-        stack_pointer = fillZero((parseInt(stack_pointer, 16) + 1).toString(16));
-        console.log(`Higher byte = [${reg_list[reg_1]}] = ${higher_byte}`);
-        console.log(`Lower byte = [${reg_list[reg_2]}] = ${lower_byte}`);
+        stack_pointer = (parseInt(stack_pointer, 16) + 1).toString(16).padStart(4, '0').toUpperCase();
+        reg_value[reg_1] = stack_value.pop().toString(16).padStart(2, '0').toUpperCase();
+        stack_pointer = (parseInt(stack_pointer, 16) + 1).toString(16).padStart(4, '0').toUpperCase();
+        console.log(`Higher byte = [${reg_list[reg_1]}] = ${reg_value[reg_1]}`);
+        console.log(`Lower byte = [${reg_list[reg_2]}] = ${reg_value[reg_2]}`);
     }
     console.log(`Stack pointer = ${stack_pointer}`);
     console.log(`Stack = ${stack}`);
     console.log(`Stack value = ${stack_value}`);
 }
 
-function RET() {
-    console.log("\n-----RET-----");
-    let lower_byte = fillZero(stack_value.pop());
-    stack_pointer = fillZero((parseInt(stack_pointer, 16) + 1).toString(16));
-    let higher_byte = fillZero(stack_value.pop());
-    ret_address = fillZero(higher_byte + lower_byte);
+function RET(mnemonic) {
+    console.log("-----RET-----");
+    let lower_byte = stack_value.pop().toString(16).padStart(2, '0').toUpperCase();
+    stack_pointer = (parseInt(stack_pointer, 16) + 1).toString(16).padStart(4, '0').toUpperCase();
+    let higher_byte = stack_value.pop().toString(16).padStart(2, '0').toUpperCase();
+    ret_address = (higher_byte + lower_byte).padStart(4, '0').toUpperCase();
     console.log(`Returning to ${ret_address}`);
 }
 
-function RC() {
-    console.log("\n-----RC-----");
+function RC(mnemonic) {
+    console.log("-----RC-----");
+    let return_flag = false;
     if (flag[7] === 1) {
-        let lower_byte = fillZero(stack_value.pop());
-        stack_pointer = fillZero((parseInt(stack_pointer, 16) + 1).toString(16));
-        let higher_byte = fillZero(stack_value.pop());
-        ret_address = fillZero(higher_byte + lower_byte);
+        let lower_byte = stack_value.pop().toString(16).padStart(2, '0').toUpperCase();
+        stack_pointer = (parseInt(stack_pointer, 16) + 1).toString(16).padStart(4, '0').toUpperCase();
+        let higher_byte = stack_value.pop().toString(16).padStart(2, '0').toUpperCase();
+        ret_address = (higher_byte + lower_byte).padStart(4, '0').toUpperCase();
         console.log(`Returning to ${ret_address}`);
-        return true;
-    } else {
-        return false;
+        return_flag = true;
     }
+    return return_flag;
 }
 
-function RNC() {
-    console.log("\n-----RNC-----");
+function RNC(mnemonic) {
+    console.log("-----RNC-----");
+    let return_flag = false;
     if (flag[7] === 0) {
-        let lower_byte = fillZero(stack_value.pop());
-        stack_pointer = fillZero((parseInt(stack_pointer, 16) + 1).toString(16));
-        let higher_byte = fillZero(stack_value.pop());
-        ret_address = fillZero(higher_byte + lower_byte);
+        let lower_byte = stack_value.pop().toString(16).padStart(2, '0').toUpperCase();
+        stack_pointer = (parseInt(stack_pointer, 16) + 1).toString(16).padStart(4, '0').toUpperCase();
+        let higher_byte = stack_value.pop().toString(16).padStart(2, '0').toUpperCase();
+        ret_address = (higher_byte + lower_byte).padStart(4, '0').toUpperCase();
         console.log(`Returning to ${ret_address}`);
-        return true;
-    } else {
-        return false;
+        return_flag = true;
     }
+    return return_flag;
 }
 
-function RP() {
-    console.log("\n-----RP-----");
+function RP(mnemonic) {
+    console.log("-----RP-----");
+    let return_value;
     if (flag[0] === 0) {
-        let lower_byte = fillZero(stack_value.pop());
-        stack_pointer = fillZero((parseInt(stack_pointer, 16) + 1).toString(16));
-        let higher_byte = fillZero(stack_value.pop());
-        ret_address = fillZero(higher_byte + lower_byte);
+        let lower_byte = stack_value.pop().toString(16).padStart(2, '0').toUpperCase();
+        stack_pointer = (parseInt(stack_pointer, 16) + 1).toString(16).padStart(4, '0').toUpperCase();
+        let higher_byte = stack_value.pop().toString(16).padStart(2, '0').toUpperCase();
+        ret_address = (higher_byte + lower_byte).padStart(4, '0').toUpperCase();
         console.log(`Returning to ${ret_address}`);
-        return true;
+        return_value = true;
     } else {
-        return false;
+        return_value = false;
     }
+    return return_value;
 }
 
-function RM() {
-    console.log("\n-----RM-----");
+function RM(mnemonic) {
+    console.log("-----RM-----");
+    let return_value;
     if (flag[0] === 1) {
-        let lower_byte = fillZero(stack_value.pop());
-        stack_pointer = fillZero((parseInt(stack_pointer, 16) + 1).toString(16));
-        let higher_byte = fillZero(stack_value.pop());
-        ret_address = fillZero(higher_byte + lower_byte);
+        let lower_byte = stack_value.pop().toString(16).padStart(2, '0').toUpperCase();
+        stack_pointer = (parseInt(stack_pointer, 16) + 1).toString(16).padStart(4, '0').toUpperCase();
+        let higher_byte = stack_value.pop().toString(16).padStart(2, '0').toUpperCase();
+        ret_address = (higher_byte + lower_byte).padStart(4, '0').toUpperCase();
         console.log(`Returning to ${ret_address}`);
-        return true;
+        return_value = true;
     } else {
-        return false;
+        return_value = false;
     }
+    return return_value;
 }
 
-function RPE() {
-    console.log("\n-----RPE-----");
+function RPE(mnemonic) {
+    console.log("-----RPE-----");
     if (flag[5] === 1) {
-        let lower_byte = fillZero(stack_value.pop());
-        stack_pointer = fillZero((parseInt(stack_pointer, 16) + 1).toString(16));
-        let higher_byte = fillZero(stack_value.pop());
-        ret_address = fillZero(higher_byte + lower_byte);
+        let lower_byte = stack_value.pop().toString(16).padStart(2, '0').toUpperCase();
+        stack_pointer = (parseInt(stack_pointer, 16) + 1).toString(16).padStart(4, '0').toUpperCase();
+        let higher_byte = stack_value.pop().toString(16).padStart(2, '0').toUpperCase();
+        ret_address = (higher_byte + lower_byte).padStart(4, '0').toUpperCase();
         console.log(`Returning to ${ret_address}`);
         return true;
     } else {
@@ -1049,13 +929,13 @@ function RPE() {
     }
 }
 
-function RPO() {
-    console.log("\n-----RPO-----");
+function RPO(mnemonic) {
+    console.log("-----RPO-----");
     if (flag[5] === 0) {
-        let lower_byte = fillZero(stack_value.pop());
-        stack_pointer = fillZero((parseInt(stack_pointer, 16) + 1).toString(16));
-        let higher_byte = fillZero(stack_value.pop());
-        ret_address = fillZero(higher_byte + lower_byte);
+        let lower_byte = stack_value.pop().toString(16).padStart(2, '0').toUpperCase();
+        stack_pointer = (parseInt(stack_pointer, 16) + 1).toString(16).padStart(4, '0').toUpperCase();
+        let higher_byte = stack_value.pop().toString(16).padStart(2, '0').toUpperCase();
+        ret_address = (higher_byte + lower_byte).padStart(4, '0').toUpperCase();
         console.log(`Returning to ${ret_address}`);
         return true;
     } else {
@@ -1063,13 +943,13 @@ function RPO() {
     }
 }
 
-function RZ() {
-    console.log("\n-----RZ-----");
+function RZ(mnemonic) {
+    console.log("-----RZ-----");
     if (flag[1] === 1) {
-        let lower_byte = fillZero(stack_value.pop());
-        stack_pointer = fillZero((parseInt(stack_pointer, 16) + 1).toString(16));
-        let higher_byte = fillZero(stack_value.pop());
-        ret_address = fillZero(higher_byte + lower_byte);
+        let lower_byte = stack_value.pop().toString(16).padStart(2, '0').toUpperCase();
+        stack_pointer = (parseInt(stack_pointer, 16) + 1).toString(16).padStart(4, '0').toUpperCase();
+        let higher_byte = stack_value.pop().toString(16).padStart(2, '0').toUpperCase();
+        ret_address = (higher_byte + lower_byte).padStart(4, '0').toUpperCase();
         console.log(`Returning to ${ret_address}`);
         return true;
     } else {
@@ -1077,70 +957,60 @@ function RZ() {
     }
 }
 
-function RNZ() {
-    console.log("\n-----RNZ-----");
+function RNZ(mnemonic) {
+    console.log("-----RNZ-----");
     if (flag[1] === 0) {
-        let lower_byte = fillZero(stack_value.pop());
-        stack_pointer = fillZero((parseInt(stack_pointer, 16) + 1).toString(16));
-        let higher_byte = fillZero(stack_value.pop());
-        ret_address = fillZero(higher_byte + lower_byte);
+        let lower_byte = stack_value.pop().toString(16).padStart(2, '0').toUpperCase();
+        stack_pointer = (parseInt(stack_pointer, 16) + 1).toString(16).padStart(4, '0').toUpperCase();
+        let higher_byte = stack_value.pop().toString(16).padStart(2, '0').toUpperCase();
+        ret_address = (higher_byte + lower_byte).padStart(4, '0').toUpperCase();
         console.log(`Returning to ${ret_address}`);
         return true;
     } else {
         return false;
     }
 }
-
-function RLC() {
-    console.log("\n-----RLC-----");
+function RLC(mnemonic) {
+    console.log("-----RLC-----");
     reg_value[0] = parseInt(reg_value[0], 16) << 1;
-    reg_value[0] = reg_value[0].toString(16);
-    reg_value[0] = fillZero(reg_value[0]);
+    reg_value[0] = reg_value[0].toString(16).padStart(2, '0').toUpperCase();
     console.log(`[A] = ${reg_value[0]}`);
 }
 
-function RRC() {
-    console.log("\n-----RRC-----");
+function RRC(instruction) {
+    console.log("-----RRC-----");
     reg_value[0] = parseInt(reg_value[0], 16) >> 1;
-    reg_value[0] = reg_value[0].toString(16);
-    reg_value[0] = fillZero(reg_value[0]);
+    reg_value[0] = reg_value[0].toString(16).padStart(2, '0').toUpperCase();
     console.log(`[A] = ${reg_value[0]}`);
 }
 
 function STA(mnemonic) {
-    console.log("\n-----STA-----");
-    mnemonic = mnemonic.split(" ");
-    let address = mnemonic[1];
-    let address_index = memoryLocationList.indexOf(address);
-    memoryLocationValue[address_index] = reg_value[0];
-    memoryLocationValue[address_index] = fillZero(memoryLocationValue[address_index]);
+    console.log("-----STA-----");
+    mnemonic = mnemonic.split(' ');
+    let address = parseInt(mnemonic[1], 16);
+    memory_location_value[address] = reg_value[0].toString(16).padStart(2, '0').toUpperCase();
     console.log(`[A] = ${reg_value[0]}`);
-    console.log(`[${address}] = ${memoryLocationValue[address_index]}`);
+    console.log(`[${address}] = ${memory_location_value[address]}`);
 }
 
 function STAX(mnemonic) {
-    console.log("\n-----STAX-----");
-    mnemonic = mnemonic.split(" ");
-    let reg_1 = mnemonic[1];
-    reg_1 = reg_list.indexOf(reg_1);
-    let higher_byte = reg_value[reg_1];
-    higher_byte = fillZero(higher_byte);
+    console.log("-----STAX-----");
+    mnemonic = mnemonic.split(' ');
+    let reg_1 = reg_list.indexOf(mnemonic[1]);
+    let higher_byte = reg_value[reg_1].toString(16).padStart(2, '0').toUpperCase();
     let reg_2 = reg_1 + 1;
-    let lower_byte = reg_value[reg_2];
-    lower_byte = fillZero(lower_byte);
+    let lower_byte = reg_value[reg_2].toString(16).padStart(2, '0').toUpperCase();
     let address = `${higher_byte}${lower_byte}`;
-    let address_index = memoryLocationList.indexOf(address);
-    reg_value[0] = fillZero(reg_value[0]);
-    memoryLocationValue[address_index] = reg_value[0];
+    memory_location_value[parseInt(address, 16)] = reg_value[0];
     console.log(`[A] = ${reg_value[0]}`);
     console.log(`[${reg_list[reg_1]}] = ${reg_value[reg_1]}`);
     console.log(`[${reg_list[reg_2]}] = ${reg_value[reg_2]}`);
-    console.log(`[${address}] = ${memoryLocationValue[address_index]}`);
+    console.log(`[${address}] = ${memory_location_value[parseInt(address, 16)]}`);
 }
 
 function SUB(mnemonic) {
-    console.log("\n-----SUB-----");
-    mnemonic = mnemonic.split(" ");
+    console.log("-----SUB-----");
+    mnemonic = mnemonic.split(' ');
     let reg_1 = mnemonic[1];
     let reg_1_index = reg_list.indexOf(reg_1);
     if (reg_1 === "M") {
@@ -1149,62 +1019,60 @@ function SUB(mnemonic) {
     if (parseInt(reg_value[0], 16) > parseInt(reg_value[reg_1_index], 16)) {
         reg_value[0] = (parseInt(reg_value[0], 16) - parseInt(reg_value[reg_1_index], 16)).toString(16);
     } else if (parseInt(reg_value[0], 16) === parseInt(reg_value[reg_1_index], 16)) {
-        reg_value[0] = "0";
+        reg_value[0] = '0';
+        flag[1] = 1;
     } else if (parseInt(reg_value[0], 16) < parseInt(reg_value[reg_1_index], 16)) {
-        reg_value[0] = (parseInt(reg_value[0], 16) - parseInt(reg_value[reg_1_index], 16)).toString(16);
-        reg_value[0] = (parseInt(reg_value[0], 16) + parseInt("100", 16)).toString(16);
+        reg_value[0] = ((parseInt(reg_value[0], 16) - parseInt(reg_value[reg_1_index], 16)) + 0x100).toString(16).slice(1);
         flag[0] = 1;
         flag[7] = 1;
     }
-    reg_value[0] = fillZero(reg_value[0]);
+    reg_value[0] = reg_value[0].padStart(2, '0').toUpperCase();
     console.log(`[A] = ${reg_value[0]}`);
     console.log(flag);
 }
 
 function SUI(mnemonic) {
-    console.log("\n-----SUI-----");
-    mnemonic = mnemonic.split(" ");
+    console.log("-----SUI-----");
+    mnemonic = mnemonic.split(' ');
     let immediate_value = mnemonic[1];
     if (immediate_value.length === 2) {
         if (parseInt(reg_value[0], 16) > parseInt(immediate_value, 16)) {
             reg_value[0] = (parseInt(reg_value[0], 16) - parseInt(immediate_value, 16)).toString(16);
-        } else {
-            reg_value[0] = (parseInt(reg_value[0], 16) - parseInt(immediate_value, 16)).toString(16);
-            reg_value[0] = (parseInt(reg_value[0], 16) + parseInt("100", 16)).toString(16);
+        } else if (parseInt(reg_value[0], 16) === parseInt(immediate_value, 16)) {
+            reg_value[0] = '0';
+            flag[1] = 1;
+        } else if (parseInt(reg_value[0], 16) < parseInt(immediate_value, 16)) {
+            reg_value[0] = ((parseInt(reg_value[0], 16) - parseInt(immediate_value, 16)) + 0x100).toString(16).slice(1);
             flag[0] = 1;
             flag[7] = 1;
         }
     } else {
         console.log("Invalid value: Expected value is one byte hexadecimal value");
     }
+    reg_value[0] = reg_value[0].padStart(2, '0').toUpperCase();
     console.log(`[A] = ${reg_value[0]}`);
-    reg_value[0] = fillZero(reg_value[0]);
 }
 
 function XCHG(mnemonic) {
-    console.log("\n-----XCHG-----");
+    console.log("-----XCHG-----");
     console.log("Before: ");
     console.log(`[H] = ${reg_value[6]}`);
     console.log(`[L] = ${reg_value[7]}`);
     console.log(`[D] = ${reg_value[4]}`);
     console.log(`[E] = ${reg_value[5]}`);
-
     let reg_H = reg_value[6];
     let reg_L = reg_value[7];
     let reg_D = reg_value[4];
     let reg_E = reg_value[5];
-
     reg_value[6] = reg_value[4];
     reg_value[7] = reg_value[5];
     reg_value[4] = reg_H;
     reg_value[5] = reg_L;
-
-    reg_value[4] = fillZero(reg_value[4]);
-    reg_value[5] = fillZero(reg_value[5]);
-    reg_value[6] = fillZero(reg_value[6]);
-    reg_value[7] = fillZero(reg_value[7]);
-
-    console.log("\nAfter: ");
+    reg_value[4] = reg_value[4].padStart(2, '0').toUpperCase();
+    reg_value[5] = reg_value[5].padStart(2, '0').toUpperCase();
+    reg_value[6] = reg_value[6].padStart(2, '0').toUpperCase();
+    reg_value[7] = reg_value[7].padStart(2, '0').toUpperCase();
+    console.log("After: ");
     console.log(`[H] = ${reg_value[6]}`);
     console.log(`[L] = ${reg_value[7]}`);
     console.log(`[D] = ${reg_value[4]}`);
@@ -1212,39 +1080,37 @@ function XCHG(mnemonic) {
 }
 
 function XRA(mnemonic) {
-    console.log("\n-----XRA-----");
-    mnemonic = mnemonic.split(" ");
-    let reg_1 = mnemonic[1];
-    reg_1 = reg_list.indexOf(reg_1);
-
-    if (reg_1 === "M") {
-        memory_address_M(1);
+    console.log("-----XRA-----");
+    mnemonic = mnemonic.split(' ');
+    let reg1 = mnemonic[1];
+    let reg_index = reg_list.indexOf(reg1);
+    if (reg_index !== -1) {
+        if (reg1 === 'M') {
+            memory_address_M(1);
+        }
+        reg_value[0] = (parseInt(reg_value[0], 16) ^ parseInt(reg_value[reg_index], 16)).toString(16);
+        console.log(`[A] = ${reg_value[0]}`);
+        check_accumulator();
+        reg_value[0] = reg_value[0].padStart(2, '0').toUpperCase();
     }
-
-    reg_value[0] = (parseInt(reg_value[0], 16) ^ parseInt(reg_value[reg_1], 16)).toString(16);
-    console.log(`[A] = ${reg_value[0]}`);
-    checkAccumulator();
-    reg_value[0] = fillZero(reg_value[0]);
 }
 
 function XRI(mnemonic) {
-    console.log("\n-----XRI-----");
-    mnemonic = mnemonic.split(" ");
+    console.log("-----XRI-----");
+    mnemonic = mnemonic.split(' ');
     let immediate_value = mnemonic[1];
-
     if (immediate_value.length === 2) {
         reg_value[0] = (parseInt(reg_value[0], 16) ^ parseInt(immediate_value, 16)).toString(16);
     } else {
         console.log("Invalid value: Expected value is one byte hexadecimal value");
     }
-
     console.log(`[A] = ${reg_value[0]}`);
     checkAccumulator();
-    reg_value[0] = fillZero(reg_value[0]);
+    reg_value[0] = reg_value[0].padStart(2, '0').toUpperCase();
 }
 
-function checkAccumulator() {
-    console.log("-----Check Accumulator-----");
+function check_accumulator() {
+    console.log("Checking Accumulator...");
     if (parseInt(reg_value[0], 16) === 0) {
         flag[1] = 1;
     } else if (parseInt(reg_value[0], 16) !== 0) {
@@ -1258,56 +1124,49 @@ function checkAccumulator() {
     console.log(`Flag = ${flag}`);
 }
 
-function checkFlag(regName) {
-    console.log("-----Check Flag-----");
-    if (parseInt(regName, 16) === 0) {
+function check_flag(reg_name) {
+    console.log("Checking Flag...");
+    if (parseInt(reg_name, 16) === 0) {
         flag[1] = 1;
-    } else if (parseInt(regName, 16) !== 0) {
+    } else if (parseInt(reg_name, 16) !== 0) {
         flag[1] = 0;
     }
-    if (parseInt(regName, 16) > 255) {
+    if (parseInt(reg_name, 16) > 255) {
         flag[7] = 1;
-    } else if (parseInt(regName, 16) <= 255) {
+    } else if (parseInt(reg_name, 16) <= 255) {
         flag[7] = 0;
     }
     console.log(`Flag = ${flag}`);
 }
 
-function fillZero(regName) {
-    if (regName === null) {
-        return regName;
-    } else {
-        if (regName.length === 1) {
-            regName = regName.toString(16).toUpperCase().padStart(2, '0')
-            return regName.toUpperCase();
-        } else if (regName.length === 3) {
-            regName = regName.toString(16).toUpperCase().padStart(4, '0')
-            return regName
-        } else {
-            return regName
-        }
-    }
+function split_address(address) {
+    // console.log("-----Split Address-----");
+    let higher_byte = address.substr(0, 2).padStart(2, '0').toUpperCase();
+    let lower_byte = address.substr(2).padStart(2, '0').toUpperCase();
+    return [higher_byte, lower_byte];
 }
 
-function splitAddress(address) {
-    console.log("-----Split Address-----")
-    console.log(address)
-    let higherByte = address.substring(0, 2);
-    let lowerByte = address.substring(2);
-    console.log(`${higherByte}, ${lowerByte}`)
-    return [higherByte.toUpperCase(), lowerByte.toUpperCase()];
-}
+// function split_address(address) {
+//     return [address.substring(0, 2), address.substring(2)];
+// }
 
-function byte8085(mnemonic) {
-    let t = 0
-    console.log(mnemonic)
-    let opcode = mnemonic.split(" ")[0]
-    console.log(`opcode = ${opcode}`)
-
-    one_byte = ["MOV", "ADD", "CMP", "CMA", "INR", "INX", "DCR", "DCX", "DAD", "LDAX", "STAX", "HLT", "SUB", "XCHG", "ANA", "ORA", "XRA", "RRC", "RLC", "RET", "RC", "RNC", "RP", "RM", "RPE", "RPO", "RZ", "RNZ", "PUSH", "POP"];
-    two_byte = ["MVI", "ADI", "ANI", "ORI", "XRI", "ACI", "SUI", "CPI"];
-    three_byte = ["LDA", "LXI", "STA", "JMP", "CALL", "CC", "CNC", "CP", "CM", "CPE", "CPO", "CZ", "CNZ", "LHLD", "SHLD", "JC", "JNC", "JZ", "JNZ", "JP", "JM", "JPE", "JPO"];
-
+function byte_8085(mnemonic) {
+    let t = 0;
+    let opcode = mnemonic.split(" ")[0];
+    let one_byte = [
+        "MOV", "ADD", "CMP", "CMA", "INR", "INX", "DCR", "DCX", "DAD",
+        "LDAX", "STAX", "HLT", "SUB", "XCHG", "ANA", "ORA", "XRA", "RRC",
+        "RLC", "RET", "RC", "RNC", "RP", "RM", "RPE", "RPO", "RZ", "RNZ",
+        "PUSH", "POP", "NOP"
+    ];
+    let two_byte = [
+        "MVI", "ADI", "ANI", "ORI", "XRI", "ACI", "SUI", "CPI"
+    ];
+    let three_byte = [
+        "LDA", "LXI", "STA", "JMP", "CALL", "CC", "CNC", "CP", "CM",
+        "CPE", "CPO", "CZ", "CNZ", "LHLD", "SHLD", "JC", "JNC", "JZ",
+        "JNZ", "JP", "JM", "JPE", "JPO"
+    ];
     if (one_byte.includes(opcode)) {
         t = 1;
         return t;
@@ -1318,1030 +1177,908 @@ function byte8085(mnemonic) {
         t = 3;
         return t;
     } else {
-        console.log("Syntax Error");
+        // console.log("Syntax Error");
         t = "error";
         return t;
     }
 }
 
-// not completed... need to add instructions...
-function instructionDecoder(mnemonic) {
-    console.log("Decoding instruction...");
-    let instruction = mnemonic.split(" ")[0];
-    console.log(`Mnemonic = ${mnemonic}, Instruction = ${instruction}`);
 
-    let oneByteList = ["MOV", "ADD", "CMP", "CMA", "INR", "INX", "DCR", "DCX", "DAD", "LDAX", "STAX", "HLT", "SUB", "XCHG", "ANA", "ORA", "XRA", "RRC", "RLC", "RET", "RC", "RNC", "RP", "RM", "RPE", "RPO", "RZ", "RNZ", "PUSH", "POP"];
-    let twoByteList1 = ["ADI", "ORI", "ACI", "SUI", "CPI", "ANI", "ORI", "XRI"];
-    let twoByteList2 = ["MVI"];
-    let threeByteList1 = ["LDA", "STA", "JMP", "CALL", "CC", "CNC", "CP", "CM", "CPE", "CPO", "CZ", "CNZ", "LHLD", "SHLD", "JC", "JNC", "JZ", "JNZ", "JP", "JM", "JPE", "JPO"];
-    let threeByteList2 = ["LXI"];
-
-    if (oneByteList.includes(instruction)) {
-        let byte = "ONE";
-        let machineCode;
-
-        // Handle different one-byte instructions
-        switch (mnemonic) {
-            case "ADD A":
-                machineCode = "87";
-                break;
-            case "ADD B":
-                machineCode = "80";
-                break;
-            case "ADD C":
-                machineCode = "81";
-                break;
-            case "ADD D":
-                machineCode = "82";
-                break;
-            case "ADD E":
-                machineCode = "83";
-                break;
-            case "ADD H":
-                machineCode = "84";
-                break;
-            case "ADD L":
-                machineCode = "85";
-                break;
-            case "ADD M":
-                machineCode = "86";
-                break;
-            case "ANA A":
-                machineCode = "A7";
-                break;
-            case "ANA B":
-                machineCode = "A0";
-                break;
-            case "ANA C":
-                machineCode = "A1";
-                break;
-            case "ANA D":
-                machineCode = "A2";
-                break;
-            case "ANA E":
-                machineCode = "A3";
-                break;
-            case "ANA H":
-                machineCode = "A4";
-                break;
-            case "ANA L":
-                machineCode = "A5";
-                break;
-            case "ANA M":
-                machineCode = "A6";
-                break;
-            case "CMA":
-                machineCode = "2F";
-                break;
-            case "CMP A":
-                machineCode = "BF";
-                break;
-            case "CMP B":
-                machineCode = "B8";
-                break;
-            case "CMP C":
-                machineCode = "B9";
-                break;
-            case "CMP D":
-                machineCode = "BA";
-                break;
-            case "CMP E":
-                machineCode = "BB";
-                break;
-            case "CMP H":
-                machineCode = "BC";
-                break;
-            case "CMP L":
-                machineCode = "BD";
-                break;
-            case "CMP M":
-                machineCode = "BE";
-                break;
-            case "DAD B":
-                machineCode = "09";
-                break;
-            case "DAD D":
-                machineCode = "19";
-                break;
-            case "DAD H":
-                machineCode = "29";
-                break;
-            case "DAD SP":
-                machineCode = "39";
-                break;
-            case "DCR A":
-                machineCode = "3D";
-                break;
-            case "DCR B":
-                machineCode = "05";
-                break;
-            case "DCR C":
-                machineCode = "0D";
-                break;
-            case "DCR D":
-                machineCode = "15";
-                break;
-            case "DCR E":
-                machineCode = "1D";
-                break;
-            case "DCR H":
-                machineCode = "25";
-                break;
-            case "DCR L":
-                machineCode = "2D";
-                break;
-            case "DCR M":
-                machineCode = "35";
-                break;
-            case "DCX B":
-                machineCode = "0B";
-                break;
-            case "DCX D":
-                machineCode = "1B";
-                break;
-            case "DCX H":
-                machineCode = "2B";
-                break;
-            case "DCX SP":
-                machineCode = "3B";
-                break;
-            case "HLT":
-                machineCode = "76";
-                break;
-            case "INR A":
-                machineCode = "3C";
-                break;
-            case "INR B":
-                machineCode = "04";
-                break;
-            case "INR C":
-                machineCode = "0C";
-                break;
-            case "INR D":
-                machineCode = "14";
-                break;
-            case "INR E":
-                machineCode = "1C";
-                break;
-            case "INR H":
-                machineCode = "24";
-                break;
-            case "INR L":
-                machineCode = "2C";
-                break;
-            case "INR M":
-                machineCode = "34";
-                break;
-            case "INX B":
-                machineCode = "03";
-                break;
-            case "INX D":
-                machineCode = "13";
-                break;
-            case "INX H":
-                machineCode = "23";
-                break;
-            case "INX M":
-                machineCode = "33";
-                break;
-            case "LDAX B":
-                machineCode = "0A";
-                break;
-            case "LDAX D":
-                machineCode = "1A";
-                break;
-            case "MOV A,A":
-                machineCode = "7F";
-                break;
-            case "MOV A,B":
-                machineCode = "78";
-                break;
-            case "MOV A,C":
-                machineCode = "79";
-                break;
-            case "MOV A,D":
-                machineCode = "7A";
-                break;
-            case "MOV A,E":
-                machineCode = "7B";
-                break;
-            case "MOV A,H":
-                machineCode = "7C";
-                break;
-            case "MOV A,L":
-                machineCode = "7D";
-                break;
-            case "MOV A,M":
-                machineCode = "7E";
-                break;
-            case "MOV B,A":
-                machineCode = "47";
-                break;
-            case "MOV B,B":
-                machineCode = "40";
-                break;
-            case "MOV B,C":
-                machineCode = "41";
-                break;
-            case "MOV B,D":
-                machineCode = "42";
-                break;
-            case "MOV B,E":
-                machineCode = "43";
-                break;
-            case "MOV B,H":
-                machineCode = "44";
-                break;
-            case "MOV B,L":
-                machineCode = "45";
-                break;
-            case "MOV B,M":
-                machineCode = "46";
-                break;
-            case "MOV C,A":
-                machineCode = "4F";
-                break;
-            case "MOV C,B":
-                machineCode = "48";
-                break;
-            case "MOV C,C":
-                machineCode = "49";
-                break;
-            case "MOV C,D":
-                machineCode = "4A";
-                break;
-            case "MOV C,E":
-                machineCode = "4B";
-                break;
-            case "MOV C,H":
-                machineCode = "4C";
-                break;
-            case "MOV C,L":
-                machineCode = "4D";
-                break;
-            case "MOV C,M":
-                machineCode = "4E";
-                break;
-            case "MOV D,A":
-                machineCode = "57";
-                break;
-            case "MOV D,B":
-                machineCode = "50";
-                break;
-            case "MOV D,C":
-                machineCode = "51";
-                break;
-            case "MOV D,D":
-                machineCode = "52";
-                break;
-            case "MOV D,E":
-                machineCode = "53";
-                break;
-            case "MOV D,H":
-                machineCode = "54";
-                break;
-            case "MOV D,L":
-                machineCode = "55";
-                break;
-            case "MOV D,M":
-                machineCode = "56";
-                break;
-            case "MOV E,A":
-                machineCode = "5F";
-                break;
-            case "MOV E,B":
-                machineCode = "58";
-                break;
-            case "MOV E,C":
-                machineCode = "59";
-                break;
-            case "MOV E,D":
-                machineCode = "5A";
-                break;
-            case "MOV E,E":
-                machineCode = "5B";
-                break;
-            case "MOV E,H":
-                machineCode = "5C";
-                break;
-            case "MOV E,L":
-                machineCode = "5D";
-                break;
-            case "MOV E,M":
-                machineCode = "5E";
-                break;
-            case "MOV H,A":
-                machineCode = "67";
-                break;
-            case "MOV H,B":
-                machineCode = "60";
-                break;
-            case "MOV H,C":
-                machineCode = "61";
-                break;
-            case "MOV H,D":
-                machineCode = "62";
-                break;
-            case "MOV H,E":
-                machineCode = "63";
-                break;
-            case "MOV H,H":
-                machineCode = "64";
-                break;
-            case "MOV H,L":
-                machineCode = "65";
-                break;
-            case "MOV H,M":
-                machineCode = "66";
-                break;
-            case "MOV L,A":
-                machineCode = "6F";
-                break;
-            case "MOV L,B":
-                machineCode = "68";
-                break;
-            case "MOV L,C":
-                machineCode = "69";
-                break;
-            case "MOV L,D":
-                machineCode = "6A";
-                break;
-            case "MOV L,E":
-                machineCode = "6B";
-                break;
-            case "MOV L,H":
-                machineCode = "6C";
-                break;
-            case "MOV L,L":
-                machineCode = "6D";
-                break;
-            case "MOV L,M":
-                machineCode = "6E";
-                break;
-            case "MOV M,A":
-                machineCode = "77";
-                break;
-            case "MOV M,B":
-                machineCode = "70";
-                break;
-            case "MOV M,C":
-                machineCode = "71";
-                break;
-            case "MOV M,D":
-                machineCode = "72";
-                break;
-            case "MOV M,E":
-                machineCode = "73";
-                break;
-            case "MOV M,H":
-                machineCode = "74";
-                break;
-            case "MOV M,L":
-                machineCode = "75";
-                break;
-            case "NOP":
-                machineCode = "00";
-                break;
-            case "NOP":
-                machineCode = "00";
-                break;
-            case "ORA A":
-                machineCode = "B7";
-                break;
-            case "ORA B":
-                machineCode = "B0";
-                break;
-            case "ORA C":
-                machineCode = "B1";
-                break;
-            case "ORA D":
-                machineCode = "B2";
-                break;
-            case "ORA E":
-                machineCode = "B3";
-                break;
-            case "ORA H":
-                machineCode = "B4";
-                break;
-            case "ORA L":
-                machineCode = "B5";
-                break;
-            case "ORA M":
-                machineCode = "B6";
-                break;
-            case "PUSH B":
-                machineCode = "C5";
-                break;
-            case "PUSH D":
-                machineCode = "D5";
-                break;
-            case "PUSH H":
-                machineCode = "E5";
-                break;
-            case "PUSH PSW":
-                machineCode = "F5";
-                break;
-            case "POP B":
-                machineCode = "C1";
-                break;
-            case "POP D":
-                machineCode = "D1";
-                break;
-            case "POP H":
-                machineCode = "E1";
-                break;
-            case "POP PSW":
-                machineCode = "F1";
-                break;
-            case "RET":
-                machineCode = "C9";
-                break;
-            case "RC":
-                machineCode = "D8";
-                break;
-            case "RNC":
-                machineCode = "D0";
-                break;
-            case "RP":
-                machineCode = "F0";
-                break;
-            case "RM":
-                machineCode = "F8";
-                break;
-            case "RPE":
-                machineCode = "E8";
-                break;
-            case "RPO":
-                machineCode = "E0";
-                break;
-            case "RZ":
-                machineCode = "C8";
-                break;
-            case "RNZ":
-                machineCode = "C0";
-                break;
-            case "RLC":
-                machineCode = "07";
-                break;
-            case "RRC":
-                machineCode = "0F";
-                break;
-            case "STAX B":
-                machineCode = "02";
-                break;
-            case "STAX D":
-                machineCode = "12";
-                break;
-            case "SUB A":
-                machineCode = "97";
-                break;
-            case "SUB B":
-                machineCode = "90";
-                break;
-            case "SUB C":
-                machineCode = "91";
-                break;
-            case "SUB D":
-                machineCode = "92";
-                break;
-            case "SUB E":
-                machineCode = "93";
-                break;
-            case "SUB H":
-                machineCode = "94";
-                break;
-            case "SUB L":
-                machineCode = "95";
-                break;
-            case "SUB M":
-                machineCode = "96";
-                break;
-            case "XCHG":
-                machineCode = "EB";
-                break;
-            case "XRA A":
-                machineCode = "AF";
-                break;
-            case "XRA B":
-                machineCode = "A8";
-                break;
-            case "XRA C":
-                machineCode = "A9";
-                break;
-            case "XRA D":
-                machineCode = "AA";
-                break;
-            case "XRA E":
-                machineCode = "AB";
-                break;
-            case "XRA H":
-                machineCode = "AC";
-                break;
-            case "XRA L":
-                machineCode = "AD";
-                break;
-            case "XRA M":
-                machineCode = "AE";
-                break;
-            default:
-                console.log("Unknown instruction...");
-                textTop.innerHTML = "SYNTAX ERROR"
-                textBottom.value = ""
-                return { byte: "Error", machineCode: null, immediateValue: null };
-        }
-
-        console.log(`Byte = ${byte}, Machine code = ${machineCode}`);
-        retValue = [byte, machineCode, immediateValue = null]
-        console.log(retValue)
-        return retValue
-    } else if (twoByteList1.includes(instruction)) {
-        let byte = "TWO";
-        let mnemonicParts = mnemonic.split(" ");
-        let opcode = mnemonicParts[0];
-        let immediateValue = mnemonicParts[1];
-
-        // Handle different two-byte instructions
-        let machineCode;
-        switch (opcode) {
-            case "ADI":
-                machineCode = "C6";
-                break;
-            case "ANI":
-                machineCode = "E6";
-                break;
-            case "CPI":
-                machineCode = "FE";
-                break;
-            case "ORI":
-                machineCode = "F6";
-                break;
-            case "SUI":
-                machineCode = "D6";
-                break;
-            case "XRI":
-                machineCode = "EE";
-                break;
-            default:
-                console.log("Unknown instruction...");
-                textTop.innerHTML = "SYNTAX ERROR"
-                textBottom.value = ""
-                return { byte: "Error", machineCode: null, immediateValue: null };
-        }
-
-        console.log(`Byte = ${byte}, Machine code = ${machineCode}, Immediate value = ${immediateValue}`)
-        retValue = [byte, machineCode, immediateValue]
-        console.log(retValue)
-        return retValue
-    } else if (twoByteList2.includes(instruction)) {
-        let byte = "TWO";
-        let mnemonicParts = mnemonic.split(",");
-        let opcode = mnemonicParts[0];
-        let immediateValue = mnemonicParts[1];
-
-        // Handle different two-byte instructions
-        let machineCode;
-        switch (opcode) {
-            case "MVI A":
-                machineCode = "3E";
-                break;
-            case "MVI B":
-                machineCode = "06";
-                break;
-            case "MVI C":
-                machineCode = "0E";
-                break;
-            case "MVI D":
-                machineCode = "16";
-                break;
-            case "MVI E":
-                machineCode = "1E";
-                break;
-            case "MVI H":
-                machineCode = "26";
-                break;
-            case "MVI L":
-                machineCode = "2E";
-                break;
-            case "MVI M":
-                machineCode = "36";
-                break;
-            default:
-                console.log("Unknown instruction...");
-                textTop.innerHTML = "SYNTAX ERROR"
-                textBottom.value = ""
-                return { byte: "Error", machineCode: null, immediateValue: null };
-        }
-
-        console.log(`Byte = ${byte}, Machine code = ${machineCode}, Immediate value = ${immediateValue}`);
-        retValue = [byte, machineCode, immediateValue]
-        console.log(retValue)
-        return retValue
-    } else if (threeByteList1.includes(instruction)) {
-        let byte = "THREE";
-        let mnemonicParts = mnemonic.split(" ");
-        let opcode = mnemonicParts[0];
-        let memoryLocation = mnemonicParts[1];
-
-        // Handle different three-byte instructions
-        let machineCode;
-        switch (opcode) {
-            case "CALL":
-                machineCode = "CD";
-                break;
-            case "CC":
-                machineCode = "DC";
-                break;
-            case "CNC":
-                machineCode = "D4";
-                break;
-            case "CP":
-                machineCode = "F4";
-                break;
-            case "CM":
-                machineCode = "FC";
-                break;
-            case "CPE":
-                machineCode = "EC";
-                break;
-            case "CPO":
-                machineCode = "E4";
-                break;
-            case "CZ":
-                machineCode = "CC";
-                break;
-            case "CNZ":
-                machineCode = "C4";
-                break;
-            case "LDA":
-                machineCode = "3A";
-                break;
-            case "STA":
-                machineCode = "32";
-                break;
-            case "JMP":
-                machineCode = "C3";
-                break;
-            case "JC":
-                machineCode = "DA";
-                break;
-            case "JNC":
-                machineCode = "D2";
-                break;
-            case "JZ":
-                machineCode = "CA";
-                break;
-            case "JNZ":
-                machineCode = "C2";
-                break;
-            case "JP":
-                machineCode = "F2";
-                break;
-            case "JM":
-                machineCode = "FA";
-                break;
-            case "JPE":
-                machineCode = "EA";
-                break;
-            case "JPO":
-                machineCode = "E2";
-                break;
-            case "LHLD":
-                machineCode = "2A";
-                break;
-            case "SHLD":
-                machineCode = "22";
-                break;
-            default:
-                console.log("Unknown instruction...");
-                textTop.innerHTML = "SYNTAX ERROR"
-                textBottom.value = ""
-                return { byte: "Error", machineCode: null, immediateValue: null };
-        }
-
-        console.log(`Byte = ${byte}, Machine code = ${machineCode}, Memory location = ${memoryLocation}`)
-        retValue = [byte, machineCode, memoryLocation]
-        console.log(retValue)
-        return retValue
-    } else if (threeByteList2.includes(instruction)) {
-        let byte = "THREE";
-        let mnemonicParts = mnemonic.split(",");
-        let opcode = mnemonicParts[0];
-        let memoryLocation = mnemonicParts[1];
-
-        // Handle different three-byte instructions
-        let machineCode;
-        switch (opcode) {
-            case "LXI B":
-                machineCode = "01";
-                break;
-            case "LXI D":
-                machineCode = "11";
-                break;
-            case "LXI H":
-                machineCode = "21";
-                break;
-            case "LXI SP":
-                machineCode = "31";
-                break;
-            default:
-                console.log("Unknown instruction...");
-                textTop.innerHTML = "SYNTAX ERROR"
-                textBottom.value = ""
-                return { byte: "Error", machineCode: null, immediateValue: null };
-        }
-
-        console.log(`Byte = ${byte}, Machine code = ${machineCode}, Memory location = ${memoryLocation}`)
-        retValue = [byte, machineCode, memoryLocation]
-        console.log(retValue)
-        return retValue
-    } else {
-        console.log("Unknown instruction...");
-        textTop.innerHTML = "SYNTAX ERROR"
-        textBottom.value = ""
-        return { byte: "Error", machineCode: null, immediateValue: null };
-    }
-}
-
-function MNToMC(address1, mnemonic) {
-    console.log("Converting to Machine Code...")
-    byte, machineCode, ivMl
-    retValue = instructionDecoder(mnemonic); // ivMl means immediateValue or memoryLocation
-    console.log(retValue)
-    byte = retValue[0]
-    machineCode = retValue[1]
-    ivMl = retValue[2]
-    console.log(ivMl)
-    if (byte === "ONE") {
-        machineCode = fillZero(machineCode);
-        addressList.push(`${address1}`);
-        machineCodeList.push(machineCode);
-        machineCodeList1.push(machineCode);
-        let memoryLocationIndex = memoryLocationList.indexOf(address1);
-        memoryLocationValue[memoryLocationIndex] = machineCode;
-        let retValue = [machineCode, null, null];
-        return retValue
-    } else if (byte === "TWO") {
-        machineCode = fillZero(machineCode);
-        addressList.push(`${address1}`);
-        machineCodeList.push(machineCode);
-        machineCodeList1.push(machineCode);
-        let memoryLocationIndex = memoryLocationList.indexOf(address1);
-        memoryLocationValue[memoryLocationIndex] = machineCode;
-        let immediateValue = parseInt(ivMl, 16).toString(16);
-        let filledImmediateValue = fillZero(immediateValue);
-        address1 = (parseInt(address1, 16) + 1).toString(16).toUpperCase().padStart(4, '0')
-        addressList.push(`${address1}`);
-        machineCodeList.push(filledImmediateValue);
-        machineCodeList1.push(filledImmediateValue);
-        let immediateMemoryLocationIndex = memoryLocationList.indexOf(address1);
-        memoryLocationValue[immediateMemoryLocationIndex] = filledImmediateValue;
-        let retValue = [machineCode, filledImmediateValue, null];
-        return retValue
-    } else if (byte === "THREE") {
-        machineCode = fillZero(machineCode);
-        addressList.push(`${address1}`);
-        let memoryLocationIndex = memoryLocationList.indexOf(address1);
-        memoryLocationValue[memoryLocationIndex] = machineCode;
-        machineCodeList.push(machineCode);
-        machineCodeList1.push(machineCode);
-        let memoryLocation = ivMl
-        console.log(ivMl)
-        console.log(memoryLocation)
-        let addressByte = splitAddress(memoryLocation);
-        console.log(addressByte)
-        higherByte = addressByte[0]
-        lowerByte = addressByte[1]
-        let filledLowerByte = fillZero(parseInt(lowerByte, 16).toString(16));
-        let filledHigherByte = fillZero(parseInt(higherByte, 16).toString(16));
-        machineCodeList.push(filledLowerByte);
-        machineCodeList1.push(filledLowerByte);
-        address1 = (parseInt(address1, 16) + 1).toString(16).toUpperCase().padStart(4, '0')
-        addressList.push(`${address1}`)
-        let lowerByteMemoryLocationIndex = memoryLocationList.indexOf(address1);
-        memoryLocationValue[lowerByteMemoryLocationIndex] = filledLowerByte;
-        address1 = (parseInt(address1, 16) + 1).toString(16).toUpperCase().padStart(4, '0')
-        addressList.push(`${address1}`);
-        machineCodeList.push(filledHigherByte);
-        machineCodeList1.push(filledHigherByte);
-        let higherByteMemoryLocationIndex = memoryLocationList.indexOf(address1);
-        memoryLocationValue[higherByteMemoryLocationIndex] = filledHigherByte;
-        let retValue = [machineCode, filledLowerByte, filledHigherByte];
-        console.log(retValue)
-        return retValue
-    } else if (byte === null) {
-        return [machineCode, null, null];
-    }
-}
-
-function memory8085() {
+function memory_8085() {
+    console.log("-----MEMORY VIEW/EDIT-----");
+    console.log("If you want to change the value, type the desired value. Otherwise hit enter.");
     memoryActiveStatus = 'active'
 
-    console.log("-----MEMORY VIEW/EDIT-----")
-    console.log("If you want to change the value, type the desired value. Otherwise hit enter.")
-    memoryFunc = 'active'
-
-    textTop.innerHTML = "MEMORY VIEW/EDIT"
-    textBottom.value = "ADDR:" + hexValue
-
     modeMemory = 0
-    let addressPlace = textBottom.value
-    hexValue = addressPlace.split(":")[1]
-    console.log(`hexValue: ${hexValue}`)
-    hexValue = (parseInt(hexValue, 16)).toString(16).padStart(4, '0')
-    memoryLocationIndex = memoryLocationList.indexOf(hexValue)
-    addressValue = memoryLocationValue[memoryLocationIndex]
+    console.log(`hexValue: ${address_location}`)
+    address_value = memory_location_value[parseInt(address_location, 16)]
+    // string = address_value
 
     enter.addEventListener('click', enterMemory = () => {
-        modeMemory = 1
-        console.log("-                  -")
-
-        memoryLocationIndex = memoryLocationList.indexOf(hexValue)
-        addressValue = memoryLocationValue[memoryLocationIndex]
-
-        if (initialMode === false && addressActiveStatus !== 'active') {
-            hexValue = hexValue
-            console.log(`hexValue = ${hexValue}`)
-            memoryLocationIndex = memoryLocationList.indexOf(hexValue)
-            let addressValue = memoryLocationValue[memoryLocationIndex]
-            let newValue = addressValue
-            let l = string.length
-            console.log(addressValue)
-            console.log(string.length)
-            if (l !== 0) {
-                newValue = string.padStart(2, '0')
-                string = ''
-            }
-            console.log(`string = ${string}`)
-            console.log(`currentValue = ${addressValue}`)
-            console.log(`newValue = ${newValue}`)
-
-            if (addressValue === newValue) {
-                addressValue = memoryLocationValue[memoryLocationIndex]
-                console.log(`Same Value: ${addressValue}`)
-                addressValue = (parseInt(addressValue, 16)).toString(16).toUpperCase().padStart(2, '0')
-                addressValueListBefore.push(memoryLocationValue[memoryLocationIndex])
-                let addressLocationIndex = addressLocationList.indexOf(hexValue);
-                if (addressLocationIndex !== -1) {
-                    addressValueList[addressLocationIndex] = addressValue;
-                } else {
-                    addressValueList.push(addressValue);
-                    addressLocationList.push(hexValue);
-                }
-            } else {
-                addressValue = newValue
-                console.log(`New Value: ${addressValue}`)
-                addressValueList.pop()
-                addressLocationList.pop()
-                addressValueListBefore.pop()
-                hexValue = (parseInt(hexValue, 16) - 1).toString(16).toUpperCase().padStart(4, '0')
-                hexValue = hexValue
-                memoryLocationIndex = memoryLocationList.indexOf(hexValue)
-                addressValueListBefore.push(memoryLocationValue[memoryLocationIndex])
-                let addressLocationIndex = addressLocationList.indexOf(hexValue);
-                if (addressLocationIndex !== -1) {
-                    addressValueList[addressLocationIndex] = addressValue;
-                } else {
-                    addressValueList.push(addressValue);
-                    addressLocationList.push(hexValue);
-                }
-            }
-
-            textBottom.value = `${hexValue}:${addressValue}`
-            console.log(`Address location list = [${addressLocationList}]`)
-            console.log(`Address value list before = [${addressValueListBefore}]`)
-            console.log(`Address value list after = [${addressValueList}]`)
-
-            hexValue = (parseInt(hexValue, 16) + 1).toString(16).toUpperCase().padStart(4, '0')
+        address_1 = address_location
+        address_1 = (parseInt(address_1, 16) - 1).toString(16).padStart(4, '0').toUpperCase();
+        address_value = memory_location_value[parseInt(address_location, 16)]
+        let preString = memory_location_value[parseInt(address_location, 16)];
+        textBottom.value = `${address_location}:${address_value}`
+        console.log(`${address_1}:${address_value}`)
+        // let address_value = prompt(`${address_location}: ${memory_location_value[parseInt(address_location, 16)]} `);
+        if (string.length === 2) {
+            memory_location_value[parseInt(address_location, 16) - 1] = string.toUpperCase();
         }
+        modeMemory = 1
+        address_1 = (parseInt(address_1, 16) + 1).toString(16).padStart(4, '0').toUpperCase();
+        address_location = (parseInt(address_location, 16) + 1).toString(16).padStart(4, '0').toUpperCase();
+        console.log(`${address_location}:${address_value}`)
+        string = preString
     })
     escapeBtn.addEventListener('click', escapeMemory = () => {
         enter.removeEventListener('click', enterMemory)
         if (initialMode === false && memoryActiveStatus === 'active') {
             textTop.innerHTML = "MENU:   A,D,M,F, "
             textBottom.value = "C,G,S,R,I,E,P"
-            console.log(`Address location list = [${addressLocationList}]`)
-            console.log(`Address value list before = [${addressValueListBefore}]`)
-            console.log(`Address value list after = [${addressValueList}]`)
-            console.log(string)
 
-            // for (let address of addressLocationList) {
-            //     let m = addressLocationList.indexOf(address)
-            //     let addressValue = addressValueList[m]
-            //     addressValue = fillZero(addressValue)
-            //     memoryLocationIndex = memoryLocationList.indexOf(address)
-            //     memoryLocationValue[memoryLocationIndex] = addressValue
-            // }
-
-            for (let i = 0; i < addressLocationList.length; i++) {
-                let address = addressLocationList[i]
-                let m = addressLocationList.indexOf(address)
-                let addressValue = addressValueList[m]
-                addressValue = fillZero(addressValue)
-
-                let memoryLocationIndex = memoryLocationList.indexOf(address)
-                memoryLocationValue[memoryLocationIndex] = addressValue
-            }
             console.log("Done!")
             initialMode = true
             modeMemory = 0
             memoryActiveStatus = 'inactive'
-            addressValueListBefore = []
+            console.log(memory_location_value)
         }
     })
 }
 
-function address8085() {
-    console.log("-----ADDRESS-----")
-    let byte1
+function instruction_decoder(mnemonic) {
+    let instruction = mnemonic.split(' ')[0];
+    let one_byte_list = ["MOV", "ADD", "CMP", "CMA", "INR", "INX", "DCR", "DCX", "DAD", "LDAX", "STAX", "HLT", "SUB", "XCHG", "ANA", "ORA", "XRA", "RRC", "RLC", "RET", "RC", "RNC", "RP", "RM", "RPE", "RPO", "RZ", "RNZ", "PUSH", "POP", "NOP"];
+    let two_byte_list_1 = ["ADI", "ORI", "ACI", "SUI", "CPI", "ANI", "ORI", "XRI"];
+    let two_byte_list_2 = ["MVI"];
+    let three_byte_list_1 = ["LDA", "STA", "JMP", "CALL", "CC", "CNC", "CP", "CM", "CPE", "CPO", "CZ", "CNZ", "LHLD", "SHLD", "JC", "JNC", "JZ", "JNZ", "JP", "JM", "JPE", "JPO"];
+    let three_byte_list_2 = ["LXI"];
+
+    if (one_byte_list.includes(instruction)) {
+        let byte = "ONE";
+        let machine_code;
+
+        // Handle different one-byte instructions
+        switch (mnemonic) {
+            case "ADD A":
+                machine_code = "87";
+                break;
+            case "ADD B":
+                machine_code = "80";
+                break;
+            case "ADD C":
+                machine_code = "81";
+                break;
+            case "ADD D":
+                machine_code = "82";
+                break;
+            case "ADD E":
+                machine_code = "83";
+                break;
+            case "ADD H":
+                machine_code = "84";
+                break;
+            case "ADD L":
+                machine_code = "85";
+                break;
+            case "ADD M":
+                machine_code = "86";
+                break;
+            case "ANA A":
+                machine_code = "A7";
+                break;
+            case "ANA B":
+                machine_code = "A0";
+                break;
+            case "ANA C":
+                machine_code = "A1";
+                break;
+            case "ANA D":
+                machine_code = "A2";
+                break;
+            case "ANA E":
+                machine_code = "A3";
+                break;
+            case "ANA H":
+                machine_code = "A4";
+                break;
+            case "ANA L":
+                machine_code = "A5";
+                break;
+            case "ANA M":
+                machine_code = "A6";
+                break;
+            case "CMA":
+                machine_code = "2F";
+                break;
+            case "CMP A":
+                machine_code = "BF";
+                break;
+            case "CMP B":
+                machine_code = "B8";
+                break;
+            case "CMP C":
+                machine_code = "B9";
+                break;
+            case "CMP D":
+                machine_code = "BA";
+                break;
+            case "CMP E":
+                machine_code = "BB";
+                break;
+            case "CMP H":
+                machine_code = "BC";
+                break;
+            case "CMP L":
+                machine_code = "BD";
+                break;
+            case "CMP M":
+                machine_code = "BE";
+                break;
+            case "DAD B":
+                machine_code = "09";
+                break;
+            case "DAD D":
+                machine_code = "19";
+                break;
+            case "DAD H":
+                machine_code = "29";
+                break;
+            case "DAD SP":
+                machine_code = "39";
+                break;
+            case "DCR A":
+                machine_code = "3D";
+                break;
+            case "DCR B":
+                machine_code = "05";
+                break;
+            case "DCR C":
+                machine_code = "0D";
+                break;
+            case "DCR D":
+                machine_code = "15";
+                break;
+            case "DCR E":
+                machine_code = "1D";
+                break;
+            case "DCR H":
+                machine_code = "25";
+                break;
+            case "DCR L":
+                machine_code = "2D";
+                break;
+            case "DCR M":
+                machine_code = "35";
+                break;
+            case "DCX B":
+                machine_code = "0B";
+                break;
+            case "DCX D":
+                machine_code = "1B";
+                break;
+            case "DCX H":
+                machine_code = "2B";
+                break;
+            case "DCX SP":
+                machine_code = "3B";
+                break;
+            case "HLT":
+                machine_code = "76";
+                break;
+            case "INR A":
+                machine_code = "3C";
+                break;
+            case "INR B":
+                machine_code = "04";
+                break;
+            case "INR C":
+                machine_code = "0C";
+                break;
+            case "INR D":
+                machine_code = "14";
+                break;
+            case "INR E":
+                machine_code = "1C";
+                break;
+            case "INR H":
+                machine_code = "24";
+                break;
+            case "INR L":
+                machine_code = "2C";
+                break;
+            case "INR M":
+                machine_code = "34";
+                break;
+            case "INX B":
+                machine_code = "03";
+                break;
+            case "INX D":
+                machine_code = "13";
+                break;
+            case "INX H":
+                machine_code = "23";
+                break;
+            case "INX M":
+                machine_code = "33";
+                break;
+            case "LDAX B":
+                machine_code = "0A";
+                break;
+            case "LDAX D":
+                machine_code = "1A";
+                break;
+            case "MOV A,A":
+                machine_code = "7F";
+                break;
+            case "MOV A,B":
+                machine_code = "78";
+                break;
+            case "MOV A,C":
+                machine_code = "79";
+                break;
+            case "MOV A,D":
+                machine_code = "7A";
+                break;
+            case "MOV A,E":
+                machine_code = "7B";
+                break;
+            case "MOV A,H":
+                machine_code = "7C";
+                break;
+            case "MOV A,L":
+                machine_code = "7D";
+                break;
+            case "MOV A,M":
+                machine_code = "7E";
+                break;
+            case "MOV B,A":
+                machine_code = "47";
+                break;
+            case "MOV B,B":
+                machine_code = "40";
+                break;
+            case "MOV B,C":
+                machine_code = "41";
+                break;
+            case "MOV B,D":
+                machine_code = "42";
+                break;
+            case "MOV B,E":
+                machine_code = "43";
+                break;
+            case "MOV B,H":
+                machine_code = "44";
+                break;
+            case "MOV B,L":
+                machine_code = "45";
+                break;
+            case "MOV B,M":
+                machine_code = "46";
+                break;
+            case "MOV C,A":
+                machine_code = "4F";
+                break;
+            case "MOV C,B":
+                machine_code = "48";
+                break;
+            case "MOV C,C":
+                machine_code = "49";
+                break;
+            case "MOV C,D":
+                machine_code = "4A";
+                break;
+            case "MOV C,E":
+                machine_code = "4B";
+                break;
+            case "MOV C,H":
+                machine_code = "4C";
+                break;
+            case "MOV C,L":
+                machine_code = "4D";
+                break;
+            case "MOV C,M":
+                machine_code = "4E";
+                break;
+            case "MOV D,A":
+                machine_code = "57";
+                break;
+            case "MOV D,B":
+                machine_code = "50";
+                break;
+            case "MOV D,C":
+                machine_code = "51";
+                break;
+            case "MOV D,D":
+                machine_code = "52";
+                break;
+            case "MOV D,E":
+                machine_code = "53";
+                break;
+            case "MOV D,H":
+                machine_code = "54";
+                break;
+            case "MOV D,L":
+                machine_code = "55";
+                break;
+            case "MOV D,M":
+                machine_code = "56";
+                break;
+            case "MOV E,A":
+                machine_code = "5F";
+                break;
+            case "MOV E,B":
+                machine_code = "58";
+                break;
+            case "MOV E,C":
+                machine_code = "59";
+                break;
+            case "MOV E,D":
+                machine_code = "5A";
+                break;
+            case "MOV E,E":
+                machine_code = "5B";
+                break;
+            case "MOV E,H":
+                machine_code = "5C";
+                break;
+            case "MOV E,L":
+                machine_code = "5D";
+                break;
+            case "MOV E,M":
+                machine_code = "5E";
+                break;
+            case "MOV H,A":
+                machine_code = "67";
+                break;
+            case "MOV H,B":
+                machine_code = "60";
+                break;
+            case "MOV H,C":
+                machine_code = "61";
+                break;
+            case "MOV H,D":
+                machine_code = "62";
+                break;
+            case "MOV H,E":
+                machine_code = "63";
+                break;
+            case "MOV H,H":
+                machine_code = "64";
+                break;
+            case "MOV H,L":
+                machine_code = "65";
+                break;
+            case "MOV H,M":
+                machine_code = "66";
+                break;
+            case "MOV L,A":
+                machine_code = "6F";
+                break;
+            case "MOV L,B":
+                machine_code = "68";
+                break;
+            case "MOV L,C":
+                machine_code = "69";
+                break;
+            case "MOV L,D":
+                machine_code = "6A";
+                break;
+            case "MOV L,E":
+                machine_code = "6B";
+                break;
+            case "MOV L,H":
+                machine_code = "6C";
+                break;
+            case "MOV L,L":
+                machine_code = "6D";
+                break;
+            case "MOV L,M":
+                machine_code = "6E";
+                break;
+            case "MOV M,A":
+                machine_code = "77";
+                break;
+            case "MOV M,B":
+                machine_code = "70";
+                break;
+            case "MOV M,C":
+                machine_code = "71";
+                break;
+            case "MOV M,D":
+                machine_code = "72";
+                break;
+            case "MOV M,E":
+                machine_code = "73";
+                break;
+            case "MOV M,H":
+                machine_code = "74";
+                break;
+            case "MOV M,L":
+                machine_code = "75";
+                break;
+            case "NOP":
+                machine_code = "00";
+                break;
+            case "NOP":
+                machine_code = "00";
+                break;
+            case "ORA A":
+                machine_code = "B7";
+                break;
+            case "ORA B":
+                machine_code = "B0";
+                break;
+            case "ORA C":
+                machine_code = "B1";
+                break;
+            case "ORA D":
+                machine_code = "B2";
+                break;
+            case "ORA E":
+                machine_code = "B3";
+                break;
+            case "ORA H":
+                machine_code = "B4";
+                break;
+            case "ORA L":
+                machine_code = "B5";
+                break;
+            case "ORA M":
+                machine_code = "B6";
+                break;
+            case "PUSH B":
+                machine_code = "C5";
+                break;
+            case "PUSH D":
+                machine_code = "D5";
+                break;
+            case "PUSH H":
+                machine_code = "E5";
+                break;
+            case "PUSH PSW":
+                machine_code = "F5";
+                break;
+            case "POP B":
+                machine_code = "C1";
+                break;
+            case "POP D":
+                machine_code = "D1";
+                break;
+            case "POP H":
+                machine_code = "E1";
+                break;
+            case "POP PSW":
+                machine_code = "F1";
+                break;
+            case "RET":
+                machine_code = "C9";
+                break;
+            case "RC":
+                machine_code = "D8";
+                break;
+            case "RNC":
+                machine_code = "D0";
+                break;
+            case "RP":
+                machine_code = "F0";
+                break;
+            case "RM":
+                machine_code = "F8";
+                break;
+            case "RPE":
+                machine_code = "E8";
+                break;
+            case "RPO":
+                machine_code = "E0";
+                break;
+            case "RZ":
+                machine_code = "C8";
+                break;
+            case "RNZ":
+                machine_code = "C0";
+                break;
+            case "RLC":
+                machine_code = "07";
+                break;
+            case "RRC":
+                machine_code = "0F";
+                break;
+            case "STAX B":
+                machine_code = "02";
+                break;
+            case "STAX D":
+                machine_code = "12";
+                break;
+            case "SUB A":
+                machine_code = "97";
+                break;
+            case "SUB B":
+                machine_code = "90";
+                break;
+            case "SUB C":
+                machine_code = "91";
+                break;
+            case "SUB D":
+                machine_code = "92";
+                break;
+            case "SUB E":
+                machine_code = "93";
+                break;
+            case "SUB H":
+                machine_code = "94";
+                break;
+            case "SUB L":
+                machine_code = "95";
+                break;
+            case "SUB M":
+                machine_code = "96";
+                break;
+            case "XCHG":
+                machine_code = "EB";
+                break;
+            case "XRA A":
+                machine_code = "AF";
+                break;
+            case "XRA B":
+                machine_code = "A8";
+                break;
+            case "XRA C":
+                machine_code = "A9";
+                break;
+            case "XRA D":
+                machine_code = "AA";
+                break;
+            case "XRA E":
+                machine_code = "AB";
+                break;
+            case "XRA H":
+                machine_code = "AC";
+                break;
+            case "XRA L":
+                machine_code = "AD";
+                break;
+            case "XRA M":
+                machine_code = "AE";
+                break;
+            default:
+                console.log("Unknown instruction...");
+                textTop.innerHTML = "SYNTAX ERROR"
+                textBottom.value = ""
+                return { byte: "Error", machine_code: null, immediate_value: null };
+        }
+
+        // console.log(`Byte = ${byte}, Machine code = ${machine_code}`);
+        ret_value = [byte, machine_code, immediate_value = null]
+        return ret_value
+    } else if (two_byte_list_1.includes(instruction)) {
+        let byte = "TWO";
+        let mnemonicParts = mnemonic.split(" ");
+        let opcode = mnemonicParts[0];
+        let immediate_value = mnemonicParts[1];
+
+        // Handle different two-byte instructions
+        let machine_code;
+        switch (opcode) {
+            case "ADI":
+                machine_code = "C6";
+                break;
+            case "ANI":
+                machine_code = "E6";
+                break;
+            case "CPI":
+                machine_code = "FE";
+                break;
+            case "ORI":
+                machine_code = "F6";
+                break;
+            case "SUI":
+                machine_code = "D6";
+                break;
+            case "XRI":
+                machine_code = "EE";
+                break;
+            default:
+                console.log("Unknown instruction...");
+                textTop.innerHTML = "SYNTAX ERROR"
+                textBottom.value = ""
+                return { byte: "Error", machine_code: null, immediate_value: null };
+        }
+
+        // console.log(`Byte = ${byte}, Machine code = ${machine_code}, Immediate value = ${immediate_value}`)
+        ret_value = [byte, machine_code, immediate_value]
+        return ret_value
+    } else if (two_byte_list_2.includes(instruction)) {
+        let byte = "TWO";
+        let mnemonicParts = mnemonic.split(",");
+        let opcode = mnemonicParts[0];
+        let immediate_value = mnemonicParts[1];
+
+        // Handle different two-byte instructions
+        let machine_code;
+        switch (opcode) {
+            case "MVI A":
+                machine_code = "3E";
+                break;
+            case "MVI B":
+                machine_code = "06";
+                break;
+            case "MVI C":
+                machine_code = "0E";
+                break;
+            case "MVI D":
+                machine_code = "16";
+                break;
+            case "MVI E":
+                machine_code = "1E";
+                break;
+            case "MVI H":
+                machine_code = "26";
+                break;
+            case "MVI L":
+                machine_code = "2E";
+                break;
+            case "MVI M":
+                machine_code = "36";
+                break;
+            default:
+                console.log("Unknown instruction...");
+                textTop.innerHTML = "SYNTAX ERROR"
+                textBottom.value = ""
+                return { byte: "Error", machine_code: null, immediate_value: null };
+        }
+
+        // console.log(`Byte = ${byte}, Machine code = ${machine_code}, Immediate value = ${immediate_value}`);
+        ret_value = [byte, machine_code, immediate_value]
+        return ret_value
+    } else if (three_byte_list_1.includes(instruction)) {
+        let byte = "THREE";
+        let mnemonicParts = mnemonic.split(" ");
+        let opcode = mnemonicParts[0];
+        let memoryLocation = mnemonicParts[1];
+
+        // Handle different three-byte instructions
+        let machine_code;
+        switch (opcode) {
+            case "CALL":
+                machine_code = "CD";
+                break;
+            case "CC":
+                machine_code = "DC";
+                break;
+            case "CNC":
+                machine_code = "D4";
+                break;
+            case "CP":
+                machine_code = "F4";
+                break;
+            case "CM":
+                machine_code = "FC";
+                break;
+            case "CPE":
+                machine_code = "EC";
+                break;
+            case "CPO":
+                machine_code = "E4";
+                break;
+            case "CZ":
+                machine_code = "CC";
+                break;
+            case "CNZ":
+                machine_code = "C4";
+                break;
+            case "LDA":
+                machine_code = "3A";
+                break;
+            case "STA":
+                machine_code = "32";
+                break;
+            case "JMP":
+                machine_code = "C3";
+                break;
+            case "JC":
+                machine_code = "DA";
+                break;
+            case "JNC":
+                machine_code = "D2";
+                break;
+            case "JZ":
+                machine_code = "CA";
+                break;
+            case "JNZ": machine_code = "C2"; break;
+            case "JP": machine_code = "F2"; break;
+            case "JM":
+                machine_code = "FA";
+                break;
+            case "JPE":
+                machine_code = "EA";
+                break;
+            case "JPO":
+                machine_code = "E2";
+                break;
+            case "LHLD":
+                machine_code = "2A";
+                break;
+            case "SHLD":
+                machine_code = "22";
+                break;
+            default:
+                console.log("Unknown instruction...");
+                textTop.innerHTML = "SYNTAX ERROR"
+                textBottom.value = ""
+                return { byte: "Error", machine_code: null, immediate_value: null };
+        }
+
+        // console.log(`Byte = ${byte}, Machine code = ${machine_code}, Memory location = ${memoryLocation}`)
+        ret_value = [byte, machine_code, memoryLocation]
+        return ret_value
+    } else if (three_byte_list_2.includes(instruction)) {
+        let byte = "THREE";
+        let mnemonicParts = mnemonic.split(",");
+        let opcode = mnemonicParts[0];
+        let memoryLocation = mnemonicParts[1];
+
+        // Handle different three-byte instructions
+        let machine_code;
+        switch (opcode) {
+            case "LXI B":
+                machine_code = "01";
+                break;
+            case "LXI D":
+                machine_code = "11";
+                break;
+            case "LXI H":
+                machine_code = "21";
+                break;
+            case "LXI SP":
+                machine_code = "31";
+                break;
+            default:
+                console.log("Unknown instruction...");
+                textTop.innerHTML = "SYNTAX ERROR"
+                textBottom.value = ""
+                return { byte: "Error", machine_code: null, immediate_value: null };
+        }
+
+        // console.log(`Byte = ${byte}, Machine code = ${machine_code}, Memory location = ${memoryLocation}`)
+        ret_value = [byte, machine_code, memoryLocation]
+        return ret_value
+    } else {
+        console.log("Unknown instruction...");
+        // textTop.innerHTML = "SYNTAX ERROR"
+        // textBottom.value = ""
+        return { byte: "Error", machine_code: null, immediate_value: null };
+    }
+}
+
+function MN_to_MC(address, mnemonic) {
+    let [byte, machine_code, iv_ml] = instruction_decoder(mnemonic); // iv_ml means immediate_value or memory_location
+    if (byte === "ONE") {
+        // console.log(`${address}, ${parseInt(address, 16)}, ${machine_code}`)
+        machine_code = String(machine_code).padStart(2, '0').toUpperCase();
+        address = String(address).toString(16).padStart(4, '0').toUpperCase();
+        // console.log(`${memory_location_value[parseInt(address, 16)]} = ${machine_code}`)
+        memory_location_value[parseInt(address, 16)] = machine_code;
+        // console.log(`${memory_location_value[parseInt(address, 16)]} = ${machine_code}`)
+        let ret_value = [machine_code, null, null];
+        console.log("DONE!!!")
+        return ret_value
+    } else if (byte === "TWO") {
+        machine_code = String(machine_code).padStart(2, '0').toUpperCase();
+        address = String(address).toString(16).padStart(4, '0').toUpperCase();
+        memory_location_value[parseInt(address, 16)] = machine_code;
+
+        let immediate_value = String(iv_ml).padStart(2, '0').toUpperCase();
+        address = String((parseInt(address, 16) + 1).toString(16)).padStart(4, '0').toUpperCase();
+        memory_location_value[parseInt(address, 16)] = immediate_value;
+        let ret_value = [machine_code, immediate_value, null];
+        return ret_value
+    } else if (byte === "THREE") {
+        machine_code = String(machine_code).padStart(2, '0').toUpperCase();
+        address = String(address).toString(16).padStart(4, '0').toUpperCase();
+        memory_location_value[parseInt(address, 16)] = machine_code;
+
+        let memory_location = iv_ml;
+        let [higher_byte, lower_byte] = split_address(memory_location);
+        lower_byte = String(lower_byte).padStart(2, '0').toUpperCase();
+        higher_byte = String(higher_byte, 16).padStart(2, '0').toUpperCase();
+
+        address = String((parseInt(address, 16) + 1).toString(16)).padStart(4, '0').toUpperCase();
+        memory_location_value[parseInt(address, 16)] = lower_byte;
+
+        address = String((parseInt(address, 16) + 1).toString(16)).padStart(4, '0').toUpperCase();
+        memory_location_value[parseInt(address, 16)] = higher_byte;
+
+        let ret_value = [machine_code, lower_byte, higher_byte];
+        return ret_value
+    } else if (byte === null) {
+        return [machine_code, null, null];
+    }
+}
+
+
+function address_8085() {
+    console.log("-----ADDRESS-----");
+    let mnemonic;
     modeAddress = 0
     addressActiveStatus = 'active'
-
-    program = []
-    addressList = []
-    machineCodeList = []
-    machineCodeList1 = []
-    programAddressList = []
-
-    textTop.innerHTML = "ASSEMBLE"
-    textBottom.value = "ADDR:" + hexValue
-
+    textBottom.value = "ADDR:" + address
+    address = String(address).toString(16).padStart(4, '0').toUpperCase();
     enter.addEventListener('click', enterAddress = () => {
-        if (initialMode === false && memoryActiveStatus !== 'active' && executeActiveStatus !== 'active') {
-            textBottom.value = ''
-            modeAddress = 1
-            textTop.innerHTML = `ASSEMBLE:${hexValue}`
-            textBottom.value += `${string}`
-            mnemonic = textBottom.value
-            console.log(mnemonic)
-
-            byte1 = byte8085(mnemonic)
-            if (byte1 !== "error") {
-                console.log(hexValue)
-                programAddressList.push(hexValue);
-                program.push(`${hexValue}:${mnemonic}`);
-                let retValue = MNToMC(hexValue, mnemonic);
-                console.log(retValue)
-                let machineCode = retValue[0]
-                let nextAddress1 = retValue[1]
-                let nextAddress2 = retValue[2]
-                if (nextAddress1 === null && nextAddress2 === null) {
-                    console.log(`Machine Code : ${machineCode}`)
-                    textTop.innerHTML = `${hexValue}:${machineCode}`
-                    textBottom.value = ''
-                } else if (nextAddress2 === null) {
-                    console.log(`Machine Code : ${machineCode}:${nextAddress1}`)
-                    textTop.innerHTML = `${hexValue}:${machineCode}:${nextAddress1}`
-                    textBottom.value = ''
-                } else {
-                    console.log(`Machine Code : ${machineCode}:${nextAddress1}:${nextAddress2}`)
-                    textTop.innerHTML = `${hexValue}:${machineCode}:${nextAddress1}:${nextAddress2}`
-                    textBottom.value = ''
-                }
+        textBottom.value = ''
+        modeAddress = 1
+        textTop.innerHTML = `ASSEMBLE:${address}`
+        textBottom.value = `${string}`
+        console.log(`${address}: ${string}`)
+        mnemonic = textBottom.value
+        let byte = byte_8085(mnemonic);
+        if (byte !== "error") {
+            let ret_value = MN_to_MC(address, mnemonic);
+            let machineCode = ret_value[0]
+            let nextAddress1 = ret_value[1]
+            let nextAddress2 = ret_value[2]
+            if (nextAddress1 === null && nextAddress2 === null) {
+                // console.log(`Machine Code : ${machineCode}`)
+                textTop.innerHTML = `${address}:${machineCode}`
+                textBottom.value = ''
+            } else if (nextAddress2 === null) {
+                // console.log(`Machine Code : ${machineCode}:${nextAddress1}`)
+                textTop.innerHTML = `${address}:${machineCode}:${nextAddress1}`
+                textBottom.value = ''
+            } else {
+                // console.log(`Machine Code : ${machineCode}:${nextAddress1}:${nextAddress2}`)
+                textTop.innerHTML = `${address}:${machineCode}:${nextAddress1}:${nextAddress2}`
+                textBottom.value = ''
             }
-            console.log(`byte: ${byte1}, ${byte}`)
-            if (byte1 === 1) {
-                hexValue = (parseInt(hexValue, 16) + parseInt("1", 16)).toString(16).toUpperCase().padStart(4, '0')
-            } else if (byte1 === 2) {
-                hexValue = (parseInt(hexValue, 16) + parseInt("2", 16)).toString(16).toUpperCase().padStart(4, '0')
-            } else if (byte1 === 3) {
-                hexValue = (parseInt(hexValue, 16) + parseInt("3", 16)).toString(16).toUpperCase().padStart(4, '0')
-            }
-            string = ''
         }
+
+        if (byte === 1) {
+            address = (parseInt(address, 16) + parseInt("1", 16)).toString(16).toUpperCase().padStart(4, '0')
+        } else if (byte === 2) {
+            address = (parseInt(address, 16) + parseInt("2", 16)).toString(16).toUpperCase().padStart(4, '0')
+        } else if (byte === 3) {
+            address = (parseInt(address, 16) + parseInt("3", 16)).toString(16).toUpperCase().padStart(4, '0')
+        }
+        string = ''
     })
     escapeBtn.addEventListener('click', escapeAddress = () => {
         enter.removeEventListener('click', enterAddress)
         if (initialMode === false && memoryActiveStatus !== 'active') {
             textTop.innerHTML = "MENU:   A,D,M,F, "
             textBottom.value = "C,G,S,R,I,E,P"
-            console.log(`Program = [${program}]`)
-            console.log(`Address list = [${addressList}]`)
-            console.log(`Machine code list = [${machineCodeList}]`)
-            console.log(`Machine code list 01 = [${machineCodeList1}]`)
-            console.log(`Program address list = [${programAddressList}]`)
             initialMode = true
             modeAddress = 0
             addressActiveStatus = 'inactive'
+            console.log(memory_location_value)
         }
     })
 }
 
-// Not complete...
-function instructionEncoder(machineCode) {
-    console.log("Encoding Instruction...");
-    console.log(`Machine code = ${machineCode}`);
+function instruction_encoder(machine_code) {
+    let one_byte_list = [
+        "00", "80", "81", "82", "83", "84", "85", "86", "87", "A0", "A1", "A2", "A3", "A4", "A5", "A6", "A7",
+        "2F", "B8", "B9", "BA", "BB", "BC", "BD", "BE", "BF", "09", "19", "29", "39", "05", "0D", "15", "1D",
+        "25", "2D", "35", "3D", "0B", "1B", "2B", "3B", "76", "04", "0C", "14", "1C", "24", "2C", "34", "3C",
+        "03", "13", "23", "33", "0A", "1A", "78", "79", "7A", "7B", "7C", "7D", "7E", "7F", "40", "41", "42",
+        "43", "44", "45", "46", "47", "48", "49", "4A", "4B", "4C", "4D", "4E", "4F", "50", "51", "52", "53",
+        "54", "55", "56", "57", "58", "59", "5A", "5B", "5C", "5D", "5E", "5F", "60", "61", "62", "63", "64",
+        "65", "66", "67", "68", "69", "6A", "6B", "6C", "6D", "6E", "6F", "70", "71", "72", "73", "74", "75",
+        "76", "77", "07", "0F", "B0", "B1", "B2", "B3", "B4", "B5", "B6", "B7", "02", "12", "90", "91", "92",
+        "93", "94", "95", "96", "97", "EB", "A8", "A9", "AA", "AB", "AC", "AD", "AE", "AF", "C9", "D8", "F8",
+        "C0", "D0", "F0", "E8", "E0", "C8", "C1", "C5", "D1", "D5", "E1", "E5", "F1", "F5"
+    ]
+    let two_byte_list_1 = ["C6", "D6", "E6", "F6", "EE", "FE"]
+    let two_byte_list_2 = ["06", "0E", "16", "1E", "26", "2E", "36", "3E"]
+    let three_byte_list_1 = ["22", "2A", "32", "3A", "C2", "C3", "CA", "CD", "DC", "FC", "D4", "C4", "CC",
+        "F4", "EC", "FE", "E4", "D2", "DA", "E2", "EA", "F2", "FA"
+    ]
+    let three_byte_list_2 = ["01", "11", "21", "31"]
 
-    const oneByteList = ["00", "80", "81", "82", "83", "84", "85", "86", "87", "AO", "A1", "A2", "A3", "A4", "A5", "A6", "A7", "2F", "B8", "B9", "BA", "BB", "BC", "BD", "BE", "BF", "09", "19", "29", "39", "05", "0D", "15", "1D", "25", "2D", "35", "3D", "0B", "1B", "2B", "3B", "76", "04", "0C", "14", "1C", "24", "2C", "34", "3C", "03", "13", "23", "33", "0A", "1A", "78", "79", "7A", "7B", "7C", "7D", "7E", "7F", "40", "41", "42", "43", "44", "45", "46", "47", "48", "49", "4A", "4B", "4C", "4D", "4E", "4F", "50", "51", "52", "53", "54", "55", "56", "57", "58", "59", "5A", "5B", "5C", "5D", "5E", "5F", "60", "61", "62", "63", "64", "65", "66", "67", "68", "69", "6A", "6B", "6C", "6D", "6E", "6F", "70", "71", "72", "73", "74", "75", "76", "77", "07", "0F", "B0", "B1", "B2", "B3", "B4", "B5", "B6", "B7", "02", "12", "90", "91", "92", "93", "94", "95", "96", "97", "EB", "A8", "A9", "AA", "AB", "AC", "AD", "AE", "AF", "C9", "D8", "F8", "C0", "D0", "F0", "E8", "E0", "C8", "C1", "C5", "D1", "D5", "E1", "E5", "F1", "F5"];
-    const twoByteList1 = ["C6", "D6", "E6", "F6", "EE", "FE"];
-    const twoByteList2 = ["06", "0E", "16", "1E", "26", "2E", "36", "3E"];
-    const threeByteList1 = ["22", "2A", "32", "3A", "C2", "C3", "CA", "CD", "DC", "FC", "D4", "C4", "CC", "F4", "EC", "FE", "E4", "D2", "DA", "E2", "EA", "F2", "FA"];
-    const threeByteList2 = ["01", "11", "21", "31"];
-
-    if (oneByteList.includes(machineCode)) {
-        const byte = "ONE";
+    if (one_byte_list.includes(machine_code)) {
+        let byte = "ONE";
         let opcode;
 
-        switch (machineCode) {
+        switch (machine_code) {
             case "87": opcode = "ADD A"; break;
             case "80": opcode = "ADD B"; break;
             case "81": opcode = "ADD C"; break;
@@ -2512,11 +2249,11 @@ function instructionEncoder(machineCode) {
         }
 
         return [byte, opcode];
-    } else if (twoByteList1.includes(machineCode)) {
-        const byte = "TWO_1";
+    } else if (two_byte_list_1.includes(machine_code)) {
+        let byte = "TWO_1";
         let opcode;
 
-        switch (machineCode) {
+        switch (machine_code) {
             case "C6": opcode = "ADI"; break;
             case "E6": opcode = "ANI"; break;
             case "FE": opcode = "CPI"; break;
@@ -2527,11 +2264,11 @@ function instructionEncoder(machineCode) {
         }
 
         return [byte, opcode];
-    } else if (twoByteList2.includes(machineCode)) {
-        const byte = "TWO_2";
+    } else if (two_byte_list_2.includes(machine_code)) {
+        let byte = "TWO_2";
         let opcode;
 
-        switch (machineCode) {
+        switch (machine_code) {
             case "3E": opcode = "MVI A"; break;
             case "06": opcode = "MVI B"; break;
             case "0E": opcode = "MVI C"; break;
@@ -2544,11 +2281,11 @@ function instructionEncoder(machineCode) {
         }
 
         return [byte, opcode];
-    } else if (threeByteList1.includes(machineCode)) {
-        const byte = "THREE_1";
+    } else if (three_byte_list_1.includes(machine_code)) {
+        let byte = "THREE_1";
         let opcode;
 
-        switch (machineCode) {
+        switch (machine_code) {
             case "CD": opcode = "CALL"; break;
             case "DC": opcode = "CC"; break;
             case "D4": opcode = "CNC"; break;
@@ -2575,11 +2312,11 @@ function instructionEncoder(machineCode) {
         }
 
         return [byte, opcode];
-    } else if (threeByteList2.includes(machineCode)) {
-        const byte = "THREE_2";
+    } else if (three_byte_list_2.includes(machine_code)) {
+        let byte = "THREE_2";
         let opcode;
 
-        switch (machineCode) {
+        switch (machine_code) {
             case "01": opcode = "LXI B"; break;
             case "11": opcode = "LXI D"; break;
             case "21": opcode = "LXI H"; break;
@@ -2589,377 +2326,432 @@ function instructionEncoder(machineCode) {
 
         return [byte, opcode];
     } else {
-        const byte = null;
-        const opcode = null;
+        let byte = null;
+        let opcode = null;
         return [byte, opcode];
     }
 }
 
-function MC_to_MN(startAddress) {
-    console.log("Converting to Mnemonic...");
-    let programCount = 0
-    let address = parseInt(startAddress, 16).toString(16).toUpperCase().padStart(4, '0')
-    console.log(address)
-
-    while (true) {
-        programCount += 1;
-        address = parseInt(address, 16).toString(16).toUpperCase().padStart(4, '0')
-        let addressIndex = memoryLocationList.indexOf(address);
-        let machineCode = memoryLocationValue[addressIndex]
-        machineCode = fillZero(machineCode).toUpperCase();
-        console.log(`Machine code = ${machineCode}`);
-
-        let [byte, mnemonicOpcode] = instructionEncoder(machineCode);
-
-        if (byte === "ONE") {
-            addressList.push(address);
-            console.log(`${address}:${mnemonicOpcode}`);
-            program.push(`${address}:${mnemonicOpcode}`);
-            address = (parseInt(address, 16) + 1).toString(16).toUpperCase().padStart(4, '0')
-        } else if (byte === "TWO_1") {
-            let address1 = address;
-            addressList.push(address);
-            address = (parseInt(address, 16) + 1).toString(16).toUpperCase().padStart(4, '0');
-            let machineCodeValue = memoryLocationValue[parseInt(address, 16)];
-            let mnemonic = `${mnemonicOpcode} ${machineCodeValue.toString().padStart(2, '0')}`;
-            console.log(`${address1}:${mnemonic}`);
-            program.push(`${address1}:${mnemonic}`);
-            // addressList.push(address);
-            address = (parseInt(address, 16) + 1).toString(16).toUpperCase().padStart(4, '0')
-        } else if (byte === "TWO_2") {
-            let address1 = address;
-            addressList.push(address);
-            address = (parseInt(address, 16) + 1).toString(16).toUpperCase().padStart(4, '0')
-            let machineCodeValue = memoryLocationValue[parseInt(address, 16)];
-            let mnemonic = `${mnemonicOpcode},${machineCodeValue.toString().padStart(2, '0')}`;
-            console.log(`${address1}:${mnemonic}`);
-            program.push(`${address1}:${mnemonic}`);
-            // addressList.push(address);
-            address = (parseInt(address, 16) + 1).toString(16).toUpperCase().padStart(4, '0')
-        } else if (byte === "THREE_1") {
-            let address1 = address;
-            addressList.push(address);
-            address = (parseInt(address, 16) + 3).toString(16).toUpperCase().padStart(4, '0')
-            let machineCode1 = memoryLocationValue[parseInt(address, 16) - 1];
-            let machineCodeHex1 = fillZero(machineCode1).toUpperCase();
-            let mnemonic1 = machineCodeHex1.padStart(2, '0');
-            // addressList.push(address);
-            address = (parseInt(address, 16) - 1).toString(16).toUpperCase().padStart(4, '0')
-            let machineCode2 = memoryLocationValue[parseInt(address, 16) - 1];
-            let machineCodeHex2 = fillZero(machineCode2).toUpperCase();
-            let mnemonic2 = machineCodeHex2.padStart(2, '0');
-            let combinedMnemonic = (parseInt(`${mnemonic1}${mnemonic2}`, 16)).toString(16).toUpperCase().padStart(4, '0')
-            let mnemonic = `${mnemonicOpcode} ${combinedMnemonic}`;
-            console.log(`${address1}:${mnemonic}`);
-            program.push(`${address1}:${mnemonic}`);
-            address = (parseInt(address, 16) + 1).toString(16).toUpperCase().padStart(4, '0')
-        } else if (byte === "THREE_2") {
-            let address1 = address;
-            addressList.push(address);
-            address = (parseInt(address, 16) + 3).toString(16).toUpperCase().padStart(4, '0')
-            let machineCode = memoryLocationValue[parseInt(address, 16) - 1];
-            console.log(`Higher byte: ${machineCode}`)
-            machineCode = fillZero(machineCode).toUpperCase();
-            let mnemonic = machineCode.padStart(2, '0');
-            // addressList.push(address);
-            address = (parseInt(address, 16) - 1).toString(16);
-            machineCode = memoryLocationValue[parseInt(address, 16) - 1];
-            console.log(`Lower byte: ${machineCode}`)
-            machineCode = fillZero(machineCode).toUpperCase();
-            mnemonic = mnemonic + machineCode
-            mnemonic = mnemonic.toString(16).toUpperCase().padStart(4, '0')
-            console.log(`Operand: ${mnemonic}`)
-            mnemonic = `${mnemonicOpcode},${mnemonic}`;
-            console.log(`${address1}:${mnemonic}`);
-            program.push(`${address1}:${mnemonic}`);
-            address = (parseInt(address, 16) + 1).toString(16).toUpperCase().padStart(4, '0');
-        } else if (byte === null) {
-            addressList.push(address);
-            address = (parseInt(address, 16) + 1).toString(16).toUpperCase().padStart(4, '0')
-        }
-        if (machineCode === "76") {
-            break;
-        }
+function MC_to_MN(address) {
+    let machine_code = memory_location_value[parseInt(address, 16)];
+    machine_code = String(machine_code).padStart(2, '0').toUpperCase();
+    let [byte, mnemonic_opcode] = instruction_encoder(machine_code); // iv_ml means immediate_value or memory_location
+    let mnemonic = "";
+    if (byte === "ONE") {
+        mnemonic = mnemonic_opcode;
+        console.log(`\n${address}:${mnemonic_opcode}`);
+        address = (parseInt(address, 16)).toString(16).toUpperCase().padStart(4, '0');
+    } else if (byte === "TWO_1") {
+        let address_1 = address;
+        address = (parseInt(address, 16) + 1).toString(16).toUpperCase().padStart(4, '0');
+        machine_code = memory_location_value[parseInt(address, 16)];
+        mnemonic = `${mnemonic_opcode} ${String(machine_code).padStart(2, '0')}`;
+        console.log(`\n${address_1}:${mnemonic}`);
+    } else if (byte === "TWO_2") {
+        let address_1 = address;
+        address = (parseInt(address, 16) + 1).toString(16).toUpperCase().padStart(4, '0');
+        machine_code = memory_location_value[parseInt(address, 16)];
+        mnemonic = `${mnemonic_opcode},${String(machine_code).padStart(2, '0')}`;
+        console.log(`\n${address_1}:${mnemonic}`);
+    } else if (byte === "THREE_1") {
+        let address_1 = address;
+        address = (parseInt(address, 16) + 3).toString(16).toUpperCase().padStart(4, '0');
+        machine_code = memory_location_value[parseInt(address, 16) - 1];
+        mnemonic = String(machine_code).padStart(2, '0').toUpperCase();
+        address = (parseInt(address, 16) - 1).toString(16).toUpperCase().padStart(4, '0');
+        machine_code = memory_location_value[parseInt(address, 16) - 1];
+        machine_code = String(machine_code).padStart(2, '0').toUpperCase();
+        mnemonic = parseInt(mnemonic + machine_code, 16).toString(16).toUpperCase().padStart(4, '0');
+        mnemonic = `${mnemonic_opcode} ${mnemonic}`;
+        console.log(`\n${address_1}:${mnemonic}`);
+        address = (parseInt(address, 16)).toString(16).toUpperCase().padStart(4, '0');
+    } else if (byte === "THREE_2") {
+        let address_1 = address;
+        address = (parseInt(address, 16) + 3).toString(16).toUpperCase().padStart(4, '0');
+        machine_code = memory_location_value[parseInt(address, 16) - 1];
+        mnemonic = String(machine_code).padStart(2, '0').toUpperCase();
+        address = (parseInt(address, 16) - 1).toString(16).toUpperCase().padStart(4, '0');
+        machine_code = memory_location_value[parseInt(address, 16) - 1];
+        machine_code = String(machine_code).padStart(2, '0').toUpperCase();
+        mnemonic = parseInt(mnemonic + machine_code, 16).toString(16).toUpperCase().padStart(4, '0');
+        mnemonic = `${mnemonic_opcode},${mnemonic}`;
+        console.log(`\n${address_1}:${mnemonic}`);
+        address = (parseInt(address, 16)).toString(16).toUpperCase().padStart(4, '0');
+    } else if (byte === null) {
+        mnemonic = "No Mnemonic";
+        address = (parseInt(address, 16)).toString(16).toUpperCase().padStart(4, '0');
     }
-    console.log(`Address List = [${addressList.join(', ')}]`);
-    console.log(`Program = [${program.join(', ')}]`);
+    return [mnemonic, address];
 }
 
-function execute8085() {
-    let ret_address
-    console.log("-----EXECUTE-----")
-    p_c = 0
-    textTop.innerHTML = "GO EXECUTE"
-    textBottom.value = "ADDR:" + hexValue
+function execute_8085() {
     modeAddress = 0
     addressActiveStatus = 'active'
-
     enter.addEventListener('click', enterExecute = () => {
         if (initialMode === false && memoryActiveStatus !== 'active') {
-            startAddress = textBottom.value.split(":")[1]
-            console.log(startAddress)
-            let addressPlace = textBottom.value
-            hexValue = addressPlace.split(":")[1]
-            hexValue = (parseInt(hexValue, 16)).toString(16).padStart(4, '0')
-            console.log(program)
-            program_1 = program.slice() // Assuming `program` is a global variable
-            MC_to_MN(startAddress);
-            textTop.innerHTML = "EXECUTING...."
-            textBottom.value = ''
-            while (true) {
-                let machine_code = program[p_c];
-                let mnemonic = machine_code.split(":");
-                let address_code = mnemonic[0];
-                let instruction = mnemonic[1];
-                let opcode = instruction.split(" ")[0];
+            address = (address).toString(16).toUpperCase().padStart(4, '0');
 
-                if (opcode === "ADD") {
-                    ADD(instruction);
-                } else if (opcode === "ADI") {
-                    ADI(instruction);
-                } else if (opcode === "ANA") {
-                    ANA(instruction);
-                } else if (opcode === "ANI") {
-                    ANI(instruction);
-                } else if (opcode === "CALL") {
-                    p_c = CALL(instruction);
-                } else if (opcode === "CC") {
-                    p_c = CC(instruction);
-                } else if (opcode === "CNC") {
-                    p_c = CNC(instruction);
-                } else if (opcode === "CP") {
-                    p_c = CP(instruction);
-                } else if (opcode === "CM") {
-                    p_c = CM(instruction);
-                } else if (opcode === "CPE") {
-                    p_c = CPE(instruction);
-                } else if (opcode === "CPO") {
-                    p_c = CPO(instruction);
-                } else if (opcode === "CZ") {
-                    p_c = CZ(instruction);
-                } else if (opcode === "CNZ") {
-                    p_c = CNZ(instruction);
-                } else if (opcode === "CMA") {
-                    CMA(instruction);
-                } else if (opcode === "CMP") {
-                    CMP(instruction);
-                } else if (opcode === "CPI") {
-                    CPI(instruction);
-                } else if (opcode === "DCR") {
-                    DCR(instruction);
-                } else if (opcode === "DCX") {
-                    DCX(instruction);
-                } else if (opcode === "DAD") {
-                    DAD(instruction);
-                } else if (opcode === "INR") {
-                    INR(instruction);
-                } else if (opcode === "INX") {
-                    INX(instruction);
-                } else if (opcode === "JMP") {
-                    p_c = JMP(instruction);
-                } else if (opcode === "JP") {
-                    p_c = JC(instruction);
-                    if (p_c === "A") {
-                        p_c = programAddressList.indexOf(address_code);
-                        p_c = p_c + 1;
-                    }
-                } else if (opcode === "JM") {
-                    p_c = JC(instruction);
-                    if (p_c === "A") {
-                        p_c = programAddressList.indexOf(address_code);
-                        p_c = p_c + 1;
-                    }
-                } else if (opcode === "JPE") {
-                    p_c = JC(instruction);
-                    if (p_c === "A") {
-                        p_c = programAddressList.indexOf(address_code);
-                        p_c = p_c + 1;
-                    }
-                } else if (opcode === "JPO") {
-                    p_c = JC(instruction);
-                    if (p_c === "A") {
-                        p_c = programAddressList.indexOf(address_code);
-                        p_c = p_c + 1;
-                    }
-                } else if (opcode === "JC") {
-                    p_c = JC(instruction);
-                    if (p_c === "A") {
-                        p_c = programAddressList.indexOf(address_code);
-                        p_c = p_c + 1;
-                    }
-                } else if (opcode === "JNC") {
-                    p_c = JNC(instruction);
-                    if (p_c === "A") {
-                        p_c = programAddressList.indexOf(address_code);
-                        p_c = p_c + 1;
-                    }
-                } else if (opcode === "JZ") {
-                    p_c = JZ(instruction);
-                    if (p_c === "A") {
-                        p_c = programAddressList.indexOf(address_code);
-                        p_c = p_c + 1;
-                    }
-                } else if (opcode === "JNZ") {
-                    p_c = JNZ(instruction);
-                    if (p_c === "A") {
-                        p_c = programAddressList.indexOf(address_code);
-                        p_c = p_c + 1;
-                    }
-                } else if (opcode === "LDA") {
-                    LDA(instruction);
-                } else if (opcode === "LDAX") {
-                    LDAX(instruction);
-                } else if (opcode === "LXI") {
-                    LXI(instruction);
-                } else if (opcode === "LHLD") {
-                    LHLD(instruction);
-                } else if (opcode === "SHLD") {
-                    SHLD(instruction);
-                } else if (opcode === "MOV") {
-                    MOV(instruction);
-                } else if (opcode === "MVI") {
-                    MVI(instruction);
-                } else if (opcode === "ORA") {
-                    ORA(instruction);
-                } else if (opcode === "ORI") {
-                    ORI(instruction);
-                } else if (opcode === "PUSH") {
-                    PUSH(instruction);
-                } else if (opcode === "POP") {
-                    POP(instruction);
-                } else if (opcode === "RET") {
-                    RET(instruction);
-                    p_c = programAddressList.indexOf(ret_address);
-                } else if (opcode === "RC") {
-                    let returnValue = RC(instruction);
-                    if (returnValue) {
-                        p_c = programAddressList.indexOf(ret_address);
-                    } else {
-                        p_c = p_c + 1;
-                    }
-                } else if (opcode === "RNC") {
-                    let returnValue = RNC(instruction);
-                    if (returnValue) {
-                        p_c = programAddressList.indexOf(ret_address);
-                    } else {
-                        p_c = p_c + 1;
-                    }
-                } else if (opcode === "RP") {
-                    let returnValue = RP(instruction);
-                    if (returnValue) {
-                        p_c = programAddressList.indexOf(ret_address);
-                    } else {
-                        p_c = p_c + 1;
-                    }
-                } else if (opcode === "RM") {
-                    let returnValue = RM(instruction);
-                    if (returnValue) {
-                        p_c = programAddressList.indexOf(ret_address);
-                    } else {
-                        p_c = p_c + 1;
-                    }
-                } else if (opcode === "RPE") {
-                    let returnValue = RPE(instruction);
-                    if (returnValue) {
-                        p_c = programAddressList.indexOf(ret_address);
-                    } else {
-                        p_c = p_c + 1;
-                    }
-                } else if (opcode === "RPO") {
-                    let returnValue = RPO(instruction);
-                    if (returnValue) {
-                        p_c = programAddressList.indexOf(ret_address);
-                    } else {
-                        p_c = p_c + 1;
-                    }
-                } else if (opcode === "RZ") {
-                    let returnValue = RZ(instruction);
-                    if (returnValue) {
-                        p_c = programAddressList.indexOf(ret_address);
-                    } else {
-                        p_c = p_c + 1;
-                    }
-                } else if (opcode === "RNZ") {
-                    let returnValue = RNZ(instruction);
-                    if (returnValue) {
-                        p_c = programAddressList.indexOf(ret_address);
-                    } else {
-                        p_c = p_c + 1;
-                    }
-                } else if (opcode === "RLC") {
-                    RLC(instruction);
-                } else if (opcode === "RRC") {
-                    RRC(instruction);
-                } else if (opcode === "STA") {
-                    STA(instruction);
-                } else if (opcode === "STAX") {
-                    STAX(instruction);
-                } else if (opcode === "SUB") {
-                    SUB(instruction);
-                } else if (opcode === "SUI") {
-                    SUI(instruction);
-                } else if (opcode === "XCHG") {
-                    XCHG(instruction);
-                } else if (opcode === "XRA") {
-                    XRA(instruction);
-                } else if (opcode === "XRI") {
-                    XRI(instruction);
-                } else if (opcode === "HLT") {
-                    console.log("-----HLT-----");
+            if (single_step_active === "inactive") {
+                console.log("Executing...");
+                textTop.innerHTML = "EXECUTING...."
+                textBottom.value = ''
+            }
+            while (true) {
+                let [instruction, addr] = MC_to_MN(address);
+                address = addr
+                let opcode = instruction.split(' ')[0];
+
+                switch (opcode) {
+                    case "ADD":
+                        ADD(instruction);
+                        break;
+                    case "ADI":
+                        ADI(instruction);
+                        break;
+                    case "ANA":
+                        ANA(instruction);
+                        break;
+                    case "ANI":
+                        ANI(instruction);
+                        break;
+                    case "CALL":
+                        address = CALL(instruction);
+                        address = String(address).padStart(4, '0').toUpperCase();
+                        break;
+                    case "CC":
+                        address = CC(instruction);
+                        address = String(address).padStart(4, '0').toUpperCase();
+                        break;
+                    case "CNC":
+                        address = CNC(instruction);
+                        address = String(address).padStart(4, '0').toUpperCase();
+                        break;
+                    case "CP":
+                        address = CP(instruction);
+                        address = String(address).padStart(4, '0').toUpperCase();
+                        break;
+                    case "CM":
+                        address = CM(instruction);
+                        address = String(address).padStart(4, '0').toUpperCase();
+                        break;
+                    case "CPE":
+                        address = CPE(instruction);
+                        address = String(address).padStart(4, '0').toUpperCase();
+                        break;
+                    case "CPO":
+                        address = CPO(instruction);
+                        address = String(address).padStart(4, '0').toUpperCase();
+                        break;
+                    case "CZ":
+                        address = CZ(instruction);
+                        address = String(address).padStart(4, '0').toUpperCase();
+                        break;
+                    case "CNZ":
+                        address = CNZ(instruction);
+                        address = String(address).padStart(4, '0').toUpperCase();
+                        break;
+                    case "CMA":
+                        CMA(instruction);
+                        break;
+                    case "CMP":
+                        CMP(instruction);
+                        break;
+                    case "CMA":
+                        CMA(instruction);
+                        break;
+                    case "CMP":
+                        CMP(instruction);
+                        break;
+                    case "CPI":
+                        CPI(instruction);
+                        break;
+                    case "DCR":
+                        DCR(instruction);
+                        break;
+                    case "DCX":
+                        DCX(instruction);
+                        break;
+                    case "DAD":
+                        DAD(instruction);
+                        break;
+                    case "INR":
+                        INR(instruction);
+                        break;
+                    case "INX":
+                        INX(instruction);
+                        break;
+                    case "CPI":
+                        CPI(instruction);
+                        break;
+                    case "DCR":
+                        DCR(instruction);
+                        break;
+                    case "DCX":
+                        DCX(instruction);
+                        break;
+                    case "DAD":
+                        DAD(instruction);
+                        break;
+                    case "INR":
+                        INR(instruction);
+                        break;
+                    case "INX":
+                        INX(instruction);
+                        break;
+                    case "JMP":
+                        address = JMP(instruction);
+                        address = String(address).padStart(4, '0').toUpperCase();
+                        break;
+                    case "JP":
+                        address_1 = address;
+                        result = JP(instruction);
+                        address = String(result[1]).padStart(4, '0').toUpperCase();
+                        if (result[0] === "no jump") {
+                            address = String(parseInt(address_1, 16) + 1).toString(16).padStart(4, '0').toUpperCase();
+                        }
+                        break;
+                    case "JM":
+                        address_1 = address;
+                        result = JM(instruction);
+                        address = String(result[1]).padStart(4, '0').toUpperCase();
+                        if (result[0] === "no jump") {
+                            address = String(parseInt(address_1, 16) + 1).toString(16).padStart(4, '0').toUpperCase();
+                        }
+                        break;
+                    case "JPE":
+                        address_1 = address;
+                        result = JPE(instruction);
+                        address = String(result[1]).padStart(4, '0').toUpperCase();
+                        if (result[0] === "no jump") {
+                            address = String(parseInt(address_1, 16) + 1).toString(16).padStart(4, '0').toUpperCase();
+                        }
+                        break;
+                    case "JPO":
+                        address_1 = address;
+                        result = JPO(instruction);
+                        address = String(result[1]).padStart(4, '0').toUpperCase();
+                        if (result[0] === "no jump") {
+                            address = String(parseInt(address_1, 16) + 1).toString(16).padStart(4, '0').toUpperCase();
+                        }
+                        break;
+                    case "JC":
+                        address_1 = address;
+                        result = JC(instruction);
+                        address = String(result[1]).padStart(4, '0').toUpperCase();
+                        if (result[0] === "no jump") {
+                            address = String(parseInt(address_1, 16) + 1).toString(16).padStart(4, '0').toUpperCase();
+                        }
+                        break;
+                    case "JNC":
+                        address_1 = address;
+                        result = JNC(instruction);
+                        address = String(result[1]).padStart(4, '0').toUpperCase();
+                        if (result[0] === "no jump") {
+                            address = String(parseInt(address_1, 16) + 1).toString(16).padStart(4, '0').toUpperCase();
+                        }
+                        break;
+                    case "JZ":
+                        address_1 = address;
+                        result = JZ(instruction);
+                        address = String(result[1]).padStart(4, '0').toUpperCase();
+                        if (result[0] === "no jump") {
+                            address = String(parseInt(address_1, 16) + 1).toString(16).padStart(4, '0').toUpperCase();
+                        }
+                        break;
+                    case "JNZ":
+                        address_1 = address;
+                        result = JNZ(instruction);
+                        address = String(result[1]).padStart(4, '0').toUpperCase();
+                        if (result[0] === "no jump") {
+                            address = String(parseInt(address_1, 16) + 1).toString(16).padStart(4, '0').toUpperCase();
+                        }
+                        break;
+                    case "LDA":
+                        LDA(instruction);
+                        break;
+                    case "LDAX":
+                        LDAX(instruction);
+                        break;
+                    case "LXI":
+                        LXI(instruction);
+                        break;
+                    case "LHLD":
+                        LHLD(instruction);
+                        break;
+                    case "SHLD":
+                        SHLD(instruction);
+                        break;
+                    case "MOV":
+                        MOV(instruction);
+                        break;
+                    case "MVI":
+                        MVI(instruction);
+                        break;
+                    case "ORA":
+                        ORA(instruction);
+                        break;
+                    case "ORI":
+                        ORI(instruction);
+                        break;
+                    case "PUSH":
+                        PUSH(instruction);
+                        break;
+                    case "POP":
+                        POP(instruction);
+                        break;
+                    case "RET":
+                        RET(instruction);
+                        address = ret_address;
+                        address = String(address).padStart(4, '0').toUpperCase();
+                        break;
+                    case "RC":
+                        return_value = RC(instruction);
+                        if (return_value === true) {
+                            address = ret_address;
+                            address = String(address).padStart(4, '0').toUpperCase();
+                        } else {
+                            address = String(parseInt(address, 16) + 1).toString(16).padStart(4, '0').toUpperCase();
+                        }
+                        break;
+                    case "RNC":
+                        return_value = RNC(instruction);
+                        if (return_value === true) {
+                            address = ret_address;
+                            address = String(address).padStart(4, '0').toUpperCase();
+                        } else {
+                            address = String(parseInt(address, 16) + 1).toString(16).padStart(4, '0').toUpperCase();
+                        }
+                        break;
+                    case "RP":
+                        return_value = RP(instruction);
+                        if (return_value === true) {
+                            address = ret_address;
+                            address = String(address).padStart(4, '0').toUpperCase();
+                        } else {
+                            address = String(parseInt(address, 16) + 1).toString(16).padStart(4, '0').toUpperCase();
+                        }
+                        break;
+                    case "RM":
+                        return_value = RM(instruction);
+                        if (return_value === true) {
+                            address = ret_address;
+                            address = String(address).padStart(4, '0').toUpperCase();
+                        } else {
+                            address = String(parseInt(address, 16) + 1).toString(16).padStart(4, '0').toUpperCase();
+                        }
+                        break;
+                    case "RPE":
+                        return_value = RPE(instruction);
+                        if (return_value === true) {
+                            address = ret_address;
+                            address = String(address).padStart(4, '0').toUpperCase();
+                        } else {
+                            address = String(parseInt(address, 16) + 1).toString(16).padStart(4, '0').toUpperCase();
+                        }
+                        break;
+                    case "RPO":
+                        return_value = RPO(instruction);
+                        if (return_value === true) {
+                            address = ret_address;
+                            address = String(address).padStart(4, '0').toUpperCase();
+                        } else {
+                            address = String(parseInt(address, 16) + 1).toString(16).padStart(4, '0').toUpperCase();
+                        }
+                        break;
+                    case "RZ":
+                        return_value = RP(instruction);
+                        if (return_value === true) {
+                            address = ret_address;
+                            address = String(address).padStart(4, '0').toUpperCase();
+                        } else {
+                            address = String(parseInt(address, 16) + 1).toString(16).padStart(4, '0').toUpperCase();
+                        }
+                        break;
+                    case "RNZ":
+                        return_value = RP(instruction);
+                        if (return_value === true) {
+                            address = ret_address;
+                            address = String(address).padStart(4, '0').toUpperCase();
+                        } else {
+                            address = String(parseInt(address, 16) + 1).toString(16).padStart(4, '0').toUpperCase();
+                        }
+                        break;
+                    case "RLC":
+                        RLC(instruction);
+                        break;
+                    case "RRC":
+                        RRC(instruction);
+                        break;
+                    case "STA":
+                        STA(instruction);
+                        break;
+                    case "STAX":
+                        STAX(instruction);
+                        break;
+                    case "SUB":
+                        SUB(instruction);
+                        break;
+                    case "SUI":
+                        SUI(instruction);
+                        break;
+                    case "XCHG":
+                        XCHG(instruction);
+                        break;
+                    case "XRA":
+                        XRA(instruction);
+                        break;
+                    case "XRI":
+                        XRI(instruction);
+                        break;
+                    case "HLT":
+                        console.log("-----HLT-----");
+                        return;
+                    default:
+                        console.log(`The instruction ${instruction} at memory location ${address.toUpperCase()} is not provided by the developer.`);
+                }
+                if (opcode !== "CALL" && opcode !== "CC" && opcode !== "CNC" && opcode !== "CP" && opcode !== "CM" && opcode !== "CPE" && opcode !== "CPO" && opcode !== "CZ" && opcode !== "CNZ" && opcode !== "JMP" && opcode !== "JC" && opcode !== "JNC" && opcode !== "JZ" && opcode !== "JNZ" && opcode !== "RET" && opcode !== "RC" && opcode !== "RNC" && opcode !== "RP" && opcode !== "RM" && opcode !== "RPE" && opcode !== "RPO" && opcode !== "RZ" && opcode !== "RNZ") {
+                    address = (parseInt(address, 16) + 1).toString(16).toUpperCase().padStart(4, '0');
+                }
+                if (single_step_active === "active" || opcode === "HLT") {
                     break;
-                } if (
-                    opcode !== "CALL" &&
-                    opcode !== "CC" &&
-                    opcode !== "CNC" &&
-                    opcode !== "CP" &&
-                    opcode !== "CM" &&
-                    opcode !== "CPE" &&
-                    opcode !== "CPO" &&
-                    opcode !== "CZ" &&
-                    opcode !== "CNZ" &&
-                    opcode !== "JMP" &&
-                    opcode !== "JC" &&
-                    opcode !== "JNC" &&
-                    opcode !== "JZ" &&
-                    opcode !== "JNZ" &&
-                    opcode !== "RET" &&
-                    opcode !== "RC" &&
-                    opcode !== "RNC" &&
-                    opcode !== "RP" &&
-                    opcode !== "RM" &&
-                    opcode !== "RPE" &&
-                    opcode !== "RPO" &&
-                    opcode !== "RZ" &&
-                    opcode !== "RNZ") {
-                    p_c = p_c + 1;
                 }
             }
         }
     })
+
+
+    console.log("\nExecuted Successfully...");
+
+    // let details = prompt("Do you want to see more details? [Y/N] : ");
+    // if (details === "Y") {
+    //     let flag_bin = reg_value[1].join('');
+    //     let flag_hex = parseInt(flag_bin, 2).toString(16).toUpperCase().padStart(2, '0');
+    //     console.log(`A = ${reg_value[0].toString(16).toUpperCase().padStart(2, '0')}  Flag = ${flag_hex} = ${flag_bin}`);
+    //     console.log(`B = ${reg_value[2].toString(16).toUpperCase().padStart(2, '0')}     C = ${reg_value[3].toString(16).toUpperCase().padStart(2, '0')}`);
+    //     console.log(`D = ${reg_value[4].toString(16).toUpperCase().padStart(2, '0')}     E = ${reg_value[5].toString(16).toUpperCase().padStart(2, '0')}`);
+    //     console.log(`H = ${reg_value[6].toString(16).toUpperCase().padStart(2, '0')}     L = ${reg_value[7].toString(16).toUpperCase().padStart(2, '0')}`);
+    // }
 }
 
 function memory_address_M(mode) {
     if (mode === 0) {
         console.log("Storing the value to Memory address...");
-        reg_value[6] = fillZero(reg_value[6]);
-        reg_value[7] = fillZero(reg_value[7]);
-        M_address = reg_value[6] + reg_value[7];
-        M_index = memoryLocationList.indexOf(M_address);
-        memoryLocationValue[M_index] = reg_value[8];
+        reg_value[6] = reg_value[6].toString().padStart(2, '0').toUpperCase();
+        reg_value[7] = reg_value[7].toString().padStart(2, '0').toUpperCase();
+        let M_address = reg_value[6] + reg_value[7];
+        memory_location_value[parseInt(M_address, 16)] = reg_value[8];
         console.log(`[H] = ${reg_value[6]}, [L] = ${reg_value[7]}`);
         console.log(`[M] = [${M_address}] = ${reg_value[8]}`);
     } else if (mode === 1) {
         console.log("Retrieving the value from Memory address...");
-        reg_value[6] = fillZero(reg_value[6]);
-        reg_value[7] = fillZero(reg_value[7]);
-        M_address = reg_value[6] + reg_value[7];
-        M_index = memoryLocationList.indexOf(M_address);
-        reg_value[8] = memoryLocationValue[M_index];
+        reg_value[6] = reg_value[6].toString().padStart(2, '0').toUpperCase();
+        reg_value[7] = reg_value[7].toString().padStart(2, '0').toUpperCase();
+        let M_address = reg_value[6] + reg_value[7];
+        reg_value[8] = memory_location_value[parseInt(M_address, 16)];
         console.log(`[M] = [${M_address}] = ${reg_value[8]}`);
         console.log(`[H] = ${reg_value[6]}, [L] = ${reg_value[7]}`);
     }
 }
-
 
 ////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////
@@ -2970,12 +2762,14 @@ reset.addEventListener('click', () => {
         hexButtons.forEach(hex => { hex.removeEventListener('click', hexFunc) })
         buttons.forEach(btn => { btn.removeEventListener('click', buttonFunc) })
 
+        flag = [0, 0, 0, 0, 0, 0, 0, 0];
         string = ''
-        hexValue = '8000'
+        address = '8000'
         hexAddress = '0000'
         memoryActiveStatus = 'inactive'
         addressActiveStatus = 'inactive'
         executeActiveStatus = 'inactive'
+        single_step_active = 'inactive'
         initialMode = true
         modeMemory = 0
         modeAddress = 0
@@ -2995,29 +2789,32 @@ buttons.forEach(btn => {
     btn.addEventListener('click', buttonFunc = () => {
         if (modeAddress === 0 && initialMode === false && addressActiveStatus === 'active') {
             if (btn.innerHTML === 'Backspace') {
-                hexValue = hexValue.substring(0, hexValue.length - 1)
-                textBottom.value = `ADDR:${hexValue}`
-            } else if (hexValue.length < 4) {
+                address = address.substring(0, address.length - 1)
+                textBottom.value = `ADDR:${address}`
+            } else if (address.length < 4) {
                 if (btn.innerHTML === 'Enter') {
-                    textBottom.value = `ADDR:${hexValue}`
+                    textBottom.value = `ADDR:${address}`
                 } else if (btn.innerHTML !== 'Enter') {
-                    hexValue += btn.innerHTML
-                    textBottom.value = `ADDR:${hexValue}`
+                    address += btn.innerHTML
+                    textBottom.value = `ADDR:${address}`
                 }
             }
         } else if (modeAddress === 1 && initialMode === false && addressActiveStatus === 'active') {
             if (btn.innerHTML === 'Backspace') {
                 string = string.substring(0, string.length - 1)
-                textBottom.value = `${string}`
+                display_string = string + "_"
+                textBottom.value = `${display_string}`
             } else if (btn.innerHTML === 'Space') {
                 string += ' '
-                textBottom.value = `${string}`
+                display_string = string + "_"
+                textBottom.value = `${display_string}`
             } else if (btn.innerHTML === 'Enter') {
-                console.log(`string: ${string}`)
+                // console.log(`string: ${string}`)
             } else {
                 string += btn.innerHTML
-                textTop.innerHTML = `ASSEMBLE:${hexValue}`
-                textBottom.value = `${string}`
+                display_string = string + "_"
+                textTop.innerHTML = `ASSEMBLE:${address}`
+                textBottom.value = `${display_string}`
             }
         }
     })
@@ -3027,43 +2824,31 @@ hexButtons.forEach(hex => {
     hex.addEventListener('click', hexFunc = () => {
         if (modeMemory === 0 && initialMode === false && memoryActiveStatus === 'active') {
             if (hex.innerHTML === 'Backspace') {
-                hexValue = hexValue.substring(0, hexValue.length - 1)
-                console.log(hexValue)
-                textBottom.value = `ADDR:${hexValue}`
-            } else if (hexValue.length < 4) {
+                address_location = address_location.substring(0, address_location.length - 1)
+                textBottom.value = `ADDR:${address_location}`
+            } else if (address_location.length < 4) {
                 if (hex.innerHTML === 'Enter') {
-                    textBottom.value = `ADDR:${hexValue}`
+                    textBottom.value = `ADDR:${address_location}`
                 } else if (hex.innerHTML !== 'Enter') {
-                    hexValue += hex.innerHTML
-                    textBottom.value = `ADDR:${hexValue}`
+                    address_location += hex.innerHTML
+                    textBottom.value = `ADDR:${address_location}`
                 }
             }
         } else if (modeMemory === 1 && initialMode === false && memoryActiveStatus === 'active') {
             if (hex.innerHTML === 'Backspace') {
-                console.log(string)
-                string = addressValue
                 string = string.substring(0, string.length - 1)
-                addressValue = string
-                let hexValueTemp = hexValue
-                hexValueTemp = (parseInt(hexValueTemp, 16) - 1).toString(16).toUpperCase().padStart(4, '0')
-                textBottom.value = `${hexValueTemp}:${addressValue}`
+                address_value = string
+                textBottom.value = `${address_1}:${string}`
             } else if (string.length < 2) {
                 if (hex.innerHTML === 'Enter') {
-                    if (string !== '') {
-                        addressValue = string
-                        string = ''
-                        console.log(`${hexValue}: ${addressValue}`)
-                        textBottom.value = `${hexValue}:${addressValue}`
-                    } else {
-                        string = ''
-                        console.log(`${hexValue}: ${addressValue}`)
-                        textBottom.value = `${hexValue}:${addressValue}`
-                    }
+                    // console.log(`${address_1}: ${address_value}`)
+                    textBottom.value = `${address_1}:${address_value}`
+                    // address_location = (parseInt(address_location, 16) + 1).toString(16).padStart(4, '0').toUpperCase()
                 } else {
-                    let address1 = (parseInt(hexValue, 16) - 1).toString(16).toUpperCase().padStart(4, '0')
+                    // let address1 = (parseInt(address_location, 16) - 1).toString(16).toUpperCase().padStart(4, '0')
                     string += hex.innerHTML
-                    addressValue = string
-                    textBottom.value = `${address1}:${addressValue}`
+                    address_value = string
+                    textBottom.value = `${address_1}:${address_value}`
                 }
             }
         }
@@ -3075,36 +2860,43 @@ spclButtons.forEach(spclbtn => {
         if (spclbtn.innerHTML === 'M' && initialMode === true) {
             initialMode = false
             textTop.innerHTML = "MEMORY VIEW/EDIT"
-            textBottom.value = "ADDR:" + hexValue
-            memory8085()
+            textBottom.value = "ADDR:" + address
+            memory_8085()
         } else if (spclbtn.innerHTML === 'A' && initialMode === true) {
             initialMode = false
             textTop.innerHTML = "ASSEMBLE"
-            textBottom.value = "ADDR:" + hexValue
-            address8085()
+            textBottom.value = "ADDR:" + address
+            address_8085()
         } else if (spclbtn.innerHTML === 'G' && initialMode === true) {
             initialMode = false
             textTop.innerHTML = "GO EXECUTE"
-            textBottom.value = "ADDR:" + hexValue
-            execute8085()
+            textBottom.value = "ADDR:" + address
+            execute_8085()
+        } else if (spclbtn.innerHTML === 'S' && initialMode === true) {
+            initialMode = false
+            single_step_active = 'active'
+            textTop.innerHTML = "SINGLE STEP"
+            textBottom.value = "ADDR:" + address
+            execute_8085()
         } else if (spclbtn.innerHTML === 'R' && initialMode === true) {
             initialMode = false
+            flag_bin = reg_value[1].join('');
+            flag_hex = parseInt(flag_bin, 2).toString(16).toUpperCase().padStart(2, '0');
             textTop.innerHTML = "REG VIEW/EDIT"
             let regArray = ["PSW", "BC", "DE", "HL"]
-            textBottom.value = `${regArray[0]}:${fillZero(reg_value[0]) + fillZero(parseInt(reg_value[1].join(''), 2).toString(16))}`
+            textBottom.value = `${regArray[0]}:${reg_value[0].toString(16).toUpperCase().padStart(2, '0') + flag_hex}`
             let i = 1
             let j = 2
             let k = 3
 
             enter.addEventListener('click', enterExecute = () => {
-                console.log(i)
                 if (i === 0) {
-                    textBottom.value = `${regArray[i]}:${fillZero(reg_value[j]) + fillZero(parseInt(reg_value[1].join(''), 2).toString(16))}`
+                    textBottom.value = `${regArray[i]}:${reg_value[j].toString(16).toUpperCase().padStart(2, '0') + flag_hex}`
                     i += 1
                     j += 2
                     k += 2
                 } else {
-                    textBottom.value = `${regArray[i]}:${fillZero(reg_value[j]) + fillZero(reg_value[k])}`
+                    textBottom.value = `${regArray[i]}:${reg_value[j].toString(16).toUpperCase().padStart(2, '0') + reg_value[k].toString(16).toUpperCase().padStart(2, '0')}`
                     i += 1
                     j += 2
                     k += 2
@@ -3113,11 +2905,10 @@ spclButtons.forEach(spclbtn => {
                     }
                 }
             })
-
-            console.log(`A = ${fillZero(reg_value[0])} flag = ${reg_value[1]} = ${fillZero(parseInt(reg_value[1].join(''), 2).toString(16))}`);
-            console.log(`B = ${fillZero(reg_value[2])} C = ${fillZero(reg_value[3])}`);
-            console.log(`D = ${fillZero(reg_value[4])} E = ${fillZero(reg_value[5])}`);
-            console.log(`H = ${fillZero(reg_value[6])} L = ${fillZero(reg_value[7])}`);
+            console.log(`A = ${reg_value[0].toString(16).toUpperCase().padStart(2, '0')}  Flag = ${flag_hex} = ${flag_bin}`);
+            console.log(`B = ${reg_value[2].toString(16).toUpperCase().padStart(2, '0')}     C = ${reg_value[3].toString(16).toUpperCase().padStart(2, '0')}`);
+            console.log(`D = ${reg_value[4].toString(16).toUpperCase().padStart(2, '0')}     E = ${reg_value[5].toString(16).toUpperCase().padStart(2, '0')}`);
+            console.log(`H = ${reg_value[6].toString(16).toUpperCase().padStart(2, '0')}     L = ${reg_value[7].toString(16).toUpperCase().padStart(2, '0')}`);
         }
     })
 })
