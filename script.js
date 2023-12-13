@@ -14,7 +14,6 @@ let space = document.querySelector('#space')
 let string = ''
 let address = '8000'
 let address_location = '8000'
-let hexAddress = '0000'
 let byte, machine_code, ivMl, ret_value, nextAddress1, nextAddress2, address_value, address_1
 let memoryActiveStatus = 'inactive'
 let addressActiveStatus = 'inactive'
@@ -143,7 +142,6 @@ function CALL(mnemonic) {
     stack_pointer = (parseInt(stack_pointer, 16) - 1).toString(16).padStart(4, '0').toUpperCase();
     stack_value.push(lower_byte);
     address = parseInt(call_address, 16).toString(16).padStart(4, '0').toUpperCase();
-
     console.log(`Going to ${call_address}`);
     console.log(`Stack pointer = ${stack_pointer}`);
     console.log(`Stack = ${stack}`);
@@ -159,20 +157,10 @@ function CC(mnemonic) {
         let call_address = split_mnemonic[1];
         ret_address = (parseInt(call_address, 16) + 1).toString(16).toUpperCase().padStart(4, '0');
         let [higher_byte, lower_byte] = split_address(ret_address);
-
-        if (stack.length === 0) {
-            stack_pointer = "0FFF";
-            stack.push(stack_pointer);
-            stack_value.push(higher_byte);
-            stack_pointer = (parseInt(stack_pointer, 16) - 1).toString(16).toUpperCase().padStart(4, '0');
-            stack_value.push(lower_byte);
-        } else {
-            stack.push(stack_pointer);
-            stack_value.push(higher_byte);
-            stack_pointer = (parseInt(stack_pointer, 16) - 1).toString(16).toUpperCase().padStart(4, '0');
-            stack_value.push(lower_byte);
-        }
-
+        stack.push(stack_pointer);
+        stack_value.push(higher_byte);
+        stack_pointer = (parseInt(stack_pointer, 16) - 1).toString(16).toUpperCase().padStart(4, '0');
+        stack_value.push(lower_byte);
         address = (parseInt(call_address, 16)).toString(16).toUpperCase().padStart(4, '0');
         console.log(`Going to ${call_address}`);
         console.log(`Stack pointer = ${stack_pointer}`);
@@ -191,20 +179,10 @@ function CNC(mnemonic) {
         let call_address = split_mnemonic[1];
         ret_address = (parseInt(call_address, 16) + 1).toString(16).toUpperCase().padStart(4, '0');
         let [higher_byte, lower_byte] = split_address(ret_address);
-
-        if (stack.length === 0) {
-            stack_pointer = "0FFF";
-            stack.push(stack_pointer);
-            stack_value.push(higher_byte);
-            stack_pointer = (parseInt(stack_pointer, 16) - 1).toString(16).toUpperCase().padStart(4, '0');
-            stack_value.push(lower_byte);
-        } else {
-            stack.push(stack_pointer);
-            stack_value.push(higher_byte);
-            stack_pointer = (parseInt(stack_pointer, 16) - 1).toString(16).toUpperCase().padStart(4, '0');
-            stack_value.push(lower_byte);
-        }
-
+        stack.push(stack_pointer);
+        stack_value.push(higher_byte);
+        stack_pointer = (parseInt(stack_pointer, 16) - 1).toString(16).toUpperCase().padStart(4, '0');
+        stack_value.push(lower_byte);
         address = (parseInt(call_address, 16)).toString(16).toUpperCase().padStart(4, '0');
         console.log(`Going to ${call_address}`);
         console.log(`Stack pointer = ${stack_pointer}`);
@@ -222,22 +200,10 @@ function CP(mnemonic) {
         let call_address = split_mnemonic[1];
         ret_address = (parseInt(call_address, 16) + 1).toString(16).padStart(4, '0').toUpperCase();
         let [higher_byte, lower_byte] = split_address(ret_address);
-
-        if (stack.length === 0) {
-            stack_pointer = "0FFF";
-            stack.push(stack_pointer);
-            stack_value.push(higher_byte);
-            stack_pointer = (parseInt(stack_pointer, 16) - 1).toString(16).padStart(4, '0').toUpperCase();
-            stack_value.push(lower_byte);
-        } else if (stack.length !== 0) {
-            stack.push(stack_pointer);
-            stack_value.push(higher_byte);
-            stack_pointer = (parseInt(stack_pointer, 16) - 1).toString(16).padStart(4, '0').toUpperCase();
-            stack_value.push(lower_byte);
-        } else {
-            console.log("Stack error: Stack not initialized");
-        }
-
+        stack.push(stack_pointer);
+        stack_value.push(higher_byte);
+        stack_pointer = (parseInt(stack_pointer, 16) - 1).toString(16).padStart(4, '0').toUpperCase();
+        stack_value.push(lower_byte);
         address = (parseInt(call_address, 16)).toString(16).padStart(4, '0').toUpperCase();
         console.log(`Going to ${call_address}`);
         console.log(`Stack pointer = ${stack_pointer}`);
@@ -256,22 +222,10 @@ function CM(mnemonic) {
         let call_address = split_mnemonic[1];
         ret_address = (parseInt(call_address, 16) + 1).toString(16).padStart(4, '0').toUpperCase();
         let [higher_byte, lower_byte] = split_address(ret_address);
-
-        if (stack.length === 0) {
-            stack_pointer = "0FFF";
-            stack.push(stack_pointer);
-            stack_value.push(higher_byte);
-            stack_pointer = (parseInt(stack_pointer, 16) - 1).toString(16).padStart(4, '0').toUpperCase();
-            stack_value.push(lower_byte);
-        } else if (stack.length !== 0) {
-            stack.push(stack_pointer);
-            stack_value.push(higher_byte);
-            stack_pointer = (parseInt(stack_pointer, 16) - 1).toString(16).padStart(4, '0').toUpperCase();
-            stack_value.push(lower_byte);
-        } else {
-            console.log("Stack error: Stack not initialized");
-        }
-
+        stack.push(stack_pointer);
+        stack_value.push(higher_byte);
+        stack_pointer = (parseInt(stack_pointer, 16) - 1).toString(16).padStart(4, '0').toUpperCase();
+        stack_value.push(lower_byte);
         address = (parseInt(call_address, 16)).toString(16).padStart(4, '0').toUpperCase();
         console.log(`Going to ${call_address}`);
         console.log(`Stack pointer = ${stack_pointer}`);
@@ -290,22 +244,10 @@ function CPE(mnemonic) {
         let call_address = split_mnemonic[1];
         ret_address = (parseInt(call_address, 16) + 1).toString(16).padStart(4, '0').toUpperCase();
         let [higher_byte, lower_byte] = split_address(ret_address);
-
-        if (stack.length === 0) {
-            stack_pointer = "0FFF";
-            stack.push(stack_pointer);
-            stack_value.push(higher_byte);
-            stack_pointer = (parseInt(stack_pointer, 16) - 1).toString(16).padStart(4, '0').toUpperCase();
-            stack_value.push(lower_byte);
-        } else if (stack.length !== 0) {
-            stack.push(stack_pointer);
-            stack_value.push(higher_byte);
-            stack_pointer = (parseInt(stack_pointer, 16) - 1).toString(16).padStart(4, '0').toUpperCase();
-            stack_value.push(lower_byte);
-        } else {
-            console.log("Stack error: Stack not initialized");
-        }
-
+        stack.push(stack_pointer);
+        stack_value.push(higher_byte);
+        stack_pointer = (parseInt(stack_pointer, 16) - 1).toString(16).padStart(4, '0').toUpperCase();
+        stack_value.push(lower_byte);
         address = (parseInt(call_address, 16)).toString(16).padStart(4, '0').toUpperCase();
         console.log(`Going to ${call_address}`);
         console.log(`Stack pointer = ${stack_pointer}`);
@@ -324,22 +266,10 @@ function CPO(mnemonic) {
         let call_address = split_mnemonic[1];
         ret_address = (parseInt(call_address, 16) + 1).toString(16).padStart(4, '0').toUpperCase();
         let [higher_byte, lower_byte] = split_address(ret_address);
-
-        if (stack.length === 0) {
-            stack_pointer = "0FFF";
-            stack.push(stack_pointer);
-            stack_value.push(higher_byte);
-            stack_pointer = (parseInt(stack_pointer, 16) - 1).toString(16).padStart(4, '0').toUpperCase();
-            stack_value.push(lower_byte);
-        } else if (stack.length !== 0) {
-            stack.push(stack_pointer);
-            stack_value.push(higher_byte);
-            stack_pointer = (parseInt(stack_pointer, 16) - 1).toString(16).padStart(4, '0').toUpperCase();
-            stack_value.push(lower_byte);
-        } else {
-            console.log("Stack error: Stack not initialized");
-        }
-
+        stack.push(stack_pointer);
+        stack_value.push(higher_byte);
+        stack_pointer = (parseInt(stack_pointer, 16) - 1).toString(16).padStart(4, '0').toUpperCase();
+        stack_value.push(lower_byte);
         address = (parseInt(call_address, 16)).toString(16).padStart(4, '0').toUpperCase();
         console.log(`Going to ${call_address}`);
         console.log(`Stack pointer = ${stack_pointer}`);
@@ -366,16 +296,9 @@ function CMP(mnemonic) {
     let split_mnemonic = mnemonic.split(' ');
     let reg_1 = split_mnemonic[1];
     let reg_index = reg_list.indexOf(reg_1);
-
-    if (reg_index === -1) {
-        console.log("Invalid register");
-        return;
-    }
-
     if (reg_1 === "M") {
-        memory_address_M(1); // Assuming memory_address_M is defined elsewhere
+        memory_address_M(1);
     }
-
     if (parseInt(reg_value[0], 16) < parseInt(reg_value[reg_index], 16)) {
         flag[1] = 0;
         flag[7] = 1;
@@ -395,7 +318,6 @@ function CPI(mnemonic) {
     console.log("-----CPI-----");
     let split_mnemonic = mnemonic.split(' ');
     let immediate_value = split_mnemonic[1];
-
     if (parseInt(reg_value[0], 16) < parseInt(immediate_value, 16)) {
         flag[1] = 0;
         flag[7] = 1;
@@ -410,6 +332,7 @@ function CPI(mnemonic) {
         console.log(`[A] > ${immediate_value}`);
     }
 }
+
 function DAD(mnemonic) {
     console.log("-----DAD-----");
     let split_mnemonic = mnemonic.split(' ');
@@ -448,17 +371,13 @@ function DCR(mnemonic) {
     mnemonic = mnemonic.split(' ');
     let reg_1 = mnemonic[1];
     let reg_index = reg_list.indexOf(reg_1);
-
     if (reg_1 === "M") {
         memory_address_M(1);
     }
-
     reg_value[reg_index] = (parseInt(reg_value[reg_index], 16) - 1).toString(16).toUpperCase();
-
     if (reg_1 === "M") {
         memory_address_M(0);
     }
-
     console.log(`[${reg_list[reg_index]}] = ${reg_value[reg_index]}`);
     check_flag(reg_value[reg_index]);
     reg_value[reg_index] = reg_value[reg_index].padStart(2, '0').toUpperCase();
@@ -470,17 +389,14 @@ function DCX(mnemonic) {
     let reg_1 = mnemonic[1];
     let reg_1_index = reg_list.indexOf(reg_1);
     let reg_2_index = reg_1_index + 1;
-
     if (parseInt(reg_value[reg_2_index], 16) === 0) {
         reg_value[reg_1_index] = (parseInt(reg_value[reg_1_index], 16) - 1).toString(16).toUpperCase();
         reg_value[reg_2_index] = 'FF';
     } else {
         reg_value[reg_2_index] = (parseInt(reg_value[reg_2_index], 16) - 1).toString(16).toUpperCase();
     }
-
     reg_value[reg_1_index] = reg_value[reg_1_index].padStart(2, '0').toUpperCase();
     reg_value[reg_2_index] = reg_value[reg_2_index].padStart(2, '0').toUpperCase();
-
     console.log(`[${reg_list[reg_1_index]}] = ${reg_value[reg_1_index]}`);
     console.log(`[${reg_list[reg_2_index]}] = ${reg_value[reg_2_index]}`);
 }
@@ -490,17 +406,13 @@ function INR(mnemonic) {
     mnemonic = mnemonic.split(' ');
     let reg_1 = mnemonic[1];
     let reg_index = reg_list.indexOf(reg_1);
-
     if (reg_1 === "M") {
         memory_address_M(1);
     }
-
     reg_value[reg_index] = (parseInt(reg_value[reg_index], 16) + 1).toString(16).toUpperCase();
-
     if (reg_1 === "M") {
         memory_address_M(0);
     }
-
     console.log(`[${reg_list[reg_index]}] = ${reg_value[reg_index]}`);
     check_flag(reg_value[reg_index]);
     reg_value[reg_index] = reg_value[reg_index].padStart(2, '0').toUpperCase();
@@ -512,22 +424,18 @@ function INX(mnemonic) {
     let reg_1 = mnemonic[1];
     let reg_1_index = reg_list.indexOf(reg_1);
     let reg_2_index = reg_1_index + 1;
-
     if (parseInt(reg_value[reg_2_index], 16) === 255) {
         reg_value[reg_1_index] = (parseInt(reg_value[reg_1_index], 16) + 1).toString(16).toUpperCase();
         reg_value[reg_2_index] = "00";
     } else {
         reg_value[reg_2_index] = (parseInt(reg_value[reg_2_index], 16) + 1).toString(16).toUpperCase();
     }
-
     reg_value[reg_1_index] = reg_value[reg_1_index].padStart(2, '0').toUpperCase();
     reg_value[reg_2_index] = reg_value[reg_2_index].padStart(2, '0').toUpperCase();
-
     if (reg_1 === "H") {
         M = reg_value[6] + reg_value[7];
         reg_value[8] = memory_location_value[parseInt(M, 16)].toString(16).padStart(2, '0').toUpperCase();
     }
-
     console.log(`[${reg_list[reg_1_index]}] = ${reg_value[reg_1_index]}`);
     console.log(`[${reg_list[reg_2_index]}] = ${reg_value[reg_2_index]}`);
 }
@@ -704,9 +612,9 @@ function LXI(mnemonic) {
 function LHLD(mnemonic) {
     console.log("-----LHLD-----");
     mnemonic = mnemonic.split(' ');
-    let address = parseInt(mnemonic[1], 16);
-    reg_value[7] = memory_location_value[address].toString(16).padStart(2, '0').toUpperCase();
-    reg_value[6] = memory_location_value[address + 1].toString(16).padStart(2, '0').toUpperCase();
+    let address = mnemonic[1]
+    reg_value[7] = memory_location_value[parseInt(address, 16)].toString(16).padStart(2, '0').toUpperCase();
+    reg_value[6] = memory_location_value[parseInt(address, 16) + 1].toString(16).padStart(2, '0').toUpperCase();
     console.log(`[${address}] = ${memory_location_value[address]}`);
     console.log(`[H] = ${reg_value[6]}`);
     console.log(`[L] = ${reg_value[7]}`);
@@ -715,12 +623,12 @@ function LHLD(mnemonic) {
 function SHLD(mnemonic) {
     console.log("-----SHLD-----");
     mnemonic = mnemonic.split(' ');
-    let address = parseInt(mnemonic[1], 16);
-    memory_location_value[address] = reg_value[7].toString(16).padStart(2, '0').toUpperCase();
-    memory_location_value[address + 1] = reg_value[6].toString(16).padStart(2, '0').toUpperCase();
+    let address = mnemonic[1]
+    memory_location_value[parseInt(address, 16)] = reg_value[7].toString(16).padStart(2, '0').toUpperCase();
+    memory_location_value[parseInt(address, 16) + 1] = reg_value[6].toString(16).padStart(2, '0').toUpperCase();
     console.log(`[H] = ${reg_value[6]}`);
     console.log(`[L] = ${reg_value[7]}`);
-    console.log(`[${address}] = ${memory_location_value[address]}`);
+    console.log(`[${address}] = ${memory_location_value[parseInt(address, 16)]}`);
 }
 
 function MOV(mnemonic) {
@@ -2340,6 +2248,10 @@ function MC_to_MN(address) {
     if (byte === "ONE") {
         mnemonic = mnemonic_opcode;
         console.log(`\n${address}:${mnemonic_opcode}`);
+        if (single_step_active === 'active') {
+            textTop.innerHTML = address + ":"
+            textBottom.value = mnemonic_opcode
+        }
         address = (parseInt(address, 16)).toString(16).toUpperCase().padStart(4, '0');
     } else if (byte === "TWO_1") {
         let address_1 = address;
@@ -2347,12 +2259,20 @@ function MC_to_MN(address) {
         machine_code = memory_location_value[parseInt(address, 16)];
         mnemonic = `${mnemonic_opcode} ${String(machine_code).padStart(2, '0')}`;
         console.log(`\n${address_1}:${mnemonic}`);
+        if (single_step_active === 'active') {
+            textTop.innerHTML = address_1 + ":"
+            textBottom.value = mnemonic
+        }
     } else if (byte === "TWO_2") {
         let address_1 = address;
         address = (parseInt(address, 16) + 1).toString(16).toUpperCase().padStart(4, '0');
         machine_code = memory_location_value[parseInt(address, 16)];
         mnemonic = `${mnemonic_opcode},${String(machine_code).padStart(2, '0')}`;
         console.log(`\n${address_1}:${mnemonic}`);
+        if (single_step_active === 'active') {
+            textTop.innerHTML = address_1 + ":"
+            textBottom.value = mnemonic
+        }
     } else if (byte === "THREE_1") {
         let address_1 = address;
         address = (parseInt(address, 16) + 3).toString(16).toUpperCase().padStart(4, '0');
@@ -2364,6 +2284,10 @@ function MC_to_MN(address) {
         mnemonic = parseInt(mnemonic + machine_code, 16).toString(16).toUpperCase().padStart(4, '0');
         mnemonic = `${mnemonic_opcode} ${mnemonic}`;
         console.log(`\n${address_1}:${mnemonic}`);
+        if (single_step_active === 'active') {
+            textTop.innerHTML = address_1 + ":"
+            textBottom.value = mnemonic
+        }
         address = (parseInt(address, 16)).toString(16).toUpperCase().padStart(4, '0');
     } else if (byte === "THREE_2") {
         let address_1 = address;
@@ -2376,9 +2300,17 @@ function MC_to_MN(address) {
         mnemonic = parseInt(mnemonic + machine_code, 16).toString(16).toUpperCase().padStart(4, '0');
         mnemonic = `${mnemonic_opcode},${mnemonic}`;
         console.log(`\n${address_1}:${mnemonic}`);
+        if (single_step_active === 'active') {
+            textTop.innerHTML = address_1 + ":"
+            textBottom.value = mnemonic
+        }
         address = (parseInt(address, 16)).toString(16).toUpperCase().padStart(4, '0');
     } else if (byte === null) {
-        mnemonic = "No Mnemonic";
+        mnemonic = "UNKNOWN MNEMONIC";
+        if (single_step_active === 'active') {
+            textTop.innerHTML = address + ":"
+            textBottom.value = mnemonic
+        }
         address = (parseInt(address, 16)).toString(16).toUpperCase().padStart(4, '0');
     }
     return [mnemonic, address];
@@ -2500,70 +2432,69 @@ function execute_8085() {
                         break;
                     case "JMP":
                         address = JMP(instruction);
-                        address = String(address).padStart(4, '0').toUpperCase();
                         break;
                     case "JP":
                         address_1 = address;
                         result = JP(instruction);
-                        address = String(result[1]).padStart(4, '0').toUpperCase();
+                        address = result[1]
                         if (result[0] === "no jump") {
-                            address = String(parseInt(address_1, 16) + 1).toString(16).padStart(4, '0').toUpperCase();
+                            address = String((parseInt(address_1, 16) + 1).toString(16)).padStart(4, '0').toUpperCase();
                         }
                         break;
                     case "JM":
                         address_1 = address;
                         result = JM(instruction);
-                        address = String(result[1]).padStart(4, '0').toUpperCase();
+                        address = result[1]
                         if (result[0] === "no jump") {
-                            address = String(parseInt(address_1, 16) + 1).toString(16).padStart(4, '0').toUpperCase();
+                            address = String((parseInt(address_1, 16) + 1).toString(16)).padStart(4, '0').toUpperCase();
                         }
                         break;
                     case "JPE":
                         address_1 = address;
                         result = JPE(instruction);
-                        address = String(result[1]).padStart(4, '0').toUpperCase();
+                        address = result[1]
                         if (result[0] === "no jump") {
-                            address = String(parseInt(address_1, 16) + 1).toString(16).padStart(4, '0').toUpperCase();
+                            address = String((parseInt(address_1, 16) + 1).toString(16)).padStart(4, '0').toUpperCase();
                         }
                         break;
                     case "JPO":
                         address_1 = address;
                         result = JPO(instruction);
-                        address = String(result[1]).padStart(4, '0').toUpperCase();
+                        address = result[1]
                         if (result[0] === "no jump") {
-                            address = String(parseInt(address_1, 16) + 1).toString(16).padStart(4, '0').toUpperCase();
+                            address = String((parseInt(address_1, 16) + 1).toString(16)).padStart(4, '0').toUpperCase();
                         }
                         break;
                     case "JC":
                         address_1 = address;
                         result = JC(instruction);
-                        address = String(result[1]).padStart(4, '0').toUpperCase();
+                        address = result[1]
                         if (result[0] === "no jump") {
-                            address = String(parseInt(address_1, 16) + 1).toString(16).padStart(4, '0').toUpperCase();
+                            address = String((parseInt(address_1, 16) + 1).toString(16)).padStart(4, '0').toUpperCase();
                         }
                         break;
                     case "JNC":
                         address_1 = address;
                         result = JNC(instruction);
-                        address = String(result[1]).padStart(4, '0').toUpperCase();
+                        address = result[1]
                         if (result[0] === "no jump") {
-                            address = String(parseInt(address_1, 16) + 1).toString(16).padStart(4, '0').toUpperCase();
+                            address = String((parseInt(address_1, 16) + 1).toString(16)).padStart(4, '0').toUpperCase();
                         }
                         break;
                     case "JZ":
                         address_1 = address;
                         result = JZ(instruction);
-                        address = String(result[1]).padStart(4, '0').toUpperCase();
+                        address = result[1]
                         if (result[0] === "no jump") {
-                            address = String(parseInt(address_1, 16) + 1).toString(16).padStart(4, '0').toUpperCase();
+                            address = String((parseInt(address_1, 16) + 1).toString(16)).padStart(4, '0').toUpperCase();
                         }
                         break;
                     case "JNZ":
                         address_1 = address;
                         result = JNZ(instruction);
-                        address = String(result[1]).padStart(4, '0').toUpperCase();
+                        address = result[1]
                         if (result[0] === "no jump") {
-                            address = String(parseInt(address_1, 16) + 1).toString(16).padStart(4, '0').toUpperCase();
+                            address = String((parseInt(address_1, 16) + 1).toString(16)).padStart(4, '0').toUpperCase();
                         }
                         break;
                     case "LDA":
@@ -2718,19 +2649,7 @@ function execute_8085() {
             }
         }
     })
-
-
-    console.log("\nExecuted Successfully...");
-
-    // let details = prompt("Do you want to see more details? [Y/N] : ");
-    // if (details === "Y") {
-    //     let flag_bin = reg_value[1].join('');
-    //     let flag_hex = parseInt(flag_bin, 2).toString(16).toUpperCase().padStart(2, '0');
-    //     console.log(`A = ${reg_value[0].toString(16).toUpperCase().padStart(2, '0')}  Flag = ${flag_hex} = ${flag_bin}`);
-    //     console.log(`B = ${reg_value[2].toString(16).toUpperCase().padStart(2, '0')}     C = ${reg_value[3].toString(16).toUpperCase().padStart(2, '0')}`);
-    //     console.log(`D = ${reg_value[4].toString(16).toUpperCase().padStart(2, '0')}     E = ${reg_value[5].toString(16).toUpperCase().padStart(2, '0')}`);
-    //     console.log(`H = ${reg_value[6].toString(16).toUpperCase().padStart(2, '0')}     L = ${reg_value[7].toString(16).toUpperCase().padStart(2, '0')}`);
-    // }
+    console.log("\nExecuted Successfully...")
 }
 
 function memory_address_M(mode) {
@@ -2765,7 +2684,6 @@ reset.addEventListener('click', () => {
         flag = [0, 0, 0, 0, 0, 0, 0, 0];
         string = ''
         address = '8000'
-        hexAddress = '0000'
         memoryActiveStatus = 'inactive'
         addressActiveStatus = 'inactive'
         executeActiveStatus = 'inactive'
@@ -2782,7 +2700,12 @@ reset.addEventListener('click', () => {
             textBottom.value = "C,G,S,R,I,E,P"
         }, 1000)
     }, 500)
-    // spclButtons.forEach(spclbtn => {spclbtn.removeEventListener('click', spclFunc)})
+    let flag_bin = reg_value[1].join('');
+    let flag_hex = parseInt(flag_bin, 2).toString(16).toUpperCase().padStart(2, '0');
+    console.log(`A = ${reg_value[0].toString(16).toUpperCase().padStart(2, '0')}  Flag = ${flag_hex} = ${flag_bin}`);
+    console.log(`B = ${reg_value[2].toString(16).toUpperCase().padStart(2, '0')}     C = ${reg_value[3].toString(16).toUpperCase().padStart(2, '0')}`);
+    console.log(`D = ${reg_value[4].toString(16).toUpperCase().padStart(2, '0')}     E = ${reg_value[5].toString(16).toUpperCase().padStart(2, '0')}`);
+    console.log(`H = ${reg_value[6].toString(16).toUpperCase().padStart(2, '0')}     L = ${reg_value[7].toString(16).toUpperCase().padStart(2, '0')}`);
 })
 
 buttons.forEach(btn => {
