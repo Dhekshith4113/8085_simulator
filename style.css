@@ -24,7 +24,7 @@ a {
 }
 
 h1 {
-    margin: 20px 0 10px 0;
+    margin: 110px 0 10px 0;
     color: white;
     font-size: 30px;
     display: flex;
@@ -83,7 +83,7 @@ input::placeholder {
 }
 
 button {
-    margin: 0 1px 7px 0;
+    margin: 0 0 5px 0;
     padding: 0;
     width: 25px;
     height: 25px;
@@ -103,10 +103,6 @@ button {
 
 #escape {
     width: 30px;
-}
-
-#backspace {
-    width: 90px;
 }
 
 #enter {
