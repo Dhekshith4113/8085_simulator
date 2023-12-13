@@ -2711,7 +2711,7 @@ reset.addEventListener('click', () => {
 buttons.forEach(btn => {
     btn.addEventListener('click', buttonFunc = () => {
         if (modeAddress === 0 && initialMode === false && addressActiveStatus === 'active') {
-            if (btn.innerHTML === 'Backspace') {
+            if (btn.innerHTML === '⌫') {
                 address = address.substring(0, address.length - 1)
                 textBottom.value = `ADDR:${address}`
             } else if (address.length < 4) {
@@ -2723,7 +2723,7 @@ buttons.forEach(btn => {
                 }
             }
         } else if (modeAddress === 1 && initialMode === false && addressActiveStatus === 'active') {
-            if (btn.innerHTML === 'Backspace') {
+            if (btn.innerHTML === '⌫') {
                 string = string.substring(0, string.length - 1)
                 display_string = string + "_"
                 textBottom.value = `${display_string}`
@@ -2746,7 +2746,7 @@ buttons.forEach(btn => {
 hexButtons.forEach(hex => {
     hex.addEventListener('click', hexFunc = () => {
         if (modeMemory === 0 && initialMode === false && memoryActiveStatus === 'active') {
-            if (hex.innerHTML === 'Backspace') {
+            if (hex.innerHTML === '⌫') {
                 address_location = address_location.substring(0, address_location.length - 1)
                 textBottom.value = `ADDR:${address_location}`
             } else if (address_location.length < 4) {
@@ -2758,17 +2758,14 @@ hexButtons.forEach(hex => {
                 }
             }
         } else if (modeMemory === 1 && initialMode === false && memoryActiveStatus === 'active') {
-            if (hex.innerHTML === 'Backspace') {
+            if (hex.innerHTML === '⌫') {
                 string = string.substring(0, string.length - 1)
                 address_value = string
                 textBottom.value = `${address_1}:${string}`
             } else if (string.length < 2) {
                 if (hex.innerHTML === 'Enter') {
-                    // console.log(`${address_1}: ${address_value}`)
-                    textBottom.value = `${address_1}:${address_value}`
-                    // address_location = (parseInt(address_location, 16) + 1).toString(16).padStart(4, '0').toUpperCase()
-                } else {
-                    // let address1 = (parseInt(address_location, 16) - 1).toString(16).toUpperCase().padStart(4, '0')
+                    textBottom.value = `${address_1}:${address_value}`// address_location = (parseInt(address_location, 16) + 1).toString(16).padStart(4, '0').toUpperCase()
+                } else {// let address1 = (parseInt(address_location, 16) - 1).toString(16).toUpperCase().padStart(4, '0')
                     string += hex.innerHTML
                     address_value = string
                     textBottom.value = `${address_1}:${address_value}`
