@@ -2732,7 +2732,6 @@ buttons.forEach(btn => {
                 display_string = string + "_"
                 textBottom.value = `${display_string}`
             } else if (btn.innerHTML === 'Enter') {
-                // console.log(`string: ${string}`)
             } else {
                 string += btn.innerHTML
                 display_string = string + "_"
