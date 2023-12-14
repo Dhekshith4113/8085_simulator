@@ -15,3 +15,4 @@ Updated on 21/10/2023 Saturday ( All instructions work in the 8085_simulator_v3.
 Updated on 02/11/2023 Thursday (Added CALL and RET instructions and their conditional counterparts. I've saved these changes in 8085_simulator.py . And also added stack pointer and LXI SP instruction ).
 Updated on 03/11/2023 Friday ( Added PUSH and POP instructions. I've saved these changes in 8085_simulator.py . PSW operand is now available ).
 Updated on 02/12/2023 Saturday ( Completed the entire simulator website using HTML, CSS and JavaScript. Note: Only A, M, G, and R operations are available ).
+Updated on 14/12/2023 Thursday ( Optimized the Python and JavaScript Program. Made the  UI elegant and as accurate as the actual 8085 kits in my college lab. Added some functions like Single Step. Now I might complete the instruction set and add some additional functions ).
