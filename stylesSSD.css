@@ -7,7 +7,6 @@
 }
 
 body {
-    /* margin: 2px 2px 2px 0; */
     margin-left: auto;
     margin-right: auto;
     width: 407px;
@@ -24,9 +23,8 @@ a {
 }
 
 h2 {
-    margin: 20px 0 0 45px;
+    margin: 10px 0 5px 45px;
     color: white;
-    /* font-size: 30px; */
 }
 
 .keypad {
@@ -38,27 +36,13 @@ h2 {
     border-radius: 16px;
 }
 
-/* .lcd16x2 { */
-    /* margin-top: 20px; */
-    /* margin-left: auto; */
-    /* margin-right: auto; */
-    /* margin-bottom: 20px; */
-    /* padding: auto; */
-    /* width: 320px; */
-    /* height: 75px; */
-    /* color: white; */
-    /* background-color: rgb(100, 10, 10); */
-    /* border: 2px solid white; */
-    /* border-radius: 5px; */
-/* } */
-
 #lcd {
     border: none;
     border-radius: 10px;
-    margin: 5px 0 15px 30px;
+    margin: 5px 0 15px 15px;
     padding: 10px 15px 0 15px;
     height: 100px;
-    width: 290px;
+    width: 340px;
     text-align: right;
     color: red;
     font-family: 'Segment7Standard';
