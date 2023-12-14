@@ -14,16 +14,15 @@ let space = document.querySelector('#space')
 let string = ''
 let address = '8000'
 let byte, machine_code, ivMl, ret_value, nextAddress1, nextAddress2, address_value, address_1
-let memoryActiveStatus = 'inactive'
-let addressActiveStatus = 'inactive'
-let executeActiveStatus = 'inactive'
+let memory_active_status = 'inactive'
+let address_active_status = 'inactive'
+let execute_active_status = 'inactive'
 let single_step_active = 'inactive'
-let executeAddress = 'inactive'
-let proceedMemory = true
-let initialMode = true
-let modeMemory = 0
-let modeAddress = 0
-let modeExecute = 0
+let execute_address = 'inactive'
+let initial_mode = true
+let mode_memory = 0
+let mode_address = 0
+let mode_execute = 0
 let ret_address
 let one_byte, mnemonic
 let two_byte
@@ -1086,9 +1085,8 @@ function byte_8085(mnemonic) {
 function memory_8085() {
     console.log("-----MEMORY VIEW/EDIT-----");
     console.log("If you want to change the value, type the desired value. Otherwise hit enter.");
-    memoryActiveStatus = 'active'
-    modeMemory = 0
-    console.log(`hexValue: ${address}`)
+    memory_active_status = 'active'
+    mode_memory = 0
     address_value = memory_location_value[parseInt(address, 16)]
     enter.addEventListener('click', enterMemory = () => {
         address_1 = address
@@ -1100,7 +1098,7 @@ function memory_8085() {
         if (string.length === 2) {
             memory_location_value[parseInt(address, 16) - 1] = string.toUpperCase();
         }
-        modeMemory = 1
+        mode_memory = 1
         address_1 = (parseInt(address_1, 16) + 1).toString(16).padStart(4, '0').toUpperCase();
         address = (parseInt(address, 16) + 1).toString(16).padStart(4, '0').toUpperCase();
         console.log(`${address}:${address_value}`)
@@ -1109,15 +1107,15 @@ function memory_8085() {
     escapeBtn.addEventListener('click', escapeMemory = () => {
         enter.removeEventListener('click', enterMemory)
         escapeBtn.removeEventListener('click', escapeMemory)
-        if (initialMode === false && memoryActiveStatus === 'active') {
+        if (initial_mode === false && memory_active_status === 'active') {
             textTop.innerHTML = "MENU:   A,D,M,F, "
             textBottom.value = "C,G,S,R,I,E,P"
             console.log("Done!")
-            initialMode = true
-            modeMemory = 0
-            memoryActiveStatus = 'inactive'
-            addressActiveStatus = 'inactive'
-            executeActiveStatus = 'inactive'
+            initial_mode = true
+            mode_memory = 0
+            memory_active_status = 'inactive'
+            address_active_status = 'inactive'
+            execute_active_status = 'inactive'
             single_step_active = 'inactive'
         }
     })
@@ -1134,129 +1132,47 @@ function instruction_decoder(mnemonic) {
         let byte = "ONE";
         let machine_code;
         switch (mnemonic) {
-            case "ADD A":
-                machine_code = "87";
-                break;
-            case "ADD B":
-                machine_code = "80";
-                break;
-            case "ADD C":
-                machine_code = "81";
-                break;
-            case "ADD D":
-                machine_code = "82";
-                break;
-            case "ADD E":
-                machine_code = "83";
-                break;
-            case "ADD H":
-                machine_code = "84";
-                break;
-            case "ADD L":
-                machine_code = "85";
-                break;
-            case "ADD M":
-                machine_code = "86";
-                break;
-            case "ANA A":
-                machine_code = "A7";
-                break;
-            case "ANA B":
-                machine_code = "A0";
-                break;
-            case "ANA C":
-                machine_code = "A1";
-                break;
-            case "ANA D":
-                machine_code = "A2";
-                break;
-            case "ANA E":
-                machine_code = "A3";
-                break;
-            case "ANA H":
-                machine_code = "A4";
-                break;
-            case "ANA L":
-                machine_code = "A5";
-                break;
-            case "ANA M":
-                machine_code = "A6";
-                break;
-            case "CMA":
-                machine_code = "2F";
-                break;
-            case "CMP A":
-                machine_code = "BF";
-                break;
-            case "CMP B":
-                machine_code = "B8";
-                break;
-            case "CMP C":
-                machine_code = "B9";
-                break;
-            case "CMP D":
-                machine_code = "BA";
-                break;
-            case "CMP E":
-                machine_code = "BB";
-                break;
-            case "CMP H":
-                machine_code = "BC";
-                break;
-            case "CMP L":
-                machine_code = "BD";
-                break;
-            case "CMP M":
-                machine_code = "BE";
-                break;
-            case "DAD B":
-                machine_code = "09";
-                break;
-            case "DAD D":
-                machine_code = "19";
-                break;
-            case "DAD H":
-                machine_code = "29";
-                break;
-            case "DAD SP":
-                machine_code = "39";
-                break;
-            case "DCR A":
-                machine_code = "3D";
-                break;
-            case "DCR B":
-                machine_code = "05";
-                break;
-            case "DCR C":
-                machine_code = "0D";
-                break;
-            case "DCR D":
-                machine_code = "15";
-                break;
-            case "DCR E":
-                machine_code = "1D";
-                break;
-            case "DCR H":
-                machine_code = "25";
-                break;
-            case "DCR L":
-                machine_code = "2D";
-                break;
-            case "DCR M":
-                machine_code = "35";
-                break;
-            case "DCX B":
-                machine_code = "0B";
-                break;
-            case "DCX D":
-                machine_code = "1B";
-                break;
-            case "DCX H":
-                machine_code = "2B";
-                break;
-            case "DCX SP":
-                machine_code = "3B";
-                break;
+            case "ADD A": machine_code = "87"; break;
+            case "ADD B": machine_code = "80"; break;
+            case "ADD C": machine_code = "81"; break;
+            case "ADD D": machine_code = "82"; break;
+            case "ADD E": machine_code = "83"; break;
+            case "ADD H": machine_code = "84"; break;
+            case "ADD L": machine_code = "85"; break;
+            case "ADD M": machine_code = "86"; break;
+            case "ANA A": machine_code = "A7"; break;
+            case "ANA B": machine_code = "A0"; break;
+            case "ANA C": machine_code = "A1"; break;
+            case "ANA D": machine_code = "A2"; break;
+            case "ANA E": machine_code = "A3"; break;
+            case "ANA H": machine_code = "A4"; break;
+            case "ANA L": machine_code = "A5"; break;
+            case "ANA M": machine_code = "A6"; break;
+            case "CMA":   machine_code = "2F"; break;
+            case "CMP A": machine_code = "BF"; break;
+            case "CMP B": machine_code = "B8"; break;
+            case "CMP C": machine_code = "B9"; break;
+            case "CMP D": machine_code = "BA"; break;
+            case "CMP E": machine_code = "BB"; break;
+            case "CMP H": machine_code = "BC"; break;
+            case "CMP L": machine_code = "BD"; break;
+            case "CMP M": machine_code = "BE"; break;
+            case "DAD B": machine_code = "09"; break;
+            case "DAD D": machine_code = "19"; break;
+            case "DAD H": machine_code = "29"; break;
+            case "DAD SP": machine_code = "39"; break;
+            case "DCR A": machine_code = "3D"; break;
+            case "DCR B": machine_code = "05"; break;
+            case "DCR C": machine_code = "0D"; break;
+            case "DCR D": machine_code = "15"; break;
+            case "DCR E": machine_code = "1D"; break;
+            case "DCR H": machine_code = "25"; break;
+            case "DCR L": machine_code = "2D"; break;
+            case "DCR M": machine_code = "35"; break;
+            case "DCX B": machine_code = "0B"; break;
+            case "DCX D": machine_code = "1B"; break;
+            case "DCX H": machine_code = "2B"; break;
+            case "DCX SP": machine_code = "3B"; break;
             case "HLT":
                 machine_code = "76";
                 break;
@@ -1854,13 +1770,13 @@ function MN_to_MC(address, mnemonic) {
 function address_8085() {
     console.log("-----ADDRESS-----");
     let mnemonic;
-    modeAddress = 0
-    addressActiveStatus = 'active'
+    mode_address = 0
+    address_active_status = 'active'
     textBottom.value = "ADDR:" + address
     address = String(address).toString(16).padStart(4, '0').toUpperCase();
     enter.addEventListener('click', enterAddress = () => {
         textBottom.value = ''
-        modeAddress = 1
+        mode_address = 1
         textTop.innerHTML = `ASSEMBLE:${address}`
         textBottom.value = `${string}`
         console.log(`${address}: ${string}`)
@@ -1895,14 +1811,14 @@ function address_8085() {
     escapeBtn.addEventListener('click', escapeAddress = () => {
         enter.removeEventListener('click', enterAddress)
         escapeBtn.removeEventListener('click', escapeAddress)
-        if (initialMode === false && memoryActiveStatus !== 'active') {
+        if (initial_mode === false && memory_active_status !== 'active') {
             textTop.innerHTML = "MENU:   A,D,M,F, "
             textBottom.value = "C,G,S,R,I,E,P"
-            initialMode = true
-            modeAddress = 0
-            memoryActiveStatus = 'inactive'
-            addressActiveStatus = 'inactive'
-            executeActiveStatus = 'inactive'
+            initial_mode = true
+            mode_address = 0
+            memory_active_status = 'inactive'
+            address_active_status = 'inactive'
+            execute_active_status = 'inactive'
             single_step_active = 'inactive'
         }
     })
@@ -1927,11 +1843,9 @@ function instruction_encoder(machine_code) {
         "F4", "EC", "FE", "E4", "D2", "DA", "E2", "EA", "F2", "FA"
     ]
     let three_byte_list_2 = ["01", "11", "21", "31"]
-
     if (one_byte_list.includes(machine_code)) {
         let byte = "ONE";
         let opcode;
-
         switch (machine_code) {
             case "87": opcode = "ADD A"; break;
             case "80": opcode = "ADD B"; break;
@@ -2101,12 +2015,10 @@ function instruction_encoder(machine_code) {
             case "AE": opcode = "XRA M"; break;
             default: break;
         }
-
         return [byte, opcode];
     } else if (two_byte_list_1.includes(machine_code)) {
         let byte = "TWO_1";
         let opcode;
-
         switch (machine_code) {
             case "C6": opcode = "ADI"; break;
             case "E6": opcode = "ANI"; break;
@@ -2116,12 +2028,10 @@ function instruction_encoder(machine_code) {
             case "EE": opcode = "XRI"; break;
             default: break;
         }
-
         return [byte, opcode];
     } else if (two_byte_list_2.includes(machine_code)) {
         let byte = "TWO_2";
         let opcode;
-
         switch (machine_code) {
             case "3E": opcode = "MVI A"; break;
             case "06": opcode = "MVI B"; break;
@@ -2133,12 +2043,10 @@ function instruction_encoder(machine_code) {
             case "36": opcode = "MVI M"; break;
             default: break;
         }
-
         return [byte, opcode];
     } else if (three_byte_list_1.includes(machine_code)) {
         let byte = "THREE_1";
         let opcode;
-
         switch (machine_code) {
             case "CD": opcode = "CALL"; break;
             case "DC": opcode = "CC"; break;
@@ -2164,12 +2072,10 @@ function instruction_encoder(machine_code) {
             case "22": opcode = "SHLD"; break;
             default: break;
         }
-
         return [byte, opcode];
     } else if (three_byte_list_2.includes(machine_code)) {
         let byte = "THREE_2";
         let opcode;
-
         switch (machine_code) {
             case "01": opcode = "LXI B"; break;
             case "11": opcode = "LXI D"; break;
@@ -2177,7 +2083,6 @@ function instruction_encoder(machine_code) {
             case "31": opcode = "LXI SP"; break;
             default: break;
         }
-
         return [byte, opcode];
     } else {
         let byte = null;
@@ -2263,10 +2168,10 @@ function MC_to_MN(address) {
 }
 
 function execute_8085() {
-    modeAddress = 0
-    addressActiveStatus = 'active'
+    mode_address = 0
+    address_active_status = 'active'
     enter.addEventListener('click', enterExecute = () => {
-        if (initialMode === false && memoryActiveStatus !== 'active' && executeAddress === "active") {
+        if (initial_mode === false && memory_active_status !== 'active' && execute_address === "active") {
             address = (address).toString(16).toUpperCase().padStart(4, '0');
             if (single_step_active === "inactive") {
                 console.log("Executing...");
@@ -2277,20 +2182,11 @@ function execute_8085() {
                 let [instruction, addr] = MC_to_MN(address);
                 address = addr
                 let opcode = instruction.split(' ')[0];
-
                 switch (opcode) {
-                    case "ADD":
-                        ADD(instruction);
-                        break;
-                    case "ADI":
-                        ADI(instruction);
-                        break;
-                    case "ANA":
-                        ANA(instruction);
-                        break;
-                    case "ANI":
-                        ANI(instruction);
-                        break;
+                    case "ADD": ADD(instruction); break;
+                    case "ADI": ADI(instruction); break;
+                    case "ANA": ANA(instruction); break;
+                    case "ANI": ANI(instruction); break;
                     case "CALL":
                         address = CALL(instruction);
                         address = String(address).padStart(4, '0').toUpperCase();
@@ -2327,54 +2223,22 @@ function execute_8085() {
                         address = CNZ(instruction);
                         address = String(address).padStart(4, '0').toUpperCase();
                         break;
-                    case "CMA":
-                        CMA(instruction);
-                        break;
-                    case "CMP":
-                        CMP(instruction);
-                        break;
-                    case "CMA":
-                        CMA(instruction);
-                        break;
-                    case "CMP":
-                        CMP(instruction);
-                        break;
-                    case "CPI":
-                        CPI(instruction);
-                        break;
-                    case "DCR":
-                        DCR(instruction);
-                        break;
-                    case "DCX":
-                        DCX(instruction);
-                        break;
-                    case "DAD":
-                        DAD(instruction);
-                        break;
-                    case "INR":
-                        INR(instruction);
-                        break;
-                    case "INX":
-                        INX(instruction);
-                        break;
-                    case "CPI":
-                        CPI(instruction);
-                        break;
-                    case "DCR":
-                        DCR(instruction);
-                        break;
-                    case "DCX":
-                        DCX(instruction);
-                        break;
-                    case "DAD":
-                        DAD(instruction);
-                        break;
-                    case "INR":
-                        INR(instruction);
-                        break;
-                    case "INX":
-                        INX(instruction);
-                        break;
+                    case "CMA": CMA(instruction); break;
+                    case "CMP": CMP(instruction); break;
+                    case "CMA": CMA(instruction); break;
+                    case "CMP": CMP(instruction); break;
+                    case "CPI": CPI(instruction); break;
+                    case "DCR": DCR(instruction); break;
+                    case "DCX": DCX(instruction); break;
+                    case "DAD": DAD(instruction); break;
+                    case "INR": INR(instruction); break;
+                    case "INX": INX(instruction); break;
+                    case "CPI": CPI(instruction); break;
+                    case "DCR": DCR(instruction); break;
+                    case "DCX": DCX(instruction); break;
+                    case "DAD": DAD(instruction); break;
+                    case "INR": INR(instruction); break;
+                    case "INX": INX(instruction); break;
                     case "JMP":
                         address = JMP(instruction);
                         break;
@@ -2442,39 +2306,17 @@ function execute_8085() {
                             address = String((parseInt(address_1, 16) + 1).toString(16)).padStart(4, '0').toUpperCase();
                         }
                         break;
-                    case "LDA":
-                        LDA(instruction);
-                        break;
-                    case "LDAX":
-                        LDAX(instruction);
-                        break;
-                    case "LXI":
-                        LXI(instruction);
-                        break;
-                    case "LHLD":
-                        LHLD(instruction);
-                        break;
-                    case "SHLD":
-                        SHLD(instruction);
-                        break;
-                    case "MOV":
-                        MOV(instruction);
-                        break;
-                    case "MVI":
-                        MVI(instruction);
-                        break;
-                    case "ORA":
-                        ORA(instruction);
-                        break;
-                    case "ORI":
-                        ORI(instruction);
-                        break;
-                    case "PUSH":
-                        PUSH(instruction);
-                        break;
-                    case "POP":
-                        POP(instruction);
-                        break;
+                    case "LDA":  LDA(instruction);  break;
+                    case "LDAX": LDAX(instruction); break;
+                    case "LXI":  LXI(instruction);  break;
+                    case "LHLD": LHLD(instruction); break;
+                    case "SHLD": SHLD(instruction); break;
+                    case "MOV":  MOV(instruction);  break;
+                    case "MVI":  MVI(instruction);  break;
+                    case "ORA":  ORA(instruction);  break;
+                    case "ORI":  ORI(instruction);  break;
+                    case "PUSH": PUSH(instruction); break;
+                    case "POP":  POP(instruction);  break;
                     case "RET":
                         RET(instruction);
                         address = ret_address;
@@ -2552,33 +2394,15 @@ function execute_8085() {
                             address = String(parseInt(address, 16) + 1).toString(16).padStart(4, '0').toUpperCase();
                         }
                         break;
-                    case "RLC":
-                        RLC(instruction);
-                        break;
-                    case "RRC":
-                        RRC(instruction);
-                        break;
-                    case "STA":
-                        STA(instruction);
-                        break;
-                    case "STAX":
-                        STAX(instruction);
-                        break;
-                    case "SUB":
-                        SUB(instruction);
-                        break;
-                    case "SUI":
-                        SUI(instruction);
-                        break;
-                    case "XCHG":
-                        XCHG(instruction);
-                        break;
-                    case "XRA":
-                        XRA(instruction);
-                        break;
-                    case "XRI":
-                        XRI(instruction);
-                        break;
+                    case "RLC":  RLC(instruction);  break;
+                    case "RRC":  RRC(instruction);  break;
+                    case "STA":  STA(instruction);  break;
+                    case "STAX": STAX(instruction); break;
+                    case "SUB":  SUB(instruction);  break;
+                    case "SUI":  SUI(instruction);  break;
+                    case "XCHG": XCHG(instruction); break;
+                    case "XRA":  XRA(instruction);  break;
+                    case "XRI":  XRI(instruction);  break;
                     case "HLT":
                         console.log("-----HLT-----");
                         return;
@@ -2604,15 +2428,15 @@ function execute_8085() {
         flag = [0, 0, 0, 0, 0, 0, 0, 0];
         string = ''
         address = '8000'
-        memoryActiveStatus = 'inactive'
-        addressActiveStatus = 'inactive'
-        executeActiveStatus = 'inactive'
+        memory_active_status = 'inactive'
+        address_active_status = 'inactive'
+        execute_active_status = 'inactive'
         single_step_active = 'inactive'
-        executeAddress = 'inactive'
-        initialMode = true
-        modeMemory = 0
-        modeAddress = 0
-        modeExecute = 0
+        execute_address = 'inactive'
+        initial_mode = true
+        mode_memory = 0
+        mode_address = 0
+        mode_execute = 0
         textTop.innerHTML = "MENU:   A,D,M,F, "
         textBottom.value = "C,G,S,R,I,E,P"
     })
@@ -2647,20 +2471,18 @@ reset.addEventListener('click', () => {
         escapeBtn.removeEventListener('click', escapeExecute)
         hexButtons.forEach(hex => { hex.removeEventListener('click', hexFunc) })
         buttons.forEach(btn => { btn.removeEventListener('click', buttonFunc) })
-
         flag = [0, 0, 0, 0, 0, 0, 0, 0];
         string = ''
         address = '8000'
-        memoryActiveStatus = 'inactive'
-        addressActiveStatus = 'inactive'
-        executeActiveStatus = 'inactive'
+        memory_active_status = 'inactive'
+        address_active_status = 'inactive'
+        execute_active_status = 'inactive'
         single_step_active = 'inactive'
-        executeAddress = 'inactive'
-        initialMode = true
-        modeMemory = 0
-        modeAddress = 0
-        modeExecute = 0
-
+        execute_address = 'inactive'
+        initial_mode = true
+        mode_memory = 0
+        mode_address = 0
+        mode_execute = 0
         textTop.innerHTML = "SCIENTIFIC TECH"
         textBottom.value = "8085 TRAINER KIT"
         setTimeout(() => {
@@ -2678,7 +2500,7 @@ reset.addEventListener('click', () => {
 
 buttons.forEach(btn => {
     btn.addEventListener('click', buttonFunc = () => {
-        if (modeAddress === 0 && initialMode === false && addressActiveStatus === 'active') {
+        if (mode_address === 0 && initial_mode === false && address_active_status === 'active') {
             if (btn.innerHTML === '⌫') {
                 address = address.substring(0, address.length - 1)
                 textBottom.value = `ADDR:${address}`
@@ -2690,7 +2512,7 @@ buttons.forEach(btn => {
                     textBottom.value = `ADDR:${address}`
                 }
             }
-        } else if (modeAddress === 1 && initialMode === false && addressActiveStatus === 'active') {
+        } else if (mode_address === 1 && initial_mode === false && address_active_status === 'active') {
             if (btn.innerHTML === '⌫') {
                 string = string.substring(0, string.length - 1)
                 display_string = string + "_"
@@ -2712,7 +2534,7 @@ buttons.forEach(btn => {
 
 hexButtons.forEach(hex => {
     hex.addEventListener('click', hexFunc = () => {
-        if (modeMemory === 0 && initialMode === false && memoryActiveStatus === 'active') {
+        if (mode_memory === 0 && initial_mode === false && memory_active_status === 'active') {
             if (hex.innerHTML === '⌫') {
                 address = address.substring(0, address.length - 1)
                 textBottom.value = `ADDR:${address}`
@@ -2724,7 +2546,7 @@ hexButtons.forEach(hex => {
                     textBottom.value = `ADDR:${address}`
                 }
             }
-        } else if (modeMemory === 1 && initialMode === false && memoryActiveStatus === 'active') {
+        } else if (mode_memory === 1 && initial_mode === false && memory_active_status === 'active') {
             if (hex.innerHTML === '⌫') {
                 string = string.substring(0, string.length - 1)
                 address_value = string
@@ -2744,40 +2566,39 @@ hexButtons.forEach(hex => {
 
 spclButtons.forEach(spclbtn => {
     spclbtn.addEventListener('click', spclFunc = () => {
-        if (spclbtn.innerHTML === 'M' && initialMode === true) {
-            initialMode = false
+        if (spclbtn.innerHTML === 'M' && initial_mode === true) {
+            initial_mode = false
             textTop.innerHTML = "MEMORY VIEW/EDIT"
             textBottom.value = "ADDR:" + address
             memory_8085()
-        } else if (spclbtn.innerHTML === 'A' && initialMode === true) {
-            initialMode = false
+        } else if (spclbtn.innerHTML === 'A' && initial_mode === true) {
+            initial_mode = false
             textTop.innerHTML = "ASSEMBLE"
             textBottom.value = "ADDR:" + address
             address_8085()
-        } else if (spclbtn.innerHTML === 'G' && initialMode === true) {
-            initialMode = false
-            executeAddress = 'active'
+        } else if (spclbtn.innerHTML === 'G' && initial_mode === true) {
+            initial_mode = false
+            execute_address = 'active'
             textTop.innerHTML = "GO EXECUTE"
             textBottom.value = "ADDR:" + address
             execute_8085()
-        } else if (spclbtn.innerHTML === 'S' && initialMode === true) {
-            initialMode = false
+        } else if (spclbtn.innerHTML === 'S' && initial_mode === true) {
+            initial_mode = false
             single_step_active = 'active'
-            executeAddress = 'active'
+            execute_address = 'active'
             textTop.innerHTML = "SINGLE STEP"
             textBottom.value = "ADDR:" + address
             execute_8085()
-        } else if (spclbtn.innerHTML === 'R' && initialMode === true) {
-            initialMode = false
-            flag_bin = reg_value[1].join('');
-            flag_hex = parseInt(flag_bin, 2).toString(16).toUpperCase().padStart(2, '0');
+        } else if (spclbtn.innerHTML === 'R' && initial_mode === true) {
+            initial_mode = false
+            let flag_bin = reg_value[1].join('');
+            let flag_hex = parseInt(flag_bin, 2).toString(16).toUpperCase().padStart(2, '0');
             textTop.innerHTML = "REG VIEW/EDIT"
             let regArray = ["PSW", "BC", "DE", "HL"]
             textBottom.value = `${regArray[0]}:${reg_value[0].toString(16).toUpperCase().padStart(2, '0') + flag_hex}`
             let i = 1
             let j = 2
             let k = 3
-
             enter.addEventListener('click', enterExecute = () => {
                 if (i === 0) {
                     textBottom.value = `${regArray[i]}:${reg_value[j].toString(16).toUpperCase().padStart(2, '0') + flag_hex}`
