@@ -346,20 +346,18 @@ def DCR(mnemonic):
     if reg_1 == "M":
         memory_address_M(1)
     if int(reg_value[reg_index], 16) > 1:
-        reg_value[0] = hex(int(reg_value[0], 16) - 1)[2:]
+        reg_value[reg_index] = str(hex(int(reg_value[reg_index], 16) - 1)[2:]).zfill(2).upper()
     elif int(reg_value[reg_index], 16) == 1:
-        reg_value[reg_index] = hex(0)[2:]
+        reg_value[reg_index] = str(hex(0)[2:]).zfill(2).upper()
         flag[1] = 1
     elif int(reg_value[reg_index], 16) < 1:
-        reg_value[reg_index] = hex(int(reg_value[reg_index], 16) - 1)
-        reg_value[reg_index] = hex(int(reg_value[reg_index], 16) + int("100", 16))[2:]
+        reg_value[reg_index] = str(hex(int(reg_value[reg_index], 16) - 1 + int("100", 16))[2:]).zfill(2).upper()
         flag[0] = 1
         flag[7] = 1
     if reg_1 == "M":
         memory_address_M(0)
-    reg_value[reg_index] = str(reg_value[reg_index]).zfill(2).upper()    
+    check_flag(reg_value[reg_index])    
     print(f"[{reg_list[reg_index]}] = {reg_value[reg_index]}")
-    check_flag(reg_value[reg_index])
     
 def DCX(mnemonic):
     global stack_pointer
@@ -368,12 +366,10 @@ def DCX(mnemonic):
     if mnemonic[1] == "SP":
         higher_byte, lower_byte = split_address(stack_pointer)
         if int(lower_byte, 16) == 0:
-            higher_byte = hex(int(higher_byte, 16) - int("1", 16))[2:]
-            lower_byte = hex(255)[2:]
+            higher_byte = str(hex(int(higher_byte, 16) - 1)[2:]).zfill(2).upper()
+            lower_byte = str(hex(255)[2:]).zfill(2).upper()
         else:
-            lower_byte = hex(int(lower_byte, 16) - int("1", 16))[2:]
-        higher_byte = str(higher_byte).zfill(2).upper()
-        lower_byte = str(lower_byte).zfill(2).upper()
+            lower_byte = str(hex(int(lower_byte, 16) - 1)[2:]).zfill(2).upper()
         stack_pointer = higher_byte + lower_byte
         print(f"Stack Pointer= {stack_pointer}")
     else:    
@@ -381,12 +377,10 @@ def DCX(mnemonic):
         reg_1_index = reg_list.index(reg_1)
         reg_2_index = reg_1_index + 1
         if int(reg_value[reg_2_index], 16) == 0:
-            reg_value[reg_1_index] = hex(int(reg_value[reg_1_index], 16) - int("1", 16))[2:]
-            reg_value[reg_2_index] = hex(255)[2:]
+            reg_value[reg_1_index] = str(hex(int(reg_value[reg_1_index], 16) - 1)[2:]).zfill(2).upper()
+            reg_value[reg_2_index] = str(hex(255)[2:]).zfill(2).upper()
         else:
-            reg_value[reg_2_index] = hex(int(reg_value[reg_2_index], 16) - int("1", 16))[2:]
-        reg_value[reg_1_index] = str(reg_value[reg_1_index]).zfill(2).upper()
-        reg_value[reg_2_index] = str(reg_value[reg_2_index]).zfill(2).upper()
+            reg_value[reg_2_index] = str(hex(int(reg_value[reg_2_index], 16) - 1)[2:]).zfill(2).upper()
         print(f"[{reg_list[reg_1_index]}] = {reg_value[reg_1_index]} [{reg_list[reg_2_index]}] = {reg_value[reg_2_index]}") 
     
 def INR(mnemonic):
@@ -396,13 +390,12 @@ def INR(mnemonic):
     reg_index = reg_list.index(reg_1)
     if reg_1 == "M":
         memory_address_M(1)
-    reg_value[reg_index] = hex(int(reg_value[reg_index], 16) + 1)[2:]
+    reg_value[reg_index] = str(hex(int(reg_value[reg_index], 16) + 1)[2:]).zfill(2).upper()
     if reg_1 == "M":
         memory_address_M(0)
     if int(reg_value[reg_index], 16) > 255:
-        check_flag(reg_value[reg_index])
-        reg_value[0] = hex(int(reg_value[reg_index], 16) - int("100", 16))[2:]    
-    reg_value[reg_index] = str(reg_value[reg_index]).zfill(2).upper()
+        reg_value[0] = str(hex(int(reg_value[reg_index], 16) - int("100", 16))[2:]).zfill(2).upper()
+    check_flag(reg_value[reg_index])    
     print(f"[{reg_list[reg_index]}] = {reg_value[reg_index]}")
     
 def INX(mnemonic):
@@ -412,16 +405,14 @@ def INX(mnemonic):
     if mnemonic[1] == "SP":
         higher_byte, lower_byte = split_address(stack_pointer)
         if int(lower_byte, 16) == 255:
-            higher_byte = hex(int(higher_byte, 16) + int("1", 16))[2:]
+            higher_byte = str(hex(int(higher_byte, 16) + 1)[2:]).zfill(2).upper()
             if int(higher_byte, 16) > 255:
-                higher_byte = hex(int(higher_byte, 16) - int("100", 16))[2:]    
+                higher_byte = str(hex(int(higher_byte, 16) - int("100", 16))[2:]).zfill(2).upper()
             lower_byte = str("00").zfill(1)
         else:
-            lower_byte = hex(int(lower_byte, 16) + int("1", 16))[2:]
+            lower_byte = str(hex(int(lower_byte, 16) + 1)[2:]).zfill(2).upper()
             if int(lower_byte, 16) > 255:
-                lower_byte = hex(int(lower_byte, 16) - int("100", 16))[2:]    
-        higher_byte = str(higher_byte).zfill(2).upper()
-        lower_byte = str(lower_byte).zfill(2).upper()
+                lower_byte = str(hex(int(lower_byte, 16) - int("100", 16))[2:]).zfill(2).upper()
         stack_pointer = higher_byte + lower_byte
         print(f"Stack Pointer= {stack_pointer}")
     else:    
@@ -429,16 +420,14 @@ def INX(mnemonic):
         reg_1_index = reg_list.index(reg_1)
         reg_2_index = reg_1_index + 1
         if int(reg_value[reg_2_index], 16)  == 255:
-            reg_value[reg_1_index] = hex(int(reg_value[reg_1_index], 16) + int("1", 16))[2:]
+            reg_value[reg_1_index] = str(hex(int(reg_value[reg_1_index], 16) + 1)[2:]).zfill(2).upper()
             if int(reg_value[reg_1_index], 16) > 255:
-                reg_value[reg_1_index] = hex(int(reg_value[reg_1_index], 16) - int("100", 16))[2:]
+                reg_value[reg_1_index] = str(hex(int(reg_value[reg_1_index], 16) - int("100", 16))[2:]).zfill(2).upper()
             reg_value[reg_2_index] = str("00").zfill(1)
         else:
-            reg_value[reg_2_index] = hex(int(reg_value[reg_2_index], 16) + int("1", 16))[2:]
+            reg_value[reg_2_index] = str(hex(int(reg_value[reg_2_index], 16) + 1)[2:]).zfill(2).upper()
             if int(reg_value[reg_2_index], 16) > 255:
-                reg_value[reg_2_index] = hex(int(reg_value[reg_2_index], 16) - int("100", 16))[2:]    
-        reg_value[reg_1_index] = str(reg_value[reg_1_index]).zfill(2).upper()
-        reg_value[reg_2_index] = str(reg_value[reg_2_index]).zfill(2).upper()
+                reg_value[reg_2_index] = str(hex(int(reg_value[reg_2_index], 16) - int("100", 16))[2:]).zfill(2).upper()
         if reg_1 == "H":
              M = str(reg_value[6]) + str(reg_value[7])
              reg_value[8] = str(memory_location_value[int(M, 16)]).zfill(2).upper()
@@ -581,13 +570,10 @@ def LXI(mnemonic):
         reg_2 = reg_1 + 1
         reg_value[reg_2] = str(hex(int(lower_byte, 16))[2:]).zfill(2).upper()
         print(f"Address = {operand[1]}")
-        print(f"[{reg_list[reg_1]}] = {reg_value[reg_1]}")
-        print(f"[{reg_list[reg_2]}] = {reg_value[reg_2]}")
+        print(f"[{reg_list[reg_1]}] = {reg_value[reg_1]} [{reg_list[reg_2]}] = {reg_value[reg_2]}")
     elif operand[0] == "SP":
         stack_pointer = str(operand[1]).zfill(4).upper()
         print(f"Stack Pointer = {stack_pointer}")
-    else:
-        print("Register invalid")
     if operand[0] == "H":
         reg_value[8] = str(memory_location_value[int(operand[1], 16)]).zfill(2).upper()
         print(f"[M] = [{operand[1]}] = {reg_value[8]}")
@@ -600,8 +586,7 @@ def LHLD(mnemonic):
     address = hex(int(address, 16) + 1)[2:]
     reg_value[6] = str(memory_location_value[int(address, 16)]).zfill(2).upper()
     print(f"[{address}] = {memory_location_value[int(address, 16)]}")
-    print(f"[H] = {reg_value[6]}")
-    print(f"[L] = {reg_value[7]}")
+    print(f"[H] = {reg_value[6]} [L] = {reg_value[7]}")
     
 def SHLD(mnemonic):
     print("-----SHLD-----")
@@ -610,8 +595,7 @@ def SHLD(mnemonic):
     memory_location_value[int(address, 16)] = str(reg_value[7]).zfill(2).upper()
     address = hex(int(address, 16) + 1)[2:]
     memory_location_value[int(address, 16)] = str(reg_value[6]).zfill(2).upper()
-    print(f"[H] = {reg_value[6]}")
-    print(f"[L] = {reg_value[7]}")
+    print(f"[H] = {reg_value[6]} [L] = {reg_value[7]}")
     print(f"[{address}] = {memory_location_value[int(address, 16)]}")
     
 def MOV(mnemonic):
@@ -627,10 +611,9 @@ def MOV(mnemonic):
     reg_value[reg_1_index] = reg_value[reg_2_index]
     if reg_1 == "M":
         memory_address_M(0)
-    print(f"[{reg_list[reg_2_index]}] = {reg_value[reg_2_index]}")
-    print(f"[{reg_list[reg_1_index]}] = {reg_value[reg_1_index]}")
+    print(f"[{reg_list[reg_2_index]}] = {reg_value[reg_2_index]} [{reg_list[reg_1_index]}] = {reg_value[reg_1_index]}")
 
-def MVI(mnemonic, address_location_list=None, address_value_list=None):
+def MVI(mnemonic):
     print("-----MVI-----")
     mnemonic = mnemonic.split()
     operand = mnemonic[1].split(",")
@@ -647,22 +630,17 @@ def ORA(mnemonic):
     reg_1 = reg_list.index(reg_1)
     if reg_1 == "M":
         memory_address_M(1)
-    reg_value[0] = hex(int(reg_value[0], 16) | int(reg_value[reg_1], 16))[2:]
-    print(f"[A] = {reg_value[0]}")
+    reg_value[0] = str(hex(int(reg_value[0], 16) | int(reg_value[reg_1], 16))[2:]).zfill(2).upper()
     check_accumulator()
-    reg_value[0] = str(reg_value[0]).zfill(2).upper()
+    print(f"[A] = {reg_value[0]}")
     
 def ORI(mnemonic):
     print("-----ORI-----")
     mnemonic = mnemonic.split()
     immediate_value = mnemonic[1]
-    if len(str(immediate_value)) == 2:
-        reg_value[0] = hex(int(str(reg_value[0]), 16) | int(str(immediate_value), 16))[2:]
-    else:
-        print("Invalid value: Expected value is one byte hexadecimal value")
-    print(f"[A] = {reg_value[0]}")
+    reg_value[0] = str(hex(int(reg_value[0], 16) | int(immediate_value, 16))[2:]).zfill(2).upper()
     check_accumulator()
-    reg_value[0] = str(reg_value[0]).zfill(2).upper()
+    print(f"[A] = {reg_value[0]}")
 
 def PCHL(mnemonic):
     print("-----PCHL-----")
@@ -684,10 +662,8 @@ def PUSH(mnemonic):
         lower_byte = str(hex(int(lower_byte, 2))[2:]).zfill(2).upper()
         stack_pointer = str(hex(int(stack_pointer, 16) - 1)[2:]).zfill(4).upper()
         memory_location_value[int(stack_pointer, 16)] = lower_byte
-        print(f"Higher byte = [A] = {higher_byte}")
-        print(f"Lower byte = flag = {lower_byte}")
-        print(f"[{str(hex(int(stack_pointer, 16) + 1))[2:].zfill(4).upper()}] = {str(memory_location_value[int(stack_pointer, 16) + 1]).zfill(2).upper()}")
-        print(f"[{str(hex(int(stack_pointer, 16))[2:]).zfill(4).upper()}] = {str(memory_location_value[int(stack_pointer, 16)]).zfill(2).upper()}")
+        print(f"[A] = {higher_byte} flag = {lower_byte}")
+        print(f"[{str(hex(int(stack_pointer, 16) + 1))[2:].zfill(4).upper()}] = {str(memory_location_value[int(stack_pointer, 16) + 1]).zfill(2).upper()} [{str(hex(int(stack_pointer, 16))[2:]).zfill(4).upper()}] = {str(memory_location_value[int(stack_pointer, 16)]).zfill(2).upper()}")
     else:    
         reg_1 = reg_list.index(reg_1)
         higher_byte = str(reg_value[reg_1]).zfill(2).upper()
@@ -696,10 +672,8 @@ def PUSH(mnemonic):
         memory_location_value[int(stack_pointer, 16)] = higher_byte
         stack_pointer = str(hex(int(stack_pointer, 16) - 1)[2:]).zfill(4).upper()
         memory_location_value[int(stack_pointer, 16)] = lower_byte
-        print(f"Higher byte = [{reg_list[reg_1]}] = {higher_byte}")
-        print(f"Lower byte = [{reg_list[reg_2]}] = {lower_byte}")
-        print(f"[{str(hex(int(stack_pointer, 16) + 1))[2:].zfill(4).upper()}] = {str(memory_location_value[int(stack_pointer, 16) + 1]).zfill(2).upper()}")
-        print(f"[{str(hex(int(stack_pointer, 16))[2:]).zfill(4).upper()}] = {str(memory_location_value[int(stack_pointer, 16)]).zfill(2).upper()}")
+        print(f"[{reg_list[reg_1]}] = {higher_byte} [{reg_list[reg_2]}] = {lower_byte}")
+        print(f"[{str(hex(int(stack_pointer, 16) + 1))[2:].zfill(4).upper()}] = {str(memory_location_value[int(stack_pointer, 16) + 1]).zfill(2).upper()} [{str(hex(int(stack_pointer, 16))[2:]).zfill(4).upper()}] = {str(memory_location_value[int(stack_pointer, 16)]).zfill(2).upper()}")
     print(f"Stack Pointer = {stack_pointer}")
     
 def POP(mnemonic):
@@ -714,20 +688,16 @@ def POP(mnemonic):
         print(f"Flag = {reg_value[1]}")
         stack_pointer = str(hex(int(str(stack_pointer), 16) + 1)[2:]).zfill(4).upper()
         reg_value[0] = str(memory_location_value[int(stack_pointer, 16)]).zfill(2).upper() # higher_byte
-        print(f"Higher byte = [A] = {reg_value[0]}")
-        print(f"Lower byte = flag = {flag}")
-        print(f"[{str(hex(int(stack_pointer, 16)))[2:].zfill(4).upper()}] = {str(memory_location_value[int(stack_pointer, 16)]).zfill(2).upper()}")
-        print(f"[{str(hex(int(stack_pointer, 16) - 1)[2:]).zfill(4).upper()}] = {str(memory_location_value[int(stack_pointer, 16) - 1]).zfill(2).upper()}")
+        print(f"[{str(hex(int(stack_pointer, 16)))[2:].zfill(4).upper()}] = {str(memory_location_value[int(stack_pointer, 16)]).zfill(2).upper()} [{str(hex(int(stack_pointer, 16) - 1)[2:]).zfill(4).upper()}] = {str(memory_location_value[int(stack_pointer, 16) - 1]).zfill(2).upper()}")
+        print(f"[A] = {reg_value[0]} flag = {flag}")
     else:    
         reg_1 = reg_list.index(reg_1)
         reg_2 = reg_1 + 1
         reg_value[reg_2] = str(memory_location_value[int(stack_pointer, 16)]).zfill(2).upper() # lower_byte
         stack_pointer = str(hex(int(str(stack_pointer), 16) + 1)[2:]).zfill(4).upper()
         reg_value[reg_1] = str(memory_location_value[int(stack_pointer, 16)]).zfill(2).upper() # higher_byte
-        print(f"Higher byte = [{reg_list[reg_1]}] = {reg_value[reg_1]}") # higher_byte
-        print(f"Lower byte = [{reg_list[reg_2]}] = {reg_value[reg_2]}") # lower_byte
-        print(f"[{str(hex(int(stack_pointer, 16)))[2:].zfill(4).upper()}] = {str(memory_location_value[int(stack_pointer, 16)]).zfill(2).upper()}")
-        print(f"[{str(hex(int(stack_pointer, 16) - 1)[2:]).zfill(4).upper()}] = {str(memory_location_value[int(stack_pointer, 16) - 1]).zfill(2).upper()}")
+        print(f"[{str(hex(int(stack_pointer, 16)))[2:].zfill(4).upper()}] = {str(memory_location_value[int(stack_pointer, 16)]).zfill(2).upper()} [{str(hex(int(stack_pointer, 16) - 1)[2:]).zfill(4).upper()}] = {str(memory_location_value[int(stack_pointer, 16) - 1]).zfill(2).upper()}")
+        print(f"[{reg_list[reg_1]}] = {reg_value[reg_1]} [{reg_list[reg_2]}] = {reg_value[reg_2]}") # higher_byte lower_byte
     stack_pointer = str(hex(int(str(stack_pointer), 16) + 1)[2:]).zfill(4).upper()
     print(f"Stack Pointer = {stack_pointer}")
 
@@ -739,7 +709,7 @@ def RET(mnemonic):
     stack_pointer = str(hex(int(str(stack_pointer), 16) + 1)[2:]).zfill(4).upper()
     higher_byte = str(memory_location_value[int(stack_pointer, 16)]).zfill(2).upper()
     ret_address = str(higher_byte + lower_byte).zfill(4).upper()
-    print(f"Returning to {ret_address}")
+    print(f"Returning to {ret_address}...")
     
 def RC(mnemonic):
     global ret_address, stack_pointer
@@ -750,9 +720,10 @@ def RC(mnemonic):
         stack_pointer = str(hex(int(str(stack_pointer), 16) + 1)[2:]).zfill(4).upper()
         higher_byte = str(memory_location_value[int(stack_pointer, 16)]).zfill(2).upper()
         ret_address = str(higher_byte + lower_byte).zfill(4).upper()
-        print(f"Returning to {ret_address}")
+        print(f"Returning to {ret_address}...")
         return_value = True
     else:
+        print("No Returning!")
         return_value = False
     return return_value    
         
@@ -765,9 +736,10 @@ def RNC(mnemonic):
         stack_pointer = str(hex(int(str(stack_pointer), 16) + 1)[2:]).zfill(4).upper()
         higher_byte = str(memory_location_value[int(stack_pointer, 16)]).zfill(2).upper()
         ret_address = str(higher_byte + lower_byte).zfill(4).upper()
-        print(f"Returning to {ret_address}")
+        print(f"Returning to {ret_address}...")
         return_value = True
     else:
+        print("No Returning!")
         return_value = False
     return return_value    
         
@@ -780,9 +752,10 @@ def RP(mnemonic):
         stack_pointer = str(hex(int(str(stack_pointer), 16) + 1)[2:]).zfill(4).upper()
         higher_byte = str(memory_location_value[int(stack_pointer, 16)]).zfill(2).upper()
         ret_address = str(higher_byte + lower_byte).zfill(4).upper()
-        print(f"Returning to {ret_address}")
+        print(f"Returning to {ret_address}...")
         return_value = True
     else:
+        print("No Returning!")
         return_value = False
     return return_value    
         
@@ -795,9 +768,10 @@ def RM(mnemonic):
         stack_pointer = str(hex(int(str(stack_pointer), 16) + 1)[2:]).zfill(4).upper()
         higher_byte = str(memory_location_value[int(stack_pointer, 16)]).zfill(2).upper()
         ret_address = str(higher_byte + lower_byte).zfill(4).upper()
-        print(f"Returning to {ret_address}")
+        print(f"Returning to {ret_address}...")
         return_value = True
     else:
+        print("No Returning!")
         return_value = False
     return return_value    
         
@@ -810,9 +784,10 @@ def RPE(mnemonic):
         stack_pointer = str(hex(int(str(stack_pointer), 16) + 1)[2:]).zfill(4).upper()
         higher_byte = str(memory_location_value[int(stack_pointer, 16)]).zfill(2).upper()
         ret_address = str(higher_byte + lower_byte).zfill(4).upper()
-        print(f"Returning to {ret_address}")
+        print(f"Returning to {ret_address}...")
         return_value = True
     else:
+        print("No Returning!")
         return_value = False
     return return_value    
         
@@ -825,9 +800,10 @@ def RPO(mnemonic):
         stack_pointer = str(hex(int(str(stack_pointer), 16) + 1)[2:]).zfill(4).upper()
         higher_byte = str(memory_location_value[int(stack_pointer, 16)]).zfill(2).upper()
         ret_address = str(higher_byte + lower_byte).zfill(4).upper()
-        print(f"Returning to {ret_address}")
+        print(f"Returning to {ret_address}...")
         return_value = True
     else:
+        print("No Returning!")
         return_value = False
     return return_value    
         
@@ -840,9 +816,10 @@ def RZ(mnemonic):
         stack_pointer = str(hex(int(str(stack_pointer), 16) + 1)[2:]).zfill(4).upper()
         higher_byte = str(memory_location_value[int(stack_pointer, 16)]).zfill(2).upper()
         ret_address = str(higher_byte + lower_byte).zfill(4).upper()
-        print(f"Returning to {ret_address}")
+        print(f"Returning to {ret_address}...")
         return_value = True
     else:
+        print("No Returning!")
         return_value = False
     return return_value    
         
@@ -855,9 +832,10 @@ def RNZ(mnemonic):
         stack_pointer = str(hex(int(str(stack_pointer), 16) + 1)[2:]).zfill(4).upper()
         higher_byte = str(memory_location_value[int(stack_pointer, 16)]).zfill(2).upper()
         ret_address = str(higher_byte + lower_byte).zfill(4).upper()
-        print(f"Returning to {ret_address}")
+        print(f"Returning to {ret_address}...")
         return_value = True
     else:
+        print("No Returning!")
         return_value = False
     return return_value                                                       
     
@@ -865,79 +843,60 @@ def RAL():
     print("-----RAL-----")
     most_significant_bit = int(reg_value[0], 16) & int("80", 16)
     if most_significant_bit == int("80", 16):
-        reg_value[0] = hex(int(reg_value[0], 16) << 1)[2:]
-        reg_value[0] = str(reg_value[0]).zfill(2).upper()
+        reg_value[0] = str(hex(int(reg_value[0], 16) << 1)[2:]).zfill(2).upper()
         if flag[7] == 1:
-            reg_value[0] = hex(int(reg_value[0], 16) - int("100", 16) + 1)[2:]
-            reg_value[0] = str(reg_value[0]).zfill(2).upper()
+            reg_value[0] = str(hex(int(reg_value[0], 16) - int("100", 16) + 1)[2:]).zfill(2).upper()
         else:
-            reg_value[0] = hex(int(reg_value[0], 16) - int("100", 16))[2:]
-            reg_value[0] = str(reg_value[0]).zfill(2).upper()
-    else:    
-        reg_value[0] = hex(int(reg_value[0], 16) << 1)[2:]
-        reg_value[0] = str(reg_value[0]).zfill(2).upper()
-        if flag[7] == 1:
-            reg_value[0] = hex(int(reg_value[0], 16) + 1)[2:]
-            reg_value[0] = str(reg_value[0]).zfill(2).upper()
-    if most_significant_bit == int("80", 16):
+            reg_value[0] = str(hex(int(reg_value[0], 16) - int("100", 16))[2:]).zfill(2).upper()
         flag[7] = 1
-    else:
+    else:    
+        reg_value[0] = str(hex(int(reg_value[0], 16) << 1)[2:]).zfill(2).upper()
+        if flag[7] == 1:
+            reg_value[0] = str(hex(int(reg_value[0], 16) + 1)[2:]).zfill(2).upper()
         flag[7] = 0
-    print(f"[A] = {reg_value[0]}")
+    print(f"[A]  = {reg_value[0]}")
     print(f"Flag = {flag}")
     
 def RAR():
     print("-----RAR-----")
     least_significant_bit = int(reg_value[0], 16) & 1
     if least_significant_bit == 1:
-        reg_value[0] = hex(int(reg_value[0], 16) >> 1)[2:]
-        reg_value[0] = str(reg_value[0]).zfill(2).upper()
+        reg_value[0] = str(hex(int(reg_value[0], 16) >> 1)[2:]).zfill(2).upper()
         if flag[7] == 1:
-            reg_value[0] = hex(int(reg_value[0], 16) + int("80", 16))[2:]
-            reg_value[0] = str(reg_value[0]).zfill(2).upper()
-    else:    
-        reg_value[0] = hex(int(reg_value[0], 16) >> 1)[2:]
-        reg_value[0] = str(reg_value[0]).zfill(2).upper()
-        if flag[7] == 1:
-            reg_value[0] = hex(int(reg_value[0], 16) + int("80", 16))[2:]
-            reg_value[0] = str(reg_value[0]).zfill(2).upper()
-    if least_significant_bit == 1:
+            reg_value[0] = str(hex(int(reg_value[0], 16) + int("80", 16))[2:]).zfill(2).upper()
         flag[7] = 1
-    else:
+    else:    
+        reg_value[0] = str(hex(int(reg_value[0], 16) >> 1)[2:]).zfill(2).upper()
+        if flag[7] == 1:
+            reg_value[0] = str(hex(int(reg_value[0], 16) + int("80", 16))[2:]).zfill(2).upper()
         flag[7] = 0
-    print(f"[A] = {reg_value[0]}")
+    print(f"[A]  = {reg_value[0]}")
     print(f"Flag = {flag}")    
     
 def RLC():
     print("-----RLC-----")
     most_significant_bit = int(reg_value[0], 16) & int("80", 16)
     if most_significant_bit == int("80", 16):
-        reg_value[0] = hex(int(reg_value[0], 16) << 1)[2:]
-        reg_value[0] = str(reg_value[0]).zfill(2).upper()
-        reg_value[0] = hex(int(reg_value[0], 16) - int("100", 16) + 1)[2:]
-        reg_value[0] = str(reg_value[0]).zfill(2).upper()
+        reg_value[0] = str(hex(int(reg_value[0], 16) << 1)[2:]).zfill(2).upper()
+        reg_value[0] = str(hex(int(reg_value[0], 16) - int("100", 16) + 1)[2:]).zfill(2).upper()
     else:    
-        reg_value[0] = hex(int(reg_value[0], 16) << 1)[2:]
-        reg_value[0] = str(reg_value[0]).zfill(2).upper()
+        reg_value[0] = str(hex(int(reg_value[0], 16) << 1)[2:]).zfill(2).upper()
     print(f"[A] = {reg_value[0]}")
     
 def RRC():
     print("-----RRC-----")
     least_significant_bit = int(reg_value[0], 16) & 1
     if least_significant_bit == 1:
-        reg_value[0] = hex(int(reg_value[0], 16) >> 1)[2:]
-        reg_value[0] = str(reg_value[0]).zfill(2).upper()
-        reg_value[0] = hex(int(reg_value[0], 16) + int("80", 16))[2:]
-        reg_value[0] = str(reg_value[0]).zfill(2).upper()
+        reg_value[0] = str(hex(int(reg_value[0], 16) >> 1)[2:]).zfill(2).upper()
+        reg_value[0] = str(hex(int(reg_value[0], 16) + int("80", 16))[2:]).zfill(2).upper()
     else:    
-        reg_value[0] = hex(int(reg_value[0], 16) >> 1)[2:]
-        reg_value[0] = str(reg_value[0]).zfill(2).upper()
+        reg_value[0] = str(hex(int(reg_value[0], 16) >> 1)[2:]).zfill(2).upper()
     print(f"[A] = {reg_value[0]}")          
 
 def SPHL(mnemonic):
     global stack_pointer
     print("-----SPHL-----")
-    stack_pointer = str(reg_value[6] + reg_value[7]).zfill(4).upper()
+    stack_pointer = reg_value[6] + reg_value[7]
     print(f"[HL] = {stack_pointer}")
     print(f"Stack Pointer changed to {stack_pointer}...")
 
@@ -960,8 +919,7 @@ def STAX(mnemonic):
     address = str(higher_byte) + str(lower_byte)
     memory_location_value[int(address, 16)] = reg_value[0]
     print(f"[A] = {reg_value[0]}")
-    print(f"[{reg_list[reg_1]}] = {reg_value[reg_1]}")
-    print(f"[{reg_list[reg_2]}] = {reg_value[reg_2]}")
+    print(f"[{reg_list[reg_1]}] = {reg_value[reg_1]} [{reg_list[reg_2]}] = {reg_value[reg_2]}")
     print(f"[{address}] = {memory_location_value[int(address, 16)]}")
     
 def STC():
@@ -977,38 +935,32 @@ def SUB(mnemonic):
     if reg_1 == "M":
         memory_address_M(1)
     if int(reg_value[0], 16) > int(reg_value[reg_1_index], 16):    
-        reg_value[0] = hex(int(reg_value[0], 16) - int(reg_value[reg_1_index], 16))[2:]
+        reg_value[0] = str(hex(int(reg_value[0], 16) - int(reg_value[reg_1_index], 16))[2:]).zfill(2).upper()
     elif int(reg_value[0], 16) == int(reg_value[reg_1_index], 16):    
-        reg_value[0] = hex(0)[2:]
+        reg_value[0] = str(hex(0)[2:]).zfill(2).upper()
         flag[1] = 1
     elif int(reg_value[0], 16) < int(reg_value[reg_1_index], 16):
-        reg_value[0] = hex(int(reg_value[0], 16) - int(reg_value[reg_1_index], 16))
-        reg_value[0] = hex(int(reg_value[0], 16) + int("100", 16))[2:]
+        reg_value[0] = str(hex(int(reg_value[0], 16) - int(reg_value[reg_1_index], 16) + int("100", 16))[2:]).zfill(2).upper()
         flag[0] = 1
         flag[7] = 1
-    reg_value[0] = str(reg_value[0]).zfill(2).upper()
     print(f"[A] = {reg_value[0]}")
-    print(flag)
+    print(f"Flag = {flag}")
     
 def SUI(mnemonic):
     print("-----SUI-----")
     mnemonic = mnemonic.split()
     immediate_value = mnemonic[1]
-    if len(str(immediate_value)) == 2:
-        if int(reg_value[0], 16) > int(str(immediate_value), 16):
-            reg_value[0] = hex(int(reg_value[0], 16) - int(str(immediate_value), 16))[2:]
-        elif int(reg_value[0], 16) == int(str(immediate_value), 16):
-            reg_value[0] = hex(0)[2:]
-            flag[1] = 1
-        elif int(reg_value[0], 16) < int(str(immediate_value), 16):
-            reg_value[0] = hex(int(reg_value[0], 16) - int(str(immediate_value), 16))
-            reg_value[0] = hex(int(reg_value[0], 16) + int("100", 16))[2:]
-            flag[0] = 1
-            flag[7] = 1
-    else:
-        print("Invalid value: Expected value is one byte hexadecimal value")
-    reg_value[0] = str(reg_value[0]).zfill(2).upper()    
+    if int(reg_value[0], 16) > int(str(immediate_value), 16):
+        reg_value[0] = str(hex(int(reg_value[0], 16) - int(str(immediate_value), 16))[2:]).zfill(2).upper()
+    elif int(reg_value[0], 16) == int(str(immediate_value), 16):
+        reg_value[0] = str(hex(0)[2:]).zfill(2).upper()
+        flag[1] = 1
+    elif int(reg_value[0], 16) < int(str(immediate_value), 16):
+        reg_value[0] = str(hex(int(reg_value[0], 16) - int(str(immediate_value), 16) + int("100", 16))[2:]).zfill(2).upper()
+        flag[0] = 1
+        flag[7] = 1
     print(f"[A] = {reg_value[0]}")
+    print(f"Flag = {flag}")
 
 def SBB(mnemonic):
     print("-----SBB-----")
@@ -1018,63 +970,61 @@ def SBB(mnemonic):
     if reg_1 == "M":
         memory_address_M(1)
     if int(reg_value[0], 16) > int(reg_value[reg_1_index], 16):    
-        reg_value[0] = hex(int(reg_value[0], 16) - int(reg_value[reg_1_index], 16) - flag[7])[2:]
+        reg_value[0] = str(hex(int(reg_value[0], 16) - int(reg_value[reg_1_index], 16) - flag[7])[2:]).zfill(2).upper()
+        if reg_value[0] == "00":
+            flag[1] = 1
     elif int(reg_value[0], 16) == int(reg_value[reg_1_index], 16):    
-        reg_value[0] = hex(0)[2:] - flag[7]
-        flag[1] = 1
+        if flag[7] == 1:
+            reg_value[0] = ("FF").zfill(2).upper()
+        else:
+            reg_value[0] = str(hex(0)[2:]).zfill(2).upper()
+            flag[1] = 1
+        flag[7] = 1
     elif int(reg_value[0], 16) < int(reg_value[reg_1_index], 16):
-        reg_value[0] = hex(int(reg_value[0], 16) - int(reg_value[reg_1_index], 16))
-        reg_value[0] = hex(int(reg_value[0], 16) + int("100", 16) - flag[7])[2:]
+        reg_value[0] = str(hex(int(reg_value[0], 16) - int(reg_value[reg_1_index], 16) + int("100", 16) - flag[7])[2:]).zfill(2).upper()
         flag[0] = 1
         flag[7] = 1
-    reg_value[0] = str(reg_value[0]).zfill(2).upper()
     print(f"[A] = {reg_value[0]}")
-    print(flag)
+    print(f"Flag = {flag}")
 
 def SBI(mnemonic):
     print("-----SBI-----")
     mnemonic = mnemonic.split()
     immediate_value = mnemonic[1]
-    if len(str(immediate_value)) == 2:
-        if int(reg_value[0], 16) > int(str(immediate_value), 16):
-            reg_value[0] = hex(int(reg_value[0], 16) - int(str(immediate_value), 16) - flag[7])[2:]
-        elif int(reg_value[0], 16) == int(str(immediate_value), 16):
-            reg_value[0] = hex(0)[2:] - flag[7]
+    if int(reg_value[0], 16) > int(str(immediate_value), 16):
+        reg_value[0] = str(hex(int(reg_value[0], 16) - int(str(immediate_value), 16) - flag[7])[2:]).zfill(2).upper()
+        if reg_value[0] == "00":
             flag[1] = 1
-        elif int(reg_value[0], 16) < int(str(immediate_value), 16):
-            reg_value[0] = hex(int(reg_value[0], 16) - int(str(immediate_value), 16))
-            reg_value[0] = hex(int(reg_value[0], 16) + int("100", 16) - flag[7])[2:]
-            flag[0] = 1
-            flag[7] = 1
-    else:
-        print("Invalid value: Expected value is one byte hexadecimal value")
-    reg_value[0] = str(reg_value[0]).zfill(2).upper()    
+    elif int(reg_value[0], 16) == int(str(immediate_value), 16):
+        if flag[7] == 1:
+            reg_value[0] = ("FF").zfill(2).upper()
+        else:
+            reg_value[0] = str(hex(0)[2:]).zfill(2).upper()
+            flag[1] = 1
+        flag[7] = 1
+    elif int(reg_value[0], 16) < int(str(immediate_value), 16):
+        reg_value[0] = str(hex(int(reg_value[0], 16) - int(str(immediate_value), 16) + int("100", 16) - flag[7])[2:]).zfill(2).upper()
+        flag[0] = 1
+        flag[7] = 1
     print(f"[A] = {reg_value[0]}")
+    print(f"Flag = {flag}")
 
 def XCHG(mnemonic):
     print("-----XCHG-----")
     print("Before: ")
-    print(f"[H] = {reg_value[6]}")
-    print(f"[L] = {reg_value[7]}")
-    print(f"[D] = {reg_value[4]}")
-    print(f"[E] = {reg_value[5]}")
+    print(f"[H] = {reg_value[6]} [L] = {reg_value[7]}")
+    print(f"[D] = {reg_value[4]} [E] = {reg_value[5]}")
     reg_H = reg_value[6]
     reg_L = reg_value[7]
     reg_D = reg_value[4]
     reg_E = reg_value[5]
-    reg_value[6] = reg_value[4]
-    reg_value[7] = reg_value[5]
+    reg_value[6] = reg_D
+    reg_value[7] = reg_E
     reg_value[4] = reg_H
     reg_value[5] = reg_L
-    reg_value[4] = str(reg_value[4]).zfill(2).upper()
-    reg_value[5] = str(reg_value[5]).zfill(2).upper()
-    reg_value[6] = str(reg_value[6]).zfill(2).upper()
-    reg_value[7] = str(reg_value[7]).zfill(2).upper()
     print("After: ")
-    print(f"[H] = {reg_value[6]}")
-    print(f"[L] = {reg_value[7]}")
-    print(f"[D] = {reg_value[4]}")
-    print(f"[E] = {reg_value[5]}")
+    print(f"[H] = {reg_value[6]} [L] = {reg_value[7]}")
+    print(f"[D] = {reg_value[4]} [E] = {reg_value[5]}")
     
 def XRA(mnemonic):
     print("-----XRA-----")
@@ -1083,22 +1033,17 @@ def XRA(mnemonic):
     reg_1 = reg_list.index(reg_1)
     if reg_1 == "M":
         memory_address_M(1)
-    reg_value[0] = hex(int(reg_value[0], 16) ^ int(reg_value[reg_1], 16))[2:]
-    print(f"[A] = {reg_value[0]}")
+    reg_value[0] = str(hex(int(reg_value[0], 16) ^ int(reg_value[reg_1], 16))[2:]).zfill(2).upper()
     check_accumulator()
-    reg_value[0] = str(reg_value[0]).zfill(2).upper()
+    print(f"[A] = {reg_value[0]}")
     
 def XRI(mnemonic):
     print("-----XRI-----")
     mnemonic = mnemonic.split()
     immediate_value = mnemonic[1]
-    if len(str(immediate_value)) == 2:
-        reg_value[0] = hex(int(str(reg_value[0]), 16) ^ int(str(immediate_value), 16))[2:]
-    else:
-        print("Invalid value: Expected value is one byte hexadecimal value")
+    reg_value[0] = str(hex(int(reg_value[0], 16) ^ int(immediate_value, 16))[2:]).zfill(2).upper()
+    check_accumulator()    
     print(f"[A] = {reg_value[0]}")
-    check_accumulator()
-    reg_value[0] = str(reg_value[0]).zfill(2).upper() 
     
 def XTHL(mnemonic):
     global stack_pointer
@@ -1107,8 +1052,7 @@ def XTHL(mnemonic):
     stack_pointer_1 = str(hex(int(stack_pointer, 16) + 1)[2:]).zfill(4).upper()
     print("Before: ")
     print(f"[HL] = {reg_value[6]}{reg_value[7]}")
-    print(f"[{stack_pointer}] = {str(memory_location_value[int(stack_pointer, 16)]).zfill(2).upper()}")
-    print(f"[{stack_pointer_1}] = {str(memory_location_value[int(stack_pointer_1, 16)]).zfill(2).upper()}")
+    print(f"[{stack_pointer_1}] = {str(memory_location_value[int(stack_pointer_1, 16)]).zfill(2).upper()} [{stack_pointer}] = {str(memory_location_value[int(stack_pointer, 16)]).zfill(2).upper()}")
     reg_H = reg_value[6]
     reg_L = reg_value[7]
     reg_value[7] = str(memory_location_value[int(stack_pointer, 16)]).zfill(2).upper()
@@ -1119,8 +1063,7 @@ def XTHL(mnemonic):
     stack_pointer_1 = str(hex(int(stack_pointer, 16) + 1)[2:]).zfill(4).upper()
     print("After: ")
     print(f"[HL] = {reg_value[6]}{reg_value[7]}")
-    print(f"[{stack_pointer}] = {str(memory_location_value[int(stack_pointer, 16)]).zfill(2).upper()}")
-    print(f"[{stack_pointer_1}] = {str(memory_location_value[int(stack_pointer_1, 16)]).zfill(2).upper()}")
+    print(f"[{stack_pointer_1}] = {str(memory_location_value[int(stack_pointer_1, 16)]).zfill(2).upper()} [{stack_pointer}] = {str(memory_location_value[int(stack_pointer, 16)]).zfill(2).upper()}")
     stack_pointer = initial_value
     
 def check_accumulator():
