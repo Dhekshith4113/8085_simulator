@@ -19,9 +19,7 @@ let initial_mode = true
 let initial_enter = false
 let mode = 0
 let ret_address
-let one_byte, mnemonic
-let two_byte
-let three_byte
+let one_byte, two_byte, three_byte, mnemonic, old_value
 
 textLCD.value = '.  '
 
@@ -51,7 +49,6 @@ for (let i = 0; i < 65536; i++) {
     n = parseInt(Math.random() * 256).toString(16).padStart(2, '0').toUpperCase();
     memory_location_value.push(n);
 }
-console.log(memory_location_value)
 
 ////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////
@@ -1258,12 +1255,13 @@ function memory_8085() {
             address_value = memory_location_value[parseInt(address, 16)]
             initial_enter = false
         }
+        console.log(`${address}:${old_value} ${string}`)
         memory_location_value[parseInt(address, 16)] = address_value.toUpperCase();
         address = (parseInt(address, 16) + 1).toString(16).padStart(4, '0').toUpperCase();
         address_value = memory_location_value[parseInt(address, 16)]
         textLCD.value = `${address}.${address_value}`
-        console.log(`Actual value: ${address}:${address_value}`)
-        string = memory_location_value[parseInt(address, 16)];
+        old_value = address_value
+        string = address_value
     })
     reset.addEventListener('click', escapeMemory = () => {
         next.removeEventListener('click', nextMemory)
@@ -1979,8 +1977,7 @@ hexButtons.forEach(hex => {
                 address = address.slice(1)
                 address += hex.innerHTML.slice(0, 1)
                 textLCD.value = `${address}.  `
-            }
-            else if (hex.id !== 'NEXT') {
+            } else if (hex.id !== 'NEXT') {
                 address += hex.innerHTML.slice(0, 1)
                 textLCD.value = `${address}.  `
             }
@@ -1990,8 +1987,7 @@ hexButtons.forEach(hex => {
                 string += hex.innerHTML.slice(0, 1)
                 address_value = string
                 textLCD.value = `${address}.${address_value}`
-            }
-            else if (hex.id !== 'NEXT') {
+            } else if (hex.id !== 'NEXT') {
                 string += hex.innerHTML.slice(0, 1)
                 address_value = string
                 textLCD.value = `${address}.${address_value}`
