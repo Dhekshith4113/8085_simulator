@@ -1198,7 +1198,7 @@ function XTHL(mnemonic) {
     stack_pointer = initial_value;
 }
 
-function checkAccumulator() {
+function check_accumulator() {
     console.log("Checking Accumulator...");
     if (parseInt(reg_value[0], 16) === 0) {
         flag[1] = 1;
@@ -1219,7 +1219,7 @@ function checkAccumulator() {
     console.log(`Flag = ${flag}`);
 }
 
-function checkFlag(regName) {
+function check_flag(regName) {
     console.log("Checking Flag...");
     if (parseInt(regName, 16) === 0) {
         flag[1] = 1;
@@ -1240,7 +1240,7 @@ function checkFlag(regName) {
     console.log(`Flag = ${flag}`);
 }
 
-function splitAddress(address) {
+function split_address(address) {
     let mid = Math.floor(address.length / 2);
     let higherByte = (address.substring(0, mid)).padStart(2, '0').toUpperCase();
     let lowerByte = (address.substring(mid % 2 === 0 ? mid : (mid + 1))).padStart(2, '0').toUpperCase();
