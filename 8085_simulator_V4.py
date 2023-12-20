@@ -36,6 +36,7 @@ def ADD(mnemonic):
     reg_value[0] = str(hex(int(reg_value[0], 16) + int(reg_value[reg_1], 16))[2:]).zfill(2).upper()
     if int(reg_value[0], 16) > 255:
         reg_value[0] = str(hex(int(reg_value[0], 16) - int("100", 16))[2:]).zfill(2).upper()
+        flag[7] = 1
     print(f"[A] = {reg_value[0]}")
     check_accumulator()
     
@@ -47,6 +48,7 @@ def ADI(mnemonic):
         reg_value[0] = str(hex(int(str(reg_value[0]), 16) + int(str(immediate_value), 16))[2:]).zfill(2).upper()
         if int(reg_value[0], 16) > 255:
             reg_value[0] = str(hex(int(reg_value[0], 16) - int("100", 16))[2:]).zfill(2).upper()
+            flag[7] = 1
     print(f"[A] = {reg_value[0]}")
     check_accumulator()
     
@@ -60,6 +62,7 @@ def ADC(mnemonic):
     reg_value[0] = str(hex(int(reg_value[0], 16) + int(reg_value[reg_1], 16) + flag[7])[2:]).zfill(2).upper()
     if int(reg_value[0], 16) > 255:
         reg_value[0] = str(hex(int(reg_value[0], 16) - int("100", 16))[2:]).zfill(2).upper()
+        flag[7] = 1
     print(f"[A] = {reg_value[0]}")
     check_accumulator()
 
@@ -70,6 +73,7 @@ def ACI(mnemonic):
     reg_value[0] = str(hex(int(str(reg_value[0]), 16) + int(str(immediate_value), 16) + flag[7])[2:]).zfill(2).upper()
     if int(reg_value[0], 16) > 255:
         reg_value[0] = str(hex(int(reg_value[0], 16) - int("100", 16))[2:]).zfill(2).upper()
+        flag[7] = 1
     print(f"[A] = {reg_value[0]}")
     check_accumulator()
 
@@ -381,6 +385,7 @@ def INR(mnemonic):
         memory_address_M(0)
     if int(reg_value[reg_index], 16) > 255:
         reg_value[0] = str(hex(int(reg_value[reg_index], 16) - int("100", 16))[2:]).zfill(2).upper()
+        flag[7] = 1
     print(f"[{reg_list[reg_index]}] = {reg_value[reg_index]}")
     check_flag(reg_value[reg_index])
     
@@ -527,7 +532,7 @@ def LDA(mnemonic):
     mnemonic = mnemonic.split()
     address = mnemonic[1]
     reg_value[0] = str(hex(int(memory_location_value[int(address, 16)], 16))[2:]).zfill(4).upper()
-    print(f"[{address}] = {memory_location_value[address_index]}")
+    print(f"[{address}] = {memory_location_value[int(address, 16)]}")
     print(f"[A] = {reg_value[0]}")
     
 def LDAX(mnemonic):
@@ -1049,7 +1054,7 @@ def check_accumulator():
         flag[1] = 1
     elif int(reg_value[0], 16) != 0:
         flag[1] = 0
-    if (int(reg_value[0], 16) > 255) | (flag[0] == 1):
+    if (flag[0] == 1):
         flag[7] = 1
     elif int(reg_value[0], 16) <= 255 :
         flag[7] = 0
@@ -1066,7 +1071,7 @@ def check_flag(reg_name):
         flag[1] = 1
     elif int(reg_name, 16) != 0:
         flag[1] = 0
-    if (int(reg_value[0], 16) > 255) | (flag[0] == 1):
+    if (flag[0] == 1):
         flag[7] = 1
     elif int(reg_name, 16) <= 255:
         flag[7] = 0
@@ -1707,7 +1712,7 @@ def instruction_encoder(machine_code):
     one_byte_list = ["00", "80", "81", "82", "83", "84", "85", "86", "87", "AO", "A1", "A2", "A3", "A4", "A5", "A6", "A7", "2F", "B8", "B9", "BA", "BB", "BC", "BD", "BE", "BF", "09", "19", "29", "39", "05", "0D", "15", "1D", "25", "2D", "35", "3D", "0B", "1B", "2B", "3B", "76", "04", "0C", "14", "1C", "24", "2C", "34", "3C", "03", "13", "23", "33", "0A", "1A", "78", "79", "7A", "7B", "7C", "7D", "7E", "7F", "40", "41", "42", "43", "44", "45", "46", "47", "48", "49", "4A", "4B", "4C", "4D", "4E", "4F", "50", "51", "52", "53", "54", "55", "56", "57", "58", "59", "5A", "5B" ,"5C", "5D", "5E", "5F", "60", "61", "62", "63", "64", "65", "66", "67", "68", "69", "6A", "6B", "6C", "6D", "6E", "6F", "70", "71", "72", "73", "74", "75", "76", "77", "07", "0F", "B0", "B1", "B2", "B3", "B4", "B5", "B6", "B7", "02", "12", "90", "91", "92", "93", "94", "95", "96", "97", "EB", "A8", "A9", "AA", "AB", "AC", "AD", "AE", "AF", "C9", "D8", "F8", "C0", "D0", "F0", "E8", "E0", "C8", "C1", "C5", "D1", "D5", "E1", "E5", "F1", "F5", "37", "17", "1F", "20", "30", "3F", "27", "8F", "88", "89", "8A", "8B", "8C", "8D", "8E", "9F", "98", "99", "9A", "9B", "9C", "9D", "9E", "C7", "CF", "D7", "DF", "E7", "EF", "F7", "FF", "D3", "DB", "E3", "E9", "F3", "FB", "F9"]
     two_byte_list_1 = ["C6", "D6", "E6", "F6", "EE", "FE", "CE", "DE", "DB", "D3"]
     two_byte_list_2 = ["06", "0E", "16", "1E", "26", "2E", "36", "3E"]
-    three_byte_list_1 = ["22", "2A", "32", "3A", "C2", "C3", "CA", "CD", "DC", "FC", "D4", "C4", "CC" "F4", "EC", "FE", "E4", "D2", "DA", "E2", "EA", "F2", "FA"]
+    three_byte_list_1 = ["22", "2A", "32", "3A", "C2", "C3", "CA", "CD", "DC", "FC", "D4", "C4", "CC", "F4", "EC", "FE", "E4", "D2", "DA", "E2", "EA", "F2", "FA"]
     three_byte_list_2 = ["01", "11", "21", "31"]
     if machine_code in one_byte_list:
         byte = "ONE"
@@ -1975,10 +1980,6 @@ def instruction_encoder(machine_code):
             opcode = "MOV M,L"
         elif machine_code == "00":
             opcode = "NOP"
-        elif machine_code == "DB":
-            opcode = "IN" 
-        elif machine_code == "D3":
-            opcode = "OUT"
         elif machine_code == "B7":
             opcode = "ORA A"
         elif machine_code == "B0":
@@ -2130,6 +2131,10 @@ def instruction_encoder(machine_code):
             opcode = "ANI"
         elif machine_code == "FE":
             opcode = "CPI"
+        elif machine_code == "DB":
+            opcode = "IN" 
+        elif machine_code == "D3":
+            opcode = "OUT"
         elif machine_code == "F6":
             opcode = "ORI"
         elif machine_code == "D6":
