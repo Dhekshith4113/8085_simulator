@@ -77,6 +77,11 @@ body {
     background-color: transparent;
 }
 
+#details {
+    color: white;
+    font-size: 15px;
+}
+
 input::placeholder {
     color: white;
 }
