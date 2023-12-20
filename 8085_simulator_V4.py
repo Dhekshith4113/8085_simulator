@@ -2,8 +2,8 @@ import random
 
 global A, flag, B, C, D, E, H, L, M
 global reg_list, reg_value, single_step_active
-global address, flag_status, memory_location_value
-global stack_pointer
+global address, memory_location_value, stack_pointer
+
 A = str(hex(0)[2:]).zfill(2)
 flag = [0, 0, 0, 0, 0, 0, 0, 0]
 B = str(hex(0)[2:]).zfill(2)
@@ -15,9 +15,10 @@ L = str(hex(0)[2:]).zfill(2)
 M = str(hex(0)[2:]).zfill(2)
 reg_list = ["A", "flag", "B", "C", "D", "E", "H", "L", "M"]
 reg_value = [A, flag, B, C, D, E, H, L, M]
-single_step_active = "inactive"
 
+address = "8000"
 stack_pointer = "00FF"
+single_step_active = "inactive"
 
 memory_location_value = []
 n = 0
@@ -34,9 +35,9 @@ def ADD(mnemonic):
         memory_address_M(1)
     reg_value[0] = str(hex(int(reg_value[0], 16) + int(reg_value[reg_1], 16))[2:]).zfill(2).upper()
     if int(reg_value[0], 16) > 255:
-        check_accumulator()
         reg_value[0] = str(hex(int(reg_value[0], 16) - int("100", 16))[2:]).zfill(2).upper()
     print(f"[A] = {reg_value[0]}")
+    check_accumulator()
     
 def ADI(mnemonic):
     print("-----ADI-----")
@@ -45,9 +46,9 @@ def ADI(mnemonic):
     if len(str(immediate_value)) == 2:
         reg_value[0] = str(hex(int(str(reg_value[0]), 16) + int(str(immediate_value), 16))[2:]).zfill(2).upper()
         if int(reg_value[0], 16) > 255:
-            check_accumulator()
             reg_value[0] = str(hex(int(reg_value[0], 16) - int("100", 16))[2:]).zfill(2).upper()
     print(f"[A] = {reg_value[0]}")
+    check_accumulator()
     
 def ADC(mnemonic):
     print("-----ADC-----")
@@ -58,9 +59,9 @@ def ADC(mnemonic):
         memory_address_M(1)
     reg_value[0] = str(hex(int(reg_value[0], 16) + int(reg_value[reg_1], 16) + flag[7])[2:]).zfill(2).upper()
     if int(reg_value[0], 16) > 255:
-        check_accumulator()
         reg_value[0] = str(hex(int(reg_value[0], 16) - int("100", 16))[2:]).zfill(2).upper()
-    print(f"[A] = {reg_value[0]}")    
+    print(f"[A] = {reg_value[0]}")
+    check_accumulator()
 
 def ACI(mnemonic):
     print("-----ACI-----")
@@ -68,9 +69,9 @@ def ACI(mnemonic):
     immediate_value = mnemonic[1]
     reg_value[0] = str(hex(int(str(reg_value[0]), 16) + int(str(immediate_value), 16) + flag[7])[2:]).zfill(2).upper()
     if int(reg_value[0], 16) > 255:
-        check_accumulator()
         reg_value[0] = str(hex(int(reg_value[0], 16) - int("100", 16))[2:]).zfill(2).upper()
     print(f"[A] = {reg_value[0]}")
+    check_accumulator()
 
 def ANA(mnemonic):
     print("-----ANA-----")
@@ -80,16 +81,16 @@ def ANA(mnemonic):
     if reg_1 == "M":
         memory_address_M(1)
     reg_value[0] = str(hex(int(reg_value[0], 16) & int(reg_value[reg_1], 16))[2:]).zfill(2).upper()
-    check_accumulator()
     print(f"[A] = {reg_value[0]}")
+    check_accumulator()
     
 def ANI(mnemonic):
     print("-----ANI-----")
     mnemonic = mnemonic.split()
     immediate_value = mnemonic[1]
     reg_value[0] = str(hex(int(str(reg_value[0]), 16) & int(str(immediate_value), 16))[2:]).zfill(2).upper()
-    check_accumulator()
     print(f"[A] = {reg_value[0]}")
+    check_accumulator()
 
 def CALL(mnemonic):
     global ret_address, stack_pointer, address
@@ -218,15 +219,15 @@ def CMA(mnemonic):
     print("-----CMA-----")
     reg_value[0] = str(hex(0 - int(reg_value[0], 16) + int("FF", 16))[2:]).zfill(2).upper()
     flag[0] = 1
-    flag[7] = 1
     print(f"[A] = {reg_value[0]}")
+    check_accumulator()
     
 def CMC(mnemonic):
     print("-----CMC-----")
     if flag[7] == 1:
         flag[7] = 0
     else:
-        flag[7] = 1    
+        flag[7] = 1
     print(f"Flag = {flag}")    
     
 def CMP(mnemonic):
@@ -274,29 +275,16 @@ def DAA(mnemonic):
     if (least_significant_bit > 9) & (most_significant_bit <= 9):
         reg_value[0] = hex(int(reg_value[0], 16) + int("06", 16))[2:].zfill(2).upper()
         flag[0] = 1
-        flag[1] = 0
         flag[3] = 1
-        flag[7] = 0
     elif (least_significant_bit <= 9) & (most_significant_bit > 9):
         reg_value[0] = hex(int(reg_value[0], 16) + int("60", 16) - int("100", 16))[2:].zfill(2).upper()
-        flag[0] = 0
-        flag[1] = 0
-        flag[3] = 0
         flag[7] = 1
     elif (least_significant_bit > 9) & (most_significant_bit  > 9):
         reg_value[0] = hex(int(reg_value[0], 16) + int("66", 16) - int("100", 16))[2:].zfill(2).upper()
-        flag[0] = 0
-        flag[1] = 0
-        flag[3] = 0
         flag[7] = 1
-    else:
-        flag[0] = 0
-        flag[1] = 0
-        flag[3] = 0
-        flag[7] = 0
     print(f"BCD equivalent of {reg_A_hex} is {flag[7]}{reg_value[0]}.")
     print(f"[A] = {reg_value[0]}")
-    print(f"Flag = {flag}")
+    check_accumulator()
     
 def DAD(mnemonic):
     global stack_pointer
@@ -349,15 +337,13 @@ def DCR(mnemonic):
         reg_value[reg_index] = str(hex(int(reg_value[reg_index], 16) - 1)[2:]).zfill(2).upper()
     elif int(reg_value[reg_index], 16) == 1:
         reg_value[reg_index] = str(hex(0)[2:]).zfill(2).upper()
-        flag[1] = 1
     elif int(reg_value[reg_index], 16) < 1:
         reg_value[reg_index] = str(hex(int(reg_value[reg_index], 16) - 1 + int("100", 16))[2:]).zfill(2).upper()
         flag[0] = 1
-        flag[7] = 1
     if reg_1 == "M":
         memory_address_M(0)
-    check_flag(reg_value[reg_index])    
     print(f"[{reg_list[reg_index]}] = {reg_value[reg_index]}")
+    check_flag(reg_value[reg_index])
     
 def DCX(mnemonic):
     global stack_pointer
@@ -395,8 +381,8 @@ def INR(mnemonic):
         memory_address_M(0)
     if int(reg_value[reg_index], 16) > 255:
         reg_value[0] = str(hex(int(reg_value[reg_index], 16) - int("100", 16))[2:]).zfill(2).upper()
-    check_flag(reg_value[reg_index])    
     print(f"[{reg_list[reg_index]}] = {reg_value[reg_index]}")
+    check_flag(reg_value[reg_index])
     
 def INX(mnemonic):
     global stack_pointer
@@ -631,16 +617,16 @@ def ORA(mnemonic):
     if reg_1 == "M":
         memory_address_M(1)
     reg_value[0] = str(hex(int(reg_value[0], 16) | int(reg_value[reg_1], 16))[2:]).zfill(2).upper()
-    check_accumulator()
     print(f"[A] = {reg_value[0]}")
+    check_accumulator()
     
 def ORI(mnemonic):
     print("-----ORI-----")
     mnemonic = mnemonic.split()
     immediate_value = mnemonic[1]
     reg_value[0] = str(hex(int(reg_value[0], 16) | int(immediate_value, 16))[2:]).zfill(2).upper()
-    check_accumulator()
     print(f"[A] = {reg_value[0]}")
+    check_accumulator()
 
 def PCHL(mnemonic):
     print("-----PCHL-----")
@@ -855,7 +841,7 @@ def RAL():
             reg_value[0] = str(hex(int(reg_value[0], 16) + 1)[2:]).zfill(2).upper()
         flag[7] = 0
     print(f"[A]  = {reg_value[0]}")
-    print(f"Flag = {flag}")
+    check_accumulator()
     
 def RAR():
     print("-----RAR-----")
@@ -871,7 +857,7 @@ def RAR():
             reg_value[0] = str(hex(int(reg_value[0], 16) + int("80", 16))[2:]).zfill(2).upper()
         flag[7] = 0
     print(f"[A]  = {reg_value[0]}")
-    print(f"Flag = {flag}")    
+    check_accumulator()
     
 def RLC():
     print("-----RLC-----")
@@ -942,9 +928,8 @@ def SUB(mnemonic):
     elif int(reg_value[0], 16) < int(reg_value[reg_1_index], 16):
         reg_value[0] = str(hex(int(reg_value[0], 16) - int(reg_value[reg_1_index], 16) + int("100", 16))[2:]).zfill(2).upper()
         flag[0] = 1
-        flag[7] = 1
     print(f"[A] = {reg_value[0]}")
-    print(f"Flag = {flag}")
+    check_accumulator()
     
 def SUI(mnemonic):
     print("-----SUI-----")
@@ -958,9 +943,8 @@ def SUI(mnemonic):
     elif int(reg_value[0], 16) < int(str(immediate_value), 16):
         reg_value[0] = str(hex(int(reg_value[0], 16) - int(str(immediate_value), 16) + int("100", 16))[2:]).zfill(2).upper()
         flag[0] = 1
-        flag[7] = 1
     print(f"[A] = {reg_value[0]}")
-    print(f"Flag = {flag}")
+    check_accumulator()
 
 def SBB(mnemonic):
     print("-----SBB-----")
@@ -971,21 +955,17 @@ def SBB(mnemonic):
         memory_address_M(1)
     if int(reg_value[0], 16) > int(reg_value[reg_1_index], 16):    
         reg_value[0] = str(hex(int(reg_value[0], 16) - int(reg_value[reg_1_index], 16) - flag[7])[2:]).zfill(2).upper()
-        if reg_value[0] == "00":
-            flag[1] = 1
     elif int(reg_value[0], 16) == int(reg_value[reg_1_index], 16):    
         if flag[7] == 1:
             reg_value[0] = ("FF").zfill(2).upper()
         else:
             reg_value[0] = str(hex(0)[2:]).zfill(2).upper()
             flag[1] = 1
-        flag[7] = 1
     elif int(reg_value[0], 16) < int(reg_value[reg_1_index], 16):
         reg_value[0] = str(hex(int(reg_value[0], 16) - int(reg_value[reg_1_index], 16) + int("100", 16) - flag[7])[2:]).zfill(2).upper()
         flag[0] = 1
-        flag[7] = 1
     print(f"[A] = {reg_value[0]}")
-    print(f"Flag = {flag}")
+    check_accumulator()
 
 def SBI(mnemonic):
     print("-----SBI-----")
@@ -993,21 +973,18 @@ def SBI(mnemonic):
     immediate_value = mnemonic[1]
     if int(reg_value[0], 16) > int(str(immediate_value), 16):
         reg_value[0] = str(hex(int(reg_value[0], 16) - int(str(immediate_value), 16) - flag[7])[2:]).zfill(2).upper()
-        if reg_value[0] == "00":
-            flag[1] = 1
     elif int(reg_value[0], 16) == int(str(immediate_value), 16):
         if flag[7] == 1:
             reg_value[0] = ("FF").zfill(2).upper()
+            flag[0] = 1
         else:
             reg_value[0] = str(hex(0)[2:]).zfill(2).upper()
             flag[1] = 1
-        flag[7] = 1
     elif int(reg_value[0], 16) < int(str(immediate_value), 16):
         reg_value[0] = str(hex(int(reg_value[0], 16) - int(str(immediate_value), 16) + int("100", 16) - flag[7])[2:]).zfill(2).upper()
         flag[0] = 1
-        flag[7] = 1
     print(f"[A] = {reg_value[0]}")
-    print(f"Flag = {flag}")
+    check_accumulator()
 
 def XCHG(mnemonic):
     print("-----XCHG-----")
@@ -1034,16 +1011,16 @@ def XRA(mnemonic):
     if reg_1 == "M":
         memory_address_M(1)
     reg_value[0] = str(hex(int(reg_value[0], 16) ^ int(reg_value[reg_1], 16))[2:]).zfill(2).upper()
-    check_accumulator()
     print(f"[A] = {reg_value[0]}")
+    check_accumulator()
     
 def XRI(mnemonic):
     print("-----XRI-----")
     mnemonic = mnemonic.split()
     immediate_value = mnemonic[1]
     reg_value[0] = str(hex(int(reg_value[0], 16) ^ int(immediate_value, 16))[2:]).zfill(2).upper()
-    check_accumulator()    
     print(f"[A] = {reg_value[0]}")
+    check_accumulator()
     
 def XTHL(mnemonic):
     global stack_pointer
@@ -1072,10 +1049,15 @@ def check_accumulator():
         flag[1] = 1
     elif int(reg_value[0], 16) != 0:
         flag[1] = 0
-    if int(reg_value[0], 16) > 255:
+    if (int(reg_value[0], 16) > 255) | (flag[0] == 1):
         flag[7] = 1
-    elif int(reg_value[0], 16) <= 255:
+    elif int(reg_value[0], 16) <= 255 :
         flag[7] = 0
+    one_count = bin(int(reg_value[0], 16)).count("1")
+    if (one_count % 2) == 0:
+        flag[5] = 1 # Even number of ones
+    else:
+        flag[5] = 0 # Odd number of ones
     print(f"Flag = {flag}")
     
 def check_flag(reg_name):
@@ -1084,10 +1066,15 @@ def check_flag(reg_name):
         flag[1] = 1
     elif int(reg_name, 16) != 0:
         flag[1] = 0
-    if int(reg_name, 16) > 255:
+    if (int(reg_value[0], 16) > 255) | (flag[0] == 1):
         flag[7] = 1
     elif int(reg_name, 16) <= 255:
         flag[7] = 0
+    one_count = bin(int(reg_value[0], 16)).count("1")
+    if (one_count % 2) == 0:
+        flag[5] = 1 # Even number of ones
+    else:
+        flag[5] = 0 # Odd number of ones    
     print(f"Flag = {flag}")
         
 def split_address(address):
@@ -1121,7 +1108,6 @@ def byte_8085(mnemonic):
 
 def memory_8085():
     global memory_location_value
-    print("-----MEMORY VIEW/EDIT-----")
     print("If you want to change the value, type the desired value. Otherwise hit enter.")
     address_location = str(input("Enter address: ")).zfill(4).upper()
     while True:
@@ -1700,7 +1686,6 @@ def MN_to_MC(address, mnemonic):
         return machine_code, None, None
 
 def address_8085():
-    print("-----ADDRESS-----")
     global mnemonic
     address = input("Enter address: ")
     address = str(hex(int(address, 16))[2:]).zfill(4).upper()
@@ -2537,10 +2522,11 @@ def execute_8085():
     if details == "Y":
         flag_bin= ''.join([str(elem) for elem in reg_value[1]])
         flag_hex = str(hex(int(flag_bin, 2))[2:]).zfill(2).upper()
-        print(f"A = {str(reg_value[0]).zfill(2).upper()}  Flag = {flag_hex} = {flag_bin}")
-        print(f"B = {str(reg_value[2]).zfill(2).upper()}     C = {str(reg_value[3]).zfill(2).upper()}")
-        print(f"D = {str(reg_value[4]).zfill(2).upper()}     E = {str(reg_value[5]).zfill(2).upper()}")
-        print(f"H = {str(reg_value[6]).zfill(2).upper()}     L = {str(reg_value[7]).zfill(2).upper()}")
+        print(f"[A]  = {str(reg_value[0]).zfill(2).upper()}   Flag  = {flag_hex} = {flag_bin}")
+        print(f"[B]  = {str(reg_value[2]).zfill(2).upper()}    [C]  = {str(reg_value[3]).zfill(2).upper()}")
+        print(f"[D]  = {str(reg_value[4]).zfill(2).upper()}    [E]  = {str(reg_value[5]).zfill(2).upper()}")
+        print(f"[H]  = {str(reg_value[6]).zfill(2).upper()}    [L]  = {str(reg_value[7]).zfill(2).upper()}")
+        print(f"[PC] = {address}  [SP] = {stack_pointer}")
     flag = [0, 0, 0, 0, 0, 0, 0, 0]
     single_step_active = "inactive"
 
@@ -2551,7 +2537,7 @@ def memory_address_M(mode):
         reg_value[7] = str(reg_value[7]).zfill(2).upper()
         M_address = reg_value[6] + reg_value[7]
         memory_location_value[int(M_address, 16)] = reg_value[8]
-        print(f"[H] = {reg_value[6]}, [L] = {reg_value[7]}")
+        print(f"[H] = {reg_value[6]} [L] = {reg_value[7]}")
         print(f"[M] = [{M_address}] = {reg_value[8]}")
     elif mode == 1:
         print("Retrieving the value from Memory address...")
@@ -2560,28 +2546,29 @@ def memory_address_M(mode):
         M_address = reg_value[6] + reg_value[7]
         reg_value[8] = memory_location_value[int(M_address, 16)]
         print(f"[M] = [{M_address}] = {reg_value[8]}")
-        print(f"[H] = {reg_value[6]}, [L] = {reg_value[7]}")
+        print(f"[H] = {reg_value[6]} [L] = {reg_value[7]}")
 
 while True:
-    print("\n""Press any of the given key: A - Address, G - Execute, S - Single Step, M - Memory, R - Register")
+    print("\n""Press any of the given key:""\n""A - Assemble    G - Go Execute    S - Single Step""\n""M - Memory View/Edit    R - Register View")
     key = input()
     if key == "A":
+        print("-----ASSEMBLE-----")
         address_8085()
     elif key == "G":
         single_step_active = "inactive"
         print("-----EXECUTE-----")
         execute_8085()
     elif key == "M":
+        print("-----MEMORY VIEW/EDIT-----")
         memory_8085()
     elif key == "S":
         single_step_active = "active"
         print("----- SINGLE STEP-----")
         execute_8085()
     elif key == "R":
-        print("-----REG VIEW/EDIT-----")
+        print("-----REG VIEW-----")
         flag_bin= ''.join([str(elem) for elem in reg_value[1]])
         flag_hex = str(hex(int(flag_bin, 2))[2:]).zfill(2).upper()
-        print(f"A = {str(reg_value[0]).zfill(2).upper()}  Flag = {flag_hex} = {flag_bin}")
-        print(f"B = {str(reg_value[2]).zfill(2).upper()}     C = {str(reg_value[3]).zfill(2).upper()}")
-        print(f"D = {str(reg_value[4]).zfill(2).upper()}     E = {str(reg_value[5]).zfill(2).upper()}")
-        print(f"H = {str(reg_value[6]).zfill(2).upper()}     L = {str(reg_value[7]).zfill(2).upper()}")
+        print(f"[PSW] = {str(reg_value[0]).zfill(2).upper()}{flag_hex}  [BC] = {str(reg_value[2]).zfill(2).upper()}{str(reg_value[3]).zfill(2).upper()}")
+        print(f"[DE]  = {str(reg_value[4]).zfill(2).upper()}{str(reg_value[5]).zfill(2).upper()}  [HL] = {str(reg_value[6]).zfill(2).upper()}{str(reg_value[7]).zfill(2).upper()}")
+        print(f"[PC]  = {address}  [SP] = {stack_pointer}")
