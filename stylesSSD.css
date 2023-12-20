@@ -52,6 +52,12 @@ h2 {
     font-size: 75px;
 }
 
+#details {
+    color: white;
+    font-size: 15px;
+    margin: 0px 50px 0px 105px;
+}
+
 input::placeholder {
     color: rgb(255, 0, 0);
 }
@@ -101,4 +107,5 @@ button {
 
 .row4 {
     float: left;
+    margin-bottom: 20px;
 }
