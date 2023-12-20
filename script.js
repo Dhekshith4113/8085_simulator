@@ -26,9 +26,7 @@ let mode_memory = 0
 let mode_address = 0
 let mode_execute = 0
 let ret_address
-let one_byte, mnemonic
-let two_byte
-let three_byte
+let one_byte, two_byte, three_byte, mnemonic, old_value
 
 setTimeout(() => {
     textTop.innerHTML = "SCIENTIFIC TECH"
@@ -65,8 +63,8 @@ for (let i = 0; i < 65536; i++) {
     n = parseInt(Math.random() * 256).toString(16).padStart(2, '0').toUpperCase();
     memory_location_value.push(n);
 }
-console.log(memory_location_value)
 
+console.log("\nPress any of the given key:\nA - Assemble    G - Go Execute    S - Single Step    M - Memory View/Edit    R - Register View");
 ////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////
 
@@ -1287,9 +1285,8 @@ function memory_8085() {
     console.log("If you want to change the value, type the desired value. Otherwise hit enter.");
     memory_active_status = 'active'
     mode_memory = 0
-    address_value = memory_location_value[parseInt(address, 16)]
     enter.addEventListener('click', enterMemory = () => {
-        mode_memory= 1
+        mode_memory = 1
         if (initial_enter === true) {
             address = (parseInt(address, 16) - 1).toString(16).padStart(4, '0').toUpperCase();
             address_value = memory_location_value[parseInt(address, 16)]
@@ -1299,8 +1296,8 @@ function memory_8085() {
         address = (parseInt(address, 16) + 1).toString(16).padStart(4, '0').toUpperCase();
         address_value = memory_location_value[parseInt(address, 16)]
         textBottom.value = `${address}:${address_value}`
-        console.log(`Actual value: ${address}:${address_value}`)
-        string = memory_location_value[parseInt(address, 16)];
+        old_value = address_value
+        string = address_value
     })
     escapeBtn.addEventListener('click', escapeMemory = () => {
         enter.removeEventListener('click', enterMemory)
@@ -1316,7 +1313,6 @@ function memory_8085() {
             address_active_status = 'inactive'
             execute_active_status = 'inactive'
             single_step_active = 'inactive'
-            console.log(memory_location_value)
             console.log("\nPress any of the given key:\nA - Assemble    G - Go Execute    S - Single Step    M - Memory View/Edit    R - Register View");
         }
     })
@@ -1691,34 +1687,38 @@ function address_8085() {
         mode_address = 1
         textTop.innerHTML = `ASSEMBLE:${address}`
         textBottom.value = `${string}`
-        console.log(`${address}: ${string}`)
-        mnemonic = textBottom.value
-        let byte = byte_8085(mnemonic);
-        if (byte !== "error") {
-            let ret_value = MN_to_MC(address, mnemonic);
-            let machineCode = ret_value[0]
-            let nextAddress1 = ret_value[1]
-            let nextAddress2 = ret_value[2]
-            if (nextAddress1 === null && nextAddress2 === null) {
-                textTop.innerHTML = `${address}:${machineCode}`
-                textBottom.value = ''
-            } else if (nextAddress2 === null) {
-                textTop.innerHTML = `${address}:${machineCode}:${nextAddress1}`
-                textBottom.value = ''
+        if (string !== '') {
+            mnemonic = textBottom.value
+            let byte = byte_8085(mnemonic);
+            if (byte !== "error") {
+                let ret_value = MN_to_MC(address, mnemonic);
+                let machineCode = ret_value[0]
+                let nextAddress1 = ret_value[1]
+                let nextAddress2 = ret_value[2]
+                if (nextAddress1 === null && nextAddress2 === null) {
+                    textTop.innerHTML = `${address}:${machineCode}`
+                    textBottom.value = ''
+                } else if (nextAddress2 === null) {
+                    textTop.innerHTML = `${address}:${machineCode}:${nextAddress1}`
+                    textBottom.value = ''
+                } else {
+                    textTop.innerHTML = `${address}:${machineCode}:${nextAddress1}:${nextAddress2}`
+                    textBottom.value = ''
+                }
+                console.log(`${address}: ${string}`)
             } else {
-                textTop.innerHTML = `${address}:${machineCode}:${nextAddress1}:${nextAddress2}`
+                textTop.innerHTML = "SYNTAX ERROR!"
                 textBottom.value = ''
             }
+            if (byte === 1) {
+                address = (parseInt(address, 16) + parseInt("1", 16)).toString(16).toUpperCase().padStart(4, '0')
+            } else if (byte === 2) {
+                address = (parseInt(address, 16) + parseInt("2", 16)).toString(16).toUpperCase().padStart(4, '0')
+            } else if (byte === 3) {
+                address = (parseInt(address, 16) + parseInt("3", 16)).toString(16).toUpperCase().padStart(4, '0')
+            }
+            string = ''
         }
-
-        if (byte === 1) {
-            address = (parseInt(address, 16) + parseInt("1", 16)).toString(16).toUpperCase().padStart(4, '0')
-        } else if (byte === 2) {
-            address = (parseInt(address, 16) + parseInt("2", 16)).toString(16).toUpperCase().padStart(4, '0')
-        } else if (byte === 3) {
-            address = (parseInt(address, 16) + parseInt("3", 16)).toString(16).toUpperCase().padStart(4, '0')
-        }
-        string = ''
     })
     escapeBtn.addEventListener('click', escapeAddress = () => {
         enter.removeEventListener('click', enterAddress)
@@ -2514,10 +2514,11 @@ hexButtons.forEach(hex => {
                 string = string.substring(0, string.length - 1)
                 address_value = string
                 textBottom.value = `${address}:${string}`
-            } else if (string.length < 2) {
+            } else if (string.length <= 2) {
                 if (hex.innerHTML === 'Enter') {
+                    console.log(`${address}:${old_value} ${string}`)
                     textBottom.value = `${address}:${address_value}`
-                } else {
+                } else if (string.length < 2)  {
                     string += hex.innerHTML
                     address_value = string
                     textBottom.value = `${address}:${address_value}`
