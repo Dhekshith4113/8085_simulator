@@ -50,9 +50,6 @@ for (let i = 0; i < 65536; i++) {
     memory_location_value.push(n);
 }
 
-////////////////////////////////////////////////////////////////////////////////////
-////////////////////////////////////////////////////////////////////////////////////
-
 function ADD(mnemonic) {
     console.log("-----ADD-----");
     mnemonic = mnemonic.split(' ');
@@ -62,12 +59,11 @@ function ADD(mnemonic) {
         memory_address_M(1);
     }
     reg_value[0] = (parseInt(reg_value[0], 16) + parseInt(reg_value[reg_1], 16)).toString(16).padStart(2, '0').toUpperCase();
+    check_flag(reg_value[0]);
     if (parseInt(reg_value[0], 16) > 255) {
         reg_value[0] = (parseInt(reg_value[0], 16) - parseInt("100", 16)).toString(16).padStart(2, '0').toUpperCase();
-        flag[7] = 1;
     }
     console.log(`[A] = ${reg_value[0]}`);
-    check_accumulator();
 }
 
 function ADI(mnemonic) {
@@ -78,13 +74,12 @@ function ADI(mnemonic) {
         // ChatGPT included the && /^[0-9A-Fa-f]{2}$/.test(immediate_value) in the JavaScript code to validate 
         // whether the immediate_value extracted from the mnemonic is a valid two-digit hexadecimal value.
         reg_value[0] = (parseInt(reg_value[0], 16) + parseInt(immediate_value, 16)).toString(16).padStart(2, '0').toUpperCase();
+        check_flag(reg_value[0]);
         if (parseInt(reg_value[0], 16) > 255) {
             reg_value[0] = (parseInt(reg_value[0], 16) - parseInt("100", 16)).toString(16).padStart(2, '0').toUpperCase();
-            flag[7] = 1;
         }
     }
     console.log(`[A] = ${reg_value[0]}`);
-    check_accumulator();
 }
 
 function ADC(mnemonic) {
@@ -97,12 +92,11 @@ function ADC(mnemonic) {
         memory_address_M(1);
     }
     reg_value[0] = (parseInt(reg_value[0], 16) + parseInt(reg_value[reg_1], 16) + flag[7]).toString(16).padStart(2, '0').toUpperCase();
+    check_flag(reg_value[0]);
     if (parseInt(reg_value[0], 16) > 255) {
         reg_value[0] = (parseInt(reg_value[0], 16) - parseInt("100", 16)).toString(16).padStart(2, '0').toUpperCase();
-        flag[7] = 1;
     }
     console.log(`[A] = ${reg_value[0]}`);
-    check_accumulator();
 }
 
 function ACI(mnemonic) {
@@ -110,12 +104,11 @@ function ACI(mnemonic) {
     mnemonic = mnemonic.split(" ");
     let immediate_value = mnemonic[1];
     reg_value[0] = (parseInt(reg_value[0], 16) + parseInt(immediate_value, 16) + flag[7]).toString(16).padStart(2, '0').toUpperCase();
+    check_flag(reg_value[0]);
     if (parseInt(reg_value[0], 16) > 255) {
         reg_value[0] = (parseInt(reg_value[0], 16) - parseInt("100", 16)).toString(16).padStart(2, '0').toUpperCase();
-        flag[7] = 1;
     }
     console.log(`[A] = ${reg_value[0]}`);
-    check_accumulator();
 }
 
 function ANA(mnemonic) {
@@ -128,7 +121,7 @@ function ANA(mnemonic) {
     }
     reg_value[0] = (parseInt(reg_value[0], 16) & parseInt(reg_value[reg_1], 16)).toString(16).padStart(2, '0').toUpperCase();
     console.log(`[A] = ${reg_value[0]}`);
-    check_accumulator();
+    check_flag(reg_value[0]);
 }
 
 function ANI(mnemonic) {
@@ -137,7 +130,7 @@ function ANI(mnemonic) {
     let immediate_value = mnemonic[1];
     reg_value[0] = (parseInt(reg_value[0], 16) & parseInt(immediate_value, 16)).toString(16).padStart(2, '0').toUpperCase();
     console.log(`[A] = ${reg_value[0]}`);
-    check_accumulator();
+    check_flag(reg_value[0]);
 }
 
 function CALL(mnemonic) {
@@ -145,7 +138,7 @@ function CALL(mnemonic) {
     let mnemonicArr = mnemonic.split(' ');
     let call_address = mnemonicArr[1];
     ret_address = (parseInt(address, 16) + 1).toString(16).padStart(4, '0').toUpperCase();
-    let [higher_byte, lower_byte] = splitAddress(ret_address);
+    let [higher_byte, lower_byte] = split_address(ret_address);
     memory_location_value[parseInt(stack_pointer, 16)] = higher_byte;
     stack_pointer = (parseInt(stack_pointer, 16) - 1).toString(16).padStart(4, '0').toUpperCase();
     memory_location_value[parseInt(stack_pointer, 16)] = lower_byte;
@@ -156,13 +149,14 @@ function CALL(mnemonic) {
 }
 
 function CC(mnemonic) {
+    console.log("-----CC-----");
     if (flag[7] === 1) {
         let call_address = mnemonic.split(' ')[1];
         ret_address = (parseInt(address, 16) + 1).toString(16).padStart(4, '0').toUpperCase();
-        let [higher_byte, lower_byte] = splitAddress(ret_address);
-        memoryLocationValue[parseInt(stack_pointer, 16)] = higher_byte;
+        let [higher_byte, lower_byte] = split_address(ret_address);
+        memory_location_value[parseInt(stack_pointer, 16)] = higher_byte;
         stack_pointer = (parseInt(stack_pointer, 16) - 1).toString(16).padStart(4, '0').toUpperCase();
-        memoryLocationValue[parseInt(stack_pointer, 16)] = lower_byte;
+        memory_location_value[parseInt(stack_pointer, 16)] = lower_byte;
         stack_pointer = (parseInt(stack_pointer, 16) - 1).toString(16).padStart(4, '0').toUpperCase();
         console.log(`Going to ${call_address}...`);
         console.log(`Stack Pointer = ${stack_pointer}`);
@@ -173,13 +167,50 @@ function CC(mnemonic) {
 }
 
 function CNC(mnemonic) {
+    console.log("-----CNC-----");
     if (flag[7] === 0) {
         let call_address = mnemonic.split(' ')[1];
         ret_address = (parseInt(address, 16) + 1).toString(16).padStart(4, '0').toUpperCase();
-        let [higher_byte, lower_byte] = splitAddress(ret_address);
-        memoryLocationValue[parseInt(stack_pointer, 16)] = higher_byte;
+        let [higher_byte, lower_byte] = split_address(ret_address);
+        memory_location_value[parseInt(stack_pointer, 16)] = higher_byte;
         stack_pointer = (parseInt(stack_pointer, 16) - 1).toString(16).padStart(4, '0').toUpperCase();
-        memoryLocationValue[parseInt(stack_pointer, 16)] = lower_byte;
+        memory_location_value[parseInt(stack_pointer, 16)] = lower_byte;
+        stack_pointer = (parseInt(stack_pointer, 16) - 1).toString(16).padStart(4, '0').toUpperCase();
+        console.log(`Going to ${call_address}...`);
+        console.log(`Stack Pointer = ${stack_pointer}`);
+        return call_address;
+    } else {
+        return (parseInt(address, 16) + 1).toString(16).padStart(4, '0').toUpperCase();
+    }
+}
+
+function CZ(mnemonic) {
+    console.log("-----CZ-----");
+    if (flag[1] === 1) {
+        let call_address = mnemonic.split(' ')[1];
+        ret_address = (parseInt(address, 16) + 1).toString(16).padStart(4, '0').toUpperCase();
+        let [higher_byte, lower_byte] = split_address(ret_address);
+        memory_location_value[parseInt(stack_pointer, 16)] = higher_byte;
+        stack_pointer = (parseInt(stack_pointer, 16) - 1).toString(16).padStart(4, '0').toUpperCase();
+        memory_location_value[parseInt(stack_pointer, 16)] = lower_byte;
+        stack_pointer = (parseInt(stack_pointer, 16) - 1).toString(16).padStart(4, '0').toUpperCase();
+        console.log(`Going to ${call_address}...`);
+        console.log(`Stack Pointer = ${stack_pointer}`);
+        return call_address;
+    } else {
+        return (parseInt(address, 16) + 1).toString(16).padStart(4, '0').toUpperCase();
+    }
+}
+
+function CNZ(mnemonic) {
+    console.log("-----CNZ-----");
+    if (flag[1] === 0) {
+        let call_address = mnemonic.split(' ')[1];
+        ret_address = (parseInt(address, 16) + 1).toString(16).padStart(4, '0').toUpperCase();
+        let [higher_byte, lower_byte] = split_address(ret_address);
+        memory_location_value[parseInt(stack_pointer, 16)] = higher_byte;
+        stack_pointer = (parseInt(stack_pointer, 16) - 1).toString(16).padStart(4, '0').toUpperCase();
+        memory_location_value[parseInt(stack_pointer, 16)] = lower_byte;
         stack_pointer = (parseInt(stack_pointer, 16) - 1).toString(16).padStart(4, '0').toUpperCase();
         console.log(`Going to ${call_address}...`);
         console.log(`Stack Pointer = ${stack_pointer}`);
@@ -194,7 +225,7 @@ function CP(mnemonic) {
     if (flag[0] === 0) {
         let call_address = mnemonic.split(' ')[1];
         ret_address = (parseInt(address, 16) + 1).toString(16).padStart(4, '0').toUpperCase();
-        let [higher_byte, lower_byte] = splitAddress(ret_address);
+        let [higher_byte, lower_byte] = split_address(ret_address);
         memory_location_value[parseInt(stack_pointer, 16)] = higher_byte;
         stack_pointer = (parseInt(stack_pointer, 16) - 1).toString(16).padStart(4, '0').toUpperCase();
         memory_location_value[parseInt(stack_pointer, 16)] = lower_byte;
@@ -212,7 +243,7 @@ function CM(mnemonic) {
     if (flag[0] === 1) {
         let call_address = mnemonic.split(' ')[1];
         ret_address = (parseInt(address, 16) + 1).toString(16).padStart(4, '0').toUpperCase();
-        let [higher_byte, lower_byte] = splitAddress(ret_address);
+        let [higher_byte, lower_byte] = split_address(ret_address);
         memory_location_value[parseInt(stack_pointer, 16)] = higher_byte;
         stack_pointer = (parseInt(stack_pointer, 16) - 1).toString(16).padStart(4, '0').toUpperCase();
         memory_location_value[parseInt(stack_pointer, 16)] = lower_byte;
@@ -266,7 +297,7 @@ function CMA() {
     reg_value[0] = (0 - parseInt(reg_value[0], 16) + parseInt("FF", 16)).toString(16).toUpperCase().padStart(2, '0');
     flag[0] = 1;
     console.log("[A] = " + reg_value[0]);
-    check_accumulator();
+    check_flag(reg_value[0]);
 }
 
 function CMC() {
@@ -339,7 +370,7 @@ function DAA(mnemonic) {
     }
     console.log(`BCD equivalent of ${reg_A_hex} is ${flag[7]}${reg_value[0]}.`);
     console.log(`[A] = ${reg_value[0]}`);
-    check_accumulator();
+    check_flag(reg_value[0]);
 }
 
 function DAD(mnemonic) {
@@ -454,12 +485,11 @@ function INR(mnemonic) {
     if (reg_1 === "M") {
         memory_address_M(0);
     }
+    check_flag(reg_value[reg_index]);
     if (parseInt(reg_value[reg_index], 16) > 255) {
         reg_value[0] = (parseInt(reg_value[reg_index], 16) - parseInt("100", 16)).toString(16).padStart(2, '0').toUpperCase();
-        flag[7] = 1;
     }
     console.log(`[${reg_list[reg_index]}] = ${reg_value[reg_index]}`);
-    check_flag(reg_value[reg_index]);
 }
 
 function INX(mnemonic) {
@@ -736,7 +766,7 @@ function ORA(mnemonic) {
     }
     reg_value[0] = (parseInt(reg_value[0], 16) | parseInt(reg_value[reg_1], 16)).toString(16).padStart(2, '0').toUpperCase();
     console.log(`[A] = ${reg_value[0]}`);
-    check_accumulator();
+    check_flag(reg_value[0]);
 }
 
 function ORI(mnemonic) {
@@ -745,7 +775,7 @@ function ORI(mnemonic) {
     let immediate_value = mnemonic[1];
     reg_value[0] = (parseInt(reg_value[0], 16) | parseInt(immediate_value, 16)).toString(16).padStart(2, '0').toUpperCase();
     console.log(`[A] = ${reg_value[0]}`);
-    check_accumulator();
+    check_flag(reg_value[0]);
 }
 
 function PCHL(mnemonic) {
@@ -967,7 +997,7 @@ function RAL() {
         flag[7] = 0;
     }
     console.log(`[A]  = ${reg_value[0]}`);
-    check_accumulator();
+    check_flag(reg_value[0]);
 }
 
 function RAR() {
@@ -987,7 +1017,7 @@ function RAR() {
         flag[7] = 0;
     }
     console.log(`[A]  = ${reg_value[0]}`);
-    check_accumulator();
+    check_flag(reg_value[0]);
 }
 
 function RLC() {
@@ -1067,7 +1097,7 @@ function SUB(mnemonic) {
         flag[0] = 1;
     }
     console.log(`[A] = ${reg_value[0]}`);
-    check_accumulator();
+    check_flag(reg_value[0]);
 }
 
 function SUI(mnemonic) {
@@ -1084,7 +1114,7 @@ function SUI(mnemonic) {
         flag[0] = 1;
     }
     console.log(`[A] = ${reg_value[0]}`);
-    check_accumulator();
+    check_flag(reg_value[0]);
 }
 
 function SBB(mnemonic) {
@@ -1109,7 +1139,7 @@ function SBB(mnemonic) {
         flag[0] = 1;
     }
     console.log(`[A] = ${reg_value[0]}`);
-    check_accumulator();
+    check_flag(reg_value[0]);
 }
 
 function SBI(mnemonic) {
@@ -1131,7 +1161,7 @@ function SBI(mnemonic) {
         flag[0] = 1;
     }
     console.log(`[A] = ${reg_value[0]}`);
-    check_accumulator();
+    check_flag(reg_value[0]);
 }
 
 function XCHG(mnemonic) {
@@ -1162,7 +1192,7 @@ function XRA(mnemonic) {
     }
     reg_value[0] = (parseInt(reg_value[0], 16) ^ parseInt(reg_value[reg_1], 16)).toString(16).padStart(2, '0').toUpperCase();
     console.log(`[A] = ${reg_value[0]}`);
-    check_accumulator();
+    check_flag(reg_value[0]);
 }
 
 function XRI(mnemonic) {
@@ -1171,7 +1201,7 @@ function XRI(mnemonic) {
     let immediate_value = mnemonic[1];
     reg_value[0] = (parseInt(reg_value[0], 16) ^ parseInt(immediate_value, 16)).toString(16).padStart(2, '0').toUpperCase();
     console.log(`[A] = ${reg_value[0]}`);
-    checkAccumulator();
+    check_flag(reg_value[0]);
 }
 
 function XTHL(mnemonic) {
@@ -1195,27 +1225,6 @@ function XTHL(mnemonic) {
     stack_pointer = initial_value;
 }
 
-function check_accumulator() {
-    console.log("Checking Accumulator...");
-    if (parseInt(reg_value[0], 16) === 0) {
-        flag[1] = 1;
-    } else if (parseInt(reg_value[0], 16) !== 0) {
-        flag[1] = 0;
-    }
-    if (flag[0] === 1) {
-        flag[7] = 1;
-    } else if (parseInt(reg_value[0], 16) <= 255) {
-        flag[7] = 0;
-    }
-    let oneCount = (parseInt(reg_value[0], 16).toString(2).match(/1/g) || []).length;
-    if (oneCount % 2 === 0) {
-        flag[5] = 1; // Even number of ones
-    } else {
-        flag[5] = 0; // Odd number of ones
-    }
-    console.log(`Flag = ${flag}`);
-}
-
 function check_flag(regName) {
     console.log("Checking Flag...");
     if (parseInt(regName, 16) === 0) {
@@ -1223,7 +1232,7 @@ function check_flag(regName) {
     } else if (parseInt(regName, 16) !== 0) {
         flag[1] = 0;
     }
-    if (flag[0] === 1) {
+    if (parseInt(regName, 16) > 255 || flag[0] === 1) {
         flag[7] = 1;
     } else if (parseInt(regName, 16) <= 255) {
         flag[7] = 0;
@@ -1259,6 +1268,9 @@ function memory_8085() {
         memory_location_value[parseInt(address, 16)] = address_value.toUpperCase();
         address = (parseInt(address, 16) + 1).toString(16).padStart(4, '0').toUpperCase();
         address_value = memory_location_value[parseInt(address, 16)]
+        if (address === "FFFF") {
+            next.removeEventListener('click', nextMemory)
+        }
         textLCD.value = `${address}.${address_value}`
         old_value = address_value
         string = address_value
@@ -1616,9 +1628,6 @@ function MC_to_MN(address) {
         mnemonic = `${mnemonic_opcode},${mnemonic}`;
         console.log(`\n${address_1}:${mnemonic}`);
         address = (parseInt(address, 16)).toString(16).toUpperCase().padStart(4, '0');
-    } else if (byte === null) {
-        mnemonic = "UNKNOWN MNEMONIC";
-        address = (parseInt(address, 16)).toString(16).toUpperCase().padStart(4, '0');
     }
     return [mnemonic, address];
 }
@@ -1869,28 +1878,28 @@ function execute_8085() {
                     case "XRI": XRI(instruction); break;
                     case "XTHL": XTHL(instruction); break;
                     case "HLT":
-                        console.log("-----HLT-----\nProgram Terminated...");
-                        console.log("Executed Successfully...")
-                        let flag_bin = reg_value[1].join('');
-                        let flag_hex = parseInt(flag_bin, 2).toString(16).padStart(2, '0').toUpperCase();
-                        console.log(`[A]  = ${reg_value[0].toString().padStart(2, '0').toUpperCase()}   Flag  = ${flag_hex} = ${flag_bin}`);
-                        console.log(`[B]  = ${reg_value[2].toString().padStart(2, '0').toUpperCase()}    [C]  = ${reg_value[3].toString().padStart(2, '0').toUpperCase()}`);
-                        console.log(`[D]  = ${reg_value[4].toString().padStart(2, '0').toUpperCase()}    [E]  = ${reg_value[5].toString().padStart(2, '0').toUpperCase()}`);
-                        console.log(`[H]  = ${reg_value[6].toString().padStart(2, '0').toUpperCase()}    [L]  = ${reg_value[7].toString().padStart(2, '0').toUpperCase()}`);
-                        console.log(`[PC] = ${address}  [SP] = ${stack_pointer}`);
-                        details.innerHTML = `<br/>[A]  = ${reg_value[0].toString().padStart(2, '0').toUpperCase()} &nbsp;&nbsp;&nbsp;&nbsp;&nbsp Flag  = ${flag_hex}<br/>
-                                            [B]  = ${reg_value[2].toString().padStart(2, '0').toUpperCase()} &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; [C]  = ${reg_value[3].toString().padStart(2, '0').toUpperCase()}<br/>
-                                            [D]  = ${reg_value[4].toString().padStart(2, '0').toUpperCase()} &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; [E]  = ${reg_value[5].toString().padStart(2, '0').toUpperCase()}<br/>
-                                            [H]  = ${reg_value[6].toString().padStart(2, '0').toUpperCase()} &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; [L]  = ${reg_value[7].toString().padStart(2, '0').toUpperCase()}<br/>
-                                            [PC] = ${address} &nbsp; [SP] = ${stack_pointer}`
-                        return;
+                        console.log("-----HLT-----\nExecuted succesfully");
+                        break;
                     default:
-                        console.log(`The instruction "${instruction}" (${memory_location_value[parseInt(address, 16)]}) at memory location "${address.padStart(4, '0').toUpperCase()}" is not provided by the developer...`);
+                        console.log(`The instruction "${instruction}" (${memory_location_value[parseInt(address, 16)]}) at memory location "${address}" is not provided by the developer...`);
                 }
                 if (opcode !== "CALL" && opcode !== "CC" && opcode !== "CNC" && opcode !== "CP" && opcode !== "CM" && opcode !== "CPE" && opcode !== "CPO" && opcode !== "CZ" && opcode !== "CNZ" && opcode !== "JMP" && opcode !== "JC" && opcode !== "JNC" && opcode !== "JZ" && opcode !== "JNZ" && opcode !== "RET" && opcode !== "RC" && opcode !== "RNC" && opcode !== "RP" && opcode !== "RM" && opcode !== "RPE" && opcode !== "RPO" && opcode !== "RZ" && opcode !== "RNZ") {
-                    address = ((parseInt(address, 16) + 1).toString(16)).toUpperCase().padStart(4, '0');
+                    address = (parseInt(address, 16) + 1).toString(16).toUpperCase().padStart(4, '0');
                 }
-                if (opcode === "HLT") {
+                if (opcode === "HLT" || address === "10000" || address === "10001" || address === "10002") {
+                    console.log("\nProgram Terminated...")
+                    let flag_bin = reg_value[1].join('');
+                    let flag_hex = parseInt(flag_bin, 2).toString(16).padStart(2, '0').toUpperCase();
+                    console.log(`[A]  = ${reg_value[0].toString().padStart(2, '0').toUpperCase()}   Flag  = ${flag_hex} = ${flag_bin}`);
+                    console.log(`[B]  = ${reg_value[2].toString().padStart(2, '0').toUpperCase()}    [C]  = ${reg_value[3].toString().padStart(2, '0').toUpperCase()}`);
+                    console.log(`[D]  = ${reg_value[4].toString().padStart(2, '0').toUpperCase()}    [E]  = ${reg_value[5].toString().padStart(2, '0').toUpperCase()}`);
+                    console.log(`[H]  = ${reg_value[6].toString().padStart(2, '0').toUpperCase()}    [L]  = ${reg_value[7].toString().padStart(2, '0').toUpperCase()}`);
+                    console.log(`[PC] = ${address}  [SP] = ${stack_pointer}`);
+                    details.innerHTML = `<br/>[A]  = ${reg_value[0].toString().padStart(2, '0').toUpperCase()} &nbsp;&nbsp;&nbsp;&nbsp;&nbsp Flag  = ${flag_hex}<br/>
+                                        [B]  = ${reg_value[2].toString().padStart(2, '0').toUpperCase()} &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; [C]  = ${reg_value[3].toString().padStart(2, '0').toUpperCase()}<br/>
+                                        [D]  = ${reg_value[4].toString().padStart(2, '0').toUpperCase()} &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; [E]  = ${reg_value[5].toString().padStart(2, '0').toUpperCase()}<br/>
+                                        [H]  = ${reg_value[6].toString().padStart(2, '0').toUpperCase()} &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; [L]  = ${reg_value[7].toString().padStart(2, '0').toUpperCase()}<br/>
+                                        [PC] = ${address} &nbsp; [SP] = ${stack_pointer}`
                     break;
                 }
             }
@@ -1904,6 +1913,7 @@ function execute_8085() {
         string = ''
         address = '0000'
         mode = 0
+        details.innerHTML = ''
         reg_active_status = 'inactive'
         initial_mode = true
         textLCD.value = '.  '
@@ -1913,20 +1923,20 @@ function execute_8085() {
 function memory_address_M(mode) {
     if (mode === 0) {
         console.log("Storing the value to Memory address...");
-        reg_value[6] = reg_value[6].toString().padStart(2, '0').toUpperCase();
-        reg_value[7] = reg_value[7].toString().padStart(2, '0').toUpperCase();
+        reg_value[6] = String(reg_value[6]).padStart(2, '0').toUpperCase();
+        reg_value[7] = String(reg_value[7]).padStart(2, '0').toUpperCase();
         let M_address = reg_value[6] + reg_value[7];
         memory_location_value[parseInt(M_address, 16)] = reg_value[8];
-        console.log(`[H] = ${reg_value[6]}, [L] = ${reg_value[7]}`);
+        console.log(`[H] = ${reg_value[6]} [L] = ${reg_value[7]}`);
         console.log(`[M] = [${M_address}] = ${reg_value[8]}`);
     } else if (mode === 1) {
         console.log("Retrieving the value from Memory address...");
-        reg_value[6] = reg_value[6].toString().padStart(2, '0').toUpperCase();
-        reg_value[7] = reg_value[7].toString().padStart(2, '0').toUpperCase();
+        reg_value[6] = String(reg_value[6]).padStart(2, '0').toUpperCase();
+        reg_value[7] = String(reg_value[7]).padStart(2, '0').toUpperCase();
         let M_address = reg_value[6] + reg_value[7];
         reg_value[8] = memory_location_value[parseInt(M_address, 16)];
         console.log(`[M] = [${M_address}] = ${reg_value[8]}`);
-        console.log(`[H] = ${reg_value[6]}, [L] = ${reg_value[7]}`);
+        console.log(`[H] = ${reg_value[6]} [L] = ${reg_value[7]}`);
     }
 }
 
@@ -1961,14 +1971,14 @@ function registers() {
         reset.removeEventListener('click', escapeRegisters)
         if (initial_mode === false) {
             textLCD.value = '.  '
+            string = ''
+            address = '0000'
             initial_mode = true
             mode = 0
             reg_active_status = 'inactive'
         }
     })
 }
-////////////////////////////////////////////////////////////////////////////////////
-////////////////////////////////////////////////////////////////////////////////////
 
 hexButtons.forEach(hex => {
     hex.addEventListener('click', hexFunc = () => {
