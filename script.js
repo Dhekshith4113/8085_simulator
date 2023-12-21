@@ -2384,11 +2384,11 @@ function execute_8085() {
                     console.log(`[D]  = ${reg_value[4].toString().padStart(2, '0').toUpperCase()}    [E]  = ${reg_value[5].toString().padStart(2, '0').toUpperCase()}`);
                     console.log(`[H]  = ${reg_value[6].toString().padStart(2, '0').toUpperCase()}    [L]  = ${reg_value[7].toString().padStart(2, '0').toUpperCase()}`);
                     console.log(`[PC] = ${address}  [SP] = ${stack_pointer}`);
-                    details.innerHTML = `<br/>[A]  = ${reg_value[0].toString().padStart(2, '0').toUpperCase()} &nbsp;&nbsp;&nbsp;&nbsp;&nbsp Flag  = ${flag_hex}<br/>
-                                        [B]  = ${reg_value[2].toString().padStart(2, '0').toUpperCase()} &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; [C]  = ${reg_value[3].toString().padStart(2, '0').toUpperCase()}<br/>
-                                        [D]  = ${reg_value[4].toString().padStart(2, '0').toUpperCase()} &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; [E]  = ${reg_value[5].toString().padStart(2, '0').toUpperCase()}<br/>
-                                        [H]  = ${reg_value[6].toString().padStart(2, '0').toUpperCase()} &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; [L]  = ${reg_value[7].toString().padStart(2, '0').toUpperCase()}<br/>
-                                        [PC] = ${address} &nbsp; [SP] = ${stack_pointer}`
+                    details.innerHTML = `<br/>[A]&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;&nbsp;${reg_value[0].toString().padStart(2, '0').toUpperCase()}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Flag&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;&nbsp;${flag_hex}<br/>
+                                         [B]&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;&nbsp;${reg_value[2].toString().padStart(2, '0').toUpperCase()}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[C]&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;&nbsp;${reg_value[3].toString().padStart(2, '0').toUpperCase()}<br/>
+                                         [D]&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;&nbsp;${reg_value[4].toString().padStart(2, '0').toUpperCase()}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[E]&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;&nbsp;${reg_value[5].toString().padStart(2, '0').toUpperCase()}<br/>
+                                         [H]&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;&nbsp;${reg_value[6].toString().padStart(2, '0').toUpperCase()}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[L]&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;&nbsp;${reg_value[7].toString().padStart(2, '0').toUpperCase()}<br/>
+                                         [PC]&nbsp;&nbsp;&nbsp;=&nbsp;&nbsp;${address}&nbsp;&nbsp;&nbsp;&nbsp;[SP]&nbsp;&nbsp;=&nbsp;&nbsp;${stack_pointer}`
                     break;
                 }
             }
