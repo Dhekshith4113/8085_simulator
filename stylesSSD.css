@@ -1,9 +1,15 @@
+@import url('https://fonts.googleapis.com/css2?family=Ubuntu:wght@300&display=swap');
+
+@font-face {
+    font-family: 'SSD';
+    src: url(fonts/SSD.ttf);
+}
+
 * {
     margin: 0;
     padding: 0;
     box-sizing: border-box;
     font-family: 'Ubuntu', sans-serif;
-
 }
 
 body {
@@ -14,7 +20,7 @@ body {
     display: flex;
     flex-direction: row;
     place-items: center;
-    background-color: black;
+    background-color: #202020;
 }
 
 a {
@@ -39,23 +45,21 @@ h2 {
 #lcd {
     border: none;
     border-radius: 10px;
-    margin: 5px 0 15px 15px;
-    padding: 10px 15px 0 15px;
-    height: 100px;
-    width: 340px;
+    margin: 5px 0 15px 17px;
+    padding: 0px 20px 0 20px;
+    height: 60px;
+    width: 305px;
     text-align: right;
-    color: red;
-    font-family: 'Segment7Standard';
-    font-weight: normal;
-    font-style: italic;
-    background-color: rgb(100, 10, 10);
-    font-size: 75px;
+    color: rgb(255, 4, 0);
+    font-family: "SSD";
+    background-color: rgb(80, 10, 10);
+    font-size: 55px;
 }
 
 #details {
     color: white;
     font-size: 15px;
-    margin: 0px 50px 0px 105px;
+    margin: 0px 50px 0px 80px;
 }
 
 input::placeholder {
@@ -63,38 +67,40 @@ input::placeholder {
 }
 
 button {
-    margin: 4px;
-    width: 50px;
-    height: 50px;
-    font-size: 17px;
+    margin: 2px;
+    width: 44px;
+    height: 44px;
+    font-size: 15px;
     display: inline-flex;
     align-content: center;
     justify-content: center;
     border: none;
-    border-radius: 5px;
+    background-color: #FFFFFF;
+    border-radius: 5px ;
     cursor: pointer;
 }
 
 #execute {
-    height: 108px;
+    height: 95px;
     float: left;
-    margin: 4px 8px 2px 4px;
+    margin: 2px 5px 2px 17px;
 }
 
 #reset {
-    height: 108px;
+    height: 95px;
     float: right;
-    margin: 4px 0 2px 0;
+    margin: 2px 45px 0 0;
 }
 
 #int {
-    height: 108px;
+    height: 95px;
     float: right;
-    margin: 3px 0 0 0;
+    margin: 5px 45px 0 0;
 }
 
 .row1 {
     float: left;
+    margin: 0 0 4px 0;
 }
 
 .row2 {
@@ -103,9 +109,10 @@ button {
 
 .row3 {
     float: left;
+    margin: 3px 0 4px 15px;
 }
 
 .row4 {
     float: left;
-    margin-bottom: 20px;
+    margin: 0px 0px 10px 15px;
 }
