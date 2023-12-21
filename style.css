@@ -80,6 +80,7 @@ body {
 #details {
     color: white;
     font-size: 15px;
+    font-family: 'Ubuntu', sans-serif;
 }
 
 input::placeholder {
