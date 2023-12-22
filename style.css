@@ -13,6 +13,25 @@
     font-family: 'Ubuntu', sans-serif;
 }
 
+body {
+    margin-left: auto;
+    margin-right: auto;
+    width: 380px;
+    height: 700px;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: row;
+    place-items: center;
+    background-color: #000000;
+}
+
+.main {
+    position: static;
+    border: 1px solid #717377;
+    padding: 20px;
+    border-radius: 16px;
+}
+
 a {
     margin: 0 0 10px 0;
     color: rgb(150, 150, 150);
@@ -23,18 +42,12 @@ a {
 }
 
 h1 {
-    margin: 110px 0 10px 0;
+    margin: 0px 0 10px 0;
     color: white;
     font-size: 30px;
     display: flex;
     flex-direction: column;
     align-items: center;
-}
-
-body {
-    place-items: center;
-    min-height: 100vh;
-    background-color: black;
 }
 
 .keyboard {
