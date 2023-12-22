@@ -1,76 +1,81 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>8085 LCD Kit Simulator</title>
     <link rel="stylesheet" href="style.css">
 </head>
+
 <body>
-    <h1>8085 LCD Kit Simulator</h1>
-    <a href="indexSSD.html" target="_self">Try 8085 SSD Kit Simulator</a>
-    <div class="lcd">
-        <p id="lcdTop"></p>
-        <input id="lcdBottom"></input>
+    <div class="main">
+        <a href="indexSSD.html" target="_self">Try 8085 SSD Kit Simulator</a>
+        <h1>8085 LCD Kit Simulator</h1>
+        <div class="lcd">
+            <p id="lcdTop"></p>
+            <input id="lcdBottom"></input>
+        </div>
+        <div class="keyboard">
+            <button id="reset">RESET</button>
+            <div class="row">
+                <button id="escape">Esc</button>
+                <button class="btn hex">1</button>
+                <button class="btn hex">2</button>
+                <button class="btn hex">3</button>
+                <button class="btn hex">4</button>
+                <button class="btn hex">5</button>
+                <button class="btn hex">6</button>
+                <button class="btn hex">7</button>
+                <button class="btn hex">8</button>
+                <button class="btn hex">9</button>
+                <button class="btn hex">0</button>
+            </div>
+            <div class="row">
+                <button class="btn">Q</button>
+                <button class="btn">W</button>
+                <button class="btn hex">E</button>
+                <button class="btn spclbtn">R</button>
+                <button class="btn">T</button>
+                <button class="btn">Y</button>
+                <button class="btn">U</button>
+                <button class="btn">I</button>
+                <button class="btn">O</button>
+                <button class="btn">P</button>
+                <button id="backspace" class="btn hex">&#x232b;</button>
+            </div>
+            <div class="row">
+                <button class="btn hex spclbtn">A</button>
+                <button class="btn spclbtn">S</button>
+                <button class="btn hex">D</button>
+                <button class="btn hex">F</button>
+                <button class="btn spclbtn">G</button>
+                <button class="btn">H</button>
+                <button class="btn">J</button>
+                <button class="btn">K</button>
+                <button class="btn">L</button>
+                <button id="enter" class="btn hex">Enter</button>
+            </div>
+            <div class="row">
+                <button class="btn">Z</button>
+                <button class="btn">X</button>
+                <button class="btn hex">C</button>
+                <button class="btn">V</button>
+                <button class="btn hex">B</button>
+                <button class="btn">N</button>
+                <button class="btn spclbtn">M</button>
+            </div>
+            <div class="row">
+                <button class="btn">,</button>
+                <button id="space" class="btn">Space</button>
+                <button class="btn">.</button>
+            </div>
+            <div>
+                <p id="details"></p>
+            </div>
+        </div>
+        <script src="script.js"></script>
     </div>
-    <div class="keyboard">
-        <button id="reset">RESET</button>
-        <div class="row">
-            <button id="escape">Esc</button>
-            <button class="btn hex">1</button>
-            <button class="btn hex">2</button>
-            <button class="btn hex">3</button>
-            <button class="btn hex">4</button>
-            <button class="btn hex">5</button>
-            <button class="btn hex">6</button>
-            <button class="btn hex">7</button>
-            <button class="btn hex">8</button>
-            <button class="btn hex">9</button>
-            <button class="btn hex">0</button>
-        </div>
-        <div class="row">
-            <button class="btn">Q</button>
-            <button class="btn">W</button>
-            <button class="btn hex">E</button>
-            <button class="btn spclbtn">R</button>
-            <button class="btn">T</button>
-            <button class="btn">Y</button>
-            <button class="btn">U</button>
-            <button class="btn">I</button>
-            <button class="btn">O</button>
-            <button class="btn">P</button>
-            <button id="backspace" class="btn hex">&#x232b;</button>
-        </div>
-        <div class="row">
-            <button class="btn hex spclbtn">A</button>
-            <button class="btn spclbtn">S</button>
-            <button class="btn hex">D</button>
-            <button class="btn hex">F</button>
-            <button class="btn spclbtn">G</button>
-            <button class="btn">H</button>
-            <button class="btn">J</button>
-            <button class="btn">K</button>
-            <button class="btn">L</button>
-            <button id="enter"class="btn hex">Enter</button>
-        </div>
-        <div class="row">
-            <button class="btn">Z</button>
-            <button class="btn">X</button>
-            <button class="btn hex">C</button>
-            <button class="btn">V</button>
-            <button class="btn hex">B</button>
-            <button class="btn">N</button>
-            <button class="btn spclbtn">M</button>
-        </div>
-        <div class="row">
-            <button class="btn">,</button>
-            <button id="space" class="btn">Space</button>
-            <button class="btn">.</button>
-        </div>
-        <div>
-            <p id="details"></p>
-        </div>
-    </div>
-    <script src="script.js"></script>
 </body>
+
 </html>
