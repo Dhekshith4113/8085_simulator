@@ -15,7 +15,7 @@
 body {
     margin-left: auto;
     margin-right: auto;
-    width: 407px;
+    width: 380px;
     height: 700px;
     display: flex;
     flex-direction: row;
@@ -81,21 +81,21 @@ button {
 }
 
 #execute {
-    height: 95px;
+    height: 96px;
     float: left;
     margin: 2px 5px 2px 17px;
 }
 
 #reset {
-    height: 95px;
+    height: 96px;
     float: right;
-    margin: 2px 45px 0 0;
+    margin: 2px 20px 0 0;
 }
 
 #int {
-    height: 95px;
+    height: 96px;
     float: right;
-    margin: 5px 45px 0 0;
+    margin: 5px 20px 0 0;
 }
 
 .row1 {
