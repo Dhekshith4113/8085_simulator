@@ -3,6 +3,14 @@
 
 This is a simulator that simulates the 8085 microprocessor. There are two versions of this project: one done in Python and another in JavaScript. The JavaScript version has two types: LCD and SSD (Seven Segment Display). The simulator is built for educational purposes and helps students understand Assembly Language Programming. Keep in mind that this simulator is more focused towards mobile phone users. 
 
+| 8085 LCD Kit Simulator | 8085 SSD Kit Simulator |
+| ---------------------- | ---------------------- |
+| <img width="480" height="480" alt="8085_LCD_Kit_Simulator" src="https://github.com/user-attachments/assets/6499c74e-27da-462e-8b05-c3a98d66837d" /> | <img width="480" height="480" alt="8085_SSD_Kit_Simulator" src="https://github.com/user-attachments/assets/36c31bd2-0bbd-4aae-a633-5c374de96076" /> |
+
+| 8085 Simulator Python |
+| ---------------------- |
+| <img width="1080" height="720" alt="8085_Simulator_Python" src="https://github.com/user-attachments/assets/3b838c8e-ee9c-4550-bade-13c66baec549" /> |
+
 ## How to use it?
 As mentioned before, there are 2 versions, Python & JavaScript. Although the methods are the same, each one is slightly different.
 ### 01. Python
@@ -27,7 +35,7 @@ Also note when typing '_JMP_', '_CALL_', etc..., type the address where you want
 As usual, the values must be given as '_hexadecimal_'.
 
 ### 02. JavaScript
-There are 2 versions for JavaScript, LCD and SSD. The link to the website is given below. It is the same as that on the left side... https://dhekshith4113.github.io/8085_simulator/
+There are 2 versions for JavaScript, LCD (Liquid Crystal Display) and SSD (Seven Segment Display). The link to the website is given below. It is the same as that on the left side... https://dhekshith4113.github.io/8085_simulator/
 #### a) LCD simulator kit
 It might look like there are many options available, but only '_A_', '_G_', '_M_', '_R_', and '_S_' are functional. They work in the same way as the Python version, but to exit from an option, hit the '_Esc_' button. To enter an address or a hexadecimal value, you have to hit '_BackSpace_' and then type the values. After hitting '_Enter_' for '_GO EXECUTE_', press the '_RESET_' button. You can press '_RESET_' anytime, and it won't reset your register or RAM values. If you are running the website on a PC, press '_Ctrl + Shift + I_' or '_Settings > Developer Tools_' and go to '_console_' to see the program doing its thing.
 ### b) SSD simulator kit
